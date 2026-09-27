@@ -1,7 +1,38 @@
 {% extends "base.html" %}
 {% block content %}
 
-<section class="max-w-6xl mx-auto px-5 pt-20 pb-16 text-center">
+{% if slides %}
+<section class="relative overflow-hidden">
+  <div id="hero-slider" class="relative h-[420px] sm:h-[560px]">
+    {% for slide in slides %}
+    <div class="hero-slide absolute inset-0 transition-opacity duration-700 {{ 'opacity-100 z-10' if loop.first else 'opacity-0 z-0 pointer-events-none' }}">
+      <img src="{{ slide.image_url }}" alt="" class="absolute inset-0 w-full h-full object-cover" />
+      <div class="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/40 to-slate-950/10"></div>
+      <div class="relative h-full max-w-3xl mx-auto px-5 flex flex-col items-center justify-center text-center text-white">
+        <h1 class="text-3xl sm:text-5xl font-extrabold tracking-tight leading-tight">{{ slide.heading }}</h1>
+        {% if slide.subheading %}
+        <p class="mt-4 text-base sm:text-lg text-white/90 max-w-xl">{{ slide.subheading }}</p>
+        {% endif %}
+        {% if slide.button_label and slide.button_url %}
+        <a href="{{ slide.button_url }}" class="mt-6 bg-brand text-white px-6 py-3 rounded-xl font-semibold hover:bg-brand-dark transition">
+          {{ slide.button_label }}
+        </a>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% if slides|length > 1 %}
+  <div class="absolute bottom-5 left-1/2 -translate-x-1/2 z-20 flex gap-2">
+    {% for slide in slides %}
+    <button type="button" class="hero-dot w-2.5 h-2.5 rounded-full transition {{ 'bg-white' if loop.first else 'bg-white/40' }}"
+            data-goto="{{ loop.index0 }}" aria-label="Go to slide {{ loop.index }}"></button>
+    {% endfor %}
+  </div>
+  {% endif %}
+</section>
+{% else %}
+<section class="max-w-6xl mx-auto px-5 pt-20 pb-4 text-center">
   <span class="inline-block bg-brand-light dark:bg-brand/10 text-brand text-xs font-semibold px-3 py-1 rounded-full mb-5">
     {{ t('home.badge') }}
   </span>
@@ -11,7 +42,11 @@
   <p class="mt-5 text-lg text-slate-500 dark:text-slate-400 max-w-xl mx-auto">
     {{ t('home.subtitle') }}
   </p>
-  <div class="mt-8 flex items-center justify-center gap-3">
+</section>
+{% endif %}
+
+<section class="max-w-6xl mx-auto px-5 {{ 'pt-10' if slides else 'pt-6' }} pb-16 text-center">
+  <div class="flex flex-wrap items-center justify-center gap-3">
     <a href="#services" class="bg-brand text-white px-6 py-3 rounded-xl font-semibold hover:bg-brand-dark transition">
       {{ t('home.browse_services') }}
     </a>
@@ -20,8 +55,24 @@
        class="border border-slate-200 dark:border-slate-700 px-6 py-3 rounded-xl font-semibold text-slate-700 dark:text-slate-200 hover:border-brand hover:text-brand transition">
       💬 {{ t('home.chat_with_us') }}
     </a>
+    <a href="https://wa.me/{{ whatsapp_number }}?text={{ ('Hi ' ~ site_name ~ '! I would like to schedule a call to discuss my IT needs.') | urlencode }}"
+       target="_blank" rel="noopener"
+       class="border border-slate-200 dark:border-slate-700 px-6 py-3 rounded-xl font-semibold text-slate-700 dark:text-slate-200 hover:border-brand hover:text-brand transition">
+      📅 {{ t('home.schedule_call') }}
+    </a>
     {% endif %}
   </div>
+
+  {% if stats %}
+  <div class="mt-14 grid grid-cols-2 sm:grid-cols-{{ [stats|length, 4]|min }} gap-6 max-w-3xl mx-auto">
+    {% for stat in stats %}
+    <div>
+      <div class="text-3xl sm:text-4xl font-extrabold text-brand">{{ stat.value }}</div>
+      <div class="text-sm text-slate-500 dark:text-slate-400 mt-1">{{ stat.label }}</div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
 </section>
 
 <section id="services" class="max-w-6xl mx-auto px-5 py-16">

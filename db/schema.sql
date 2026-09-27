@@ -83,16 +83,49 @@ create table if not exists blog_posts (
 create index if not exists idx_blog_published on blog_posts (is_published, created_at desc);
 
 -- ---------------------------------------------------------------------------
+-- hero_slides: the homepage hero carousel — however many slides are added
+-- (and marked active) here, that's how many the homepage shows.
+-- ---------------------------------------------------------------------------
+create table if not exists hero_slides (
+  id            bigserial primary key,
+  image_url     text not null,
+  heading       text not null,
+  subheading    text,
+  button_label  text,               -- e.g. "Browse services" — optional
+  button_url    text,               -- e.g. "/#services" or a full URL
+  is_active     boolean not null default true,
+  sort_order    integer not null default 0,
+  created_at    timestamptz not null default now(),
+  updated_at    timestamptz not null default now()
+);
+
+create index if not exists idx_hero_slides_active on hero_slides (is_active, sort_order);
+
+-- ---------------------------------------------------------------------------
+-- site_stats: the small "2 IT experts / 1 office / 10 clients served"
+-- style counters on the homepage — also an open-ended list.
+-- ---------------------------------------------------------------------------
+create table if not exists site_stats (
+  id          bigserial primary key,
+  label       text not null,        -- e.g. "Clients served"
+  value       text not null,        -- e.g. "10+" — plain text, so "24/7" etc. work too
+  sort_order  integer not null default 0,
+  created_at  timestamptz not null default now()
+);
+
+-- ---------------------------------------------------------------------------
 -- Row Level Security (defense in depth).
 -- The FastAPI backend talks to Postgres with the Supabase SERVICE ROLE key,
 -- which bypasses RLS, and enforces auth/admin checks itself in Python.
 -- These policies only matter if you ever also call Supabase directly from a
 -- browser with the anon key.
 -- ---------------------------------------------------------------------------
-alter table profiles   enable row level security;
-alter table services   enable row level security;
-alter table orders     enable row level security;
-alter table blog_posts enable row level security;
+alter table profiles    enable row level security;
+alter table services    enable row level security;
+alter table orders      enable row level security;
+alter table blog_posts  enable row level security;
+alter table hero_slides enable row level security;
+alter table site_stats  enable row level security;
 
 drop policy if exists "profiles: read own" on profiles;
 create policy "profiles: read own" on profiles
@@ -109,6 +142,14 @@ create policy "blog: public read published" on blog_posts
 drop policy if exists "orders: read own" on orders;
 create policy "orders: read own" on orders
   for select using (auth.uid() = user_id);
+
+drop policy if exists "hero_slides: public read active" on hero_slides;
+create policy "hero_slides: public read active" on hero_slides
+  for select using (is_active = true);
+
+drop policy if exists "site_stats: public read" on site_stats;
+create policy "site_stats: public read" on site_stats
+  for select using (true);
 
 -- Make the first admin manually after signing up once, e.g.:
 -- update profiles set is_admin = true where id = '<your-user-uuid>';

@@ -1,0 +1,73 @@
+{% extends "admin/layout.html" %}
+{% block title %}Home page — Admin{% endblock %}
+{% block admin_content %}
+<h1 class="text-2xl font-extrabold mb-2">Home page</h1>
+<p class="text-sm text-slate-500 mb-8">Controls the hero slider and the stat counters on the public homepage. Nothing here needs a code change or a redeploy — changes go live immediately.</p>
+
+<!-- ============================= Hero slides ============================= -->
+<div class="flex items-center justify-between mb-4">
+  <h2 class="font-bold text-lg">Hero slider</h2>
+  <a href="/admin/home/slides/new" class="bg-brand text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-brand-dark">+ Add slide</a>
+</div>
+<p class="text-xs text-slate-400 mb-4">The homepage shows one slide per row below (in this order) as an auto-rotating carousel. Add as many as you like — turn one off with "Disable" without deleting it.</p>
+
+<div class="border border-slate-100 dark:border-slate-800 rounded-2xl divide-y divide-slate-100 dark:divide-slate-800 mb-12">
+  {% for s in slides %}
+  <div class="flex items-center gap-4 p-4">
+    <img src="{{ s.image_url }}" alt="" class="w-20 h-14 object-cover rounded-lg border border-slate-200 dark:border-slate-700 flex-shrink-0" />
+    <div class="flex-1 min-w-0">
+      <div class="font-semibold truncate">{{ s.heading }}</div>
+      <div class="text-xs text-slate-400 truncate">{{ s.subheading }}</div>
+    </div>
+    <span class="px-2 py-0.5 rounded-full text-xs font-medium flex-shrink-0 {{ 'bg-green-100 text-green-700' if s.is_active else 'bg-slate-100 text-slate-500' }}">
+      {{ "Active" if s.is_active else "Disabled" }}
+    </span>
+    <div class="flex items-center gap-2 text-sm flex-shrink-0">
+      <a href="/admin/home/slides/{{ s.id }}/edit" class="text-brand font-medium">Edit</a>
+      <form method="post" action="/admin/home/slides/{{ s.id }}/toggle" class="inline">
+        <button class="text-slate-500 hover:text-slate-800 font-medium">{{ "Disable" if s.is_active else "Enable" }}</button>
+      </form>
+      <form method="post" action="/admin/home/slides/{{ s.id }}/delete" class="inline" onsubmit="return confirm('Delete this slide?');">
+        <button class="text-red-500 hover:text-red-700 font-medium">Delete</button>
+      </form>
+    </div>
+  </div>
+  {% else %}
+  <div class="p-6 text-center text-slate-400 text-sm">No slides yet — the homepage falls back to a plain default hero until you add one.</div>
+  {% endfor %}
+</div>
+
+<!-- ============================== Stat counters ============================== -->
+<div class="mb-4">
+  <h2 class="font-bold text-lg">Stat counters</h2>
+  <p class="text-xs text-slate-400 mt-1">Small "2 IT experts · 1 office · 10+ clients served" style numbers shown under the hero. Add as many as you like; keep the value short (e.g. "10+", "24/7", "2").</p>
+</div>
+
+<div class="border border-slate-100 dark:border-slate-800 rounded-2xl divide-y divide-slate-100 dark:divide-slate-800 mb-6">
+  {% for stat in stats %}
+  <form method="post" action="/admin/home/stats/{{ stat.id }}/edit" class="flex items-center gap-3 p-4">
+    <input name="value" value="{{ stat.value }}" placeholder="10+"
+           class="w-24 border border-slate-200 dark:border-slate-700 dark:bg-slate-900 rounded-lg px-3 py-2 text-sm font-bold text-center" />
+    <input name="label" value="{{ stat.label }}" placeholder="Clients served"
+           class="flex-1 border border-slate-200 dark:border-slate-700 dark:bg-slate-900 rounded-lg px-3 py-2 text-sm" />
+    <input name="sort_order" type="number" value="{{ stat.sort_order }}" title="Sort order"
+           class="w-16 border border-slate-200 dark:border-slate-700 dark:bg-slate-900 rounded-lg px-2 py-2 text-sm text-center" />
+    <button class="bg-slate-900 text-white text-sm px-3 py-2 rounded-lg font-medium hover:bg-slate-700">Save</button>
+    <button type="submit" formaction="/admin/home/stats/{{ stat.id }}/delete"
+            class="text-red-500 hover:text-red-700 text-sm font-medium">Delete</button>
+  </form>
+  {% else %}
+  <div class="p-6 text-center text-slate-400 text-sm">No stat counters yet.</div>
+  {% endfor %}
+</div>
+
+<form method="post" action="/admin/home/stats/new" class="flex items-center gap-3 p-4 border border-dashed border-slate-200 dark:border-slate-700 rounded-2xl">
+  <input name="value" placeholder="10+" required
+         class="w-24 border border-slate-200 dark:border-slate-700 dark:bg-slate-900 rounded-lg px-3 py-2 text-sm font-bold text-center" />
+  <input name="label" placeholder="Clients served" required
+         class="flex-1 border border-slate-200 dark:border-slate-700 dark:bg-slate-900 rounded-lg px-3 py-2 text-sm" />
+  <input name="sort_order" type="number" value="0" title="Sort order"
+         class="w-16 border border-slate-200 dark:border-slate-700 dark:bg-slate-900 rounded-lg px-2 py-2 text-sm text-center" />
+  <button class="bg-brand text-white text-sm px-4 py-2 rounded-lg font-semibold hover:bg-brand-dark">+ Add</button>
+</form>
+{% endblock %}

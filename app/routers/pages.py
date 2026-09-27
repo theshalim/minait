@@ -43,8 +43,21 @@ def home(request: Request):
         .execute()
         .data
     )
+    slides = (
+        supabase_admin()
+        .table("hero_slides")
+        .select("*")
+        .eq("is_active", True)
+        .order("sort_order")
+        .execute()
+        .data
+    )
+    stats = (
+        supabase_admin().table("site_stats").select("*").order("sort_order").execute().data
+    )
     return templates.TemplateResponse(
-        "index.html", base_ctx(request, services=services, posts=posts)
+        "index.html",
+        base_ctx(request, services=services, posts=posts, slides=slides, stats=stats),
     )
 
 

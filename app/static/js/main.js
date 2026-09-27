@@ -49,3 +49,49 @@
     } catch (e) {}
   });
 })();
+
+// Homepage hero slider: auto-rotates every 5s, plus clickable dots.
+// However many .hero-slide elements the server rendered (one per admin
+// "hero_slides" row), that's how many this cycles through.
+(function () {
+  var root = document.getElementById("hero-slider");
+  if (!root) return;
+  var slides = root.querySelectorAll(".hero-slide");
+  var dots = document.querySelectorAll(".hero-dot");
+  if (slides.length < 2) return;
+
+  var current = 0;
+  var timer;
+
+  function show(index) {
+    current = (index + slides.length) % slides.length;
+    slides.forEach(function (el, i) {
+      var active = i === current;
+      el.classList.toggle("opacity-100", active);
+      el.classList.toggle("z-10", active);
+      el.classList.toggle("opacity-0", !active);
+      el.classList.toggle("z-0", !active);
+      el.classList.toggle("pointer-events-none", !active);
+    });
+    dots.forEach(function (dot, i) {
+      dot.classList.toggle("bg-white", i === current);
+      dot.classList.toggle("bg-white/40", i !== current);
+    });
+  }
+
+  function restart() {
+    clearInterval(timer);
+    timer = setInterval(function () {
+      show(current + 1);
+    }, 5000);
+  }
+
+  dots.forEach(function (dot) {
+    dot.addEventListener("click", function () {
+      show(parseInt(dot.getAttribute("data-goto"), 10));
+      restart();
+    });
+  });
+
+  restart();
+})();
