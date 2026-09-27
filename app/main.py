@@ -1,3 +1,4 @@
+import logging
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException, Request
@@ -9,6 +10,7 @@ from app.routers import admin, auth, dashboard, orders, pages, webhooks
 from app.templating import base_ctx, templates
 
 STATIC_DIR = Path(__file__).parent / "static"
+logger = logging.getLogger("minait")
 
 app = FastAPI(title=settings.SITE_NAME)
 
@@ -36,3 +38,12 @@ async def http_exception_handler(request: Request, exc: HTTPException):
             "403.html", base_ctx(request), status_code=403
         )
     return JSONResponse({"detail": exc.detail}, status_code=exc.status_code, headers=exc.headers)
+
+
+@app.exception_handler(Exception)
+async def unhandled_exception_handler(request: Request, exc: Exception):
+    # Last-resort net: an unexpected bug should show a normal-looking error
+    # page (and get logged, visible in Vercel's Runtime Logs) instead of a
+    # bare, unstyled "Internal Server Error".
+    logger.error("Unhandled exception on %s %s", request.method, request.url.path, exc_info=exc)
+    return templates.TemplateResponse("500.html", base_ctx(request), status_code=500)

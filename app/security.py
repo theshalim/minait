@@ -39,15 +39,21 @@ def clear_session_cookies(response) -> None:
 
 
 def _load_profile(user_id: str) -> dict:
-    res = (
-        supabase_admin()
-        .table("profiles")
-        .select("full_name, phone, is_admin")
-        .eq("id", user_id)
-        .maybe_single()
-        .execute()
-    )
-    return res.data or {}
+    try:
+        res = (
+            supabase_admin()
+            .table("profiles")
+            .select("full_name, phone, is_admin")
+            .eq("id", user_id)
+            .maybe_single()
+            .execute()
+        )
+        return res.data or {}
+    except Exception:
+        # A hiccup here (network blip, row missing, etc.) should never take
+        # a public page down — worst case we just don't know the profile
+        # details yet and fall back to the defaults below.
+        return {}
 
 
 def get_optional_user(request: Request) -> Optional[CurrentUser]:
