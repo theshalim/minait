@@ -1,4 +1,6 @@
 """Signup / login / logout using Supabase Auth."""
+import logging
+
 from fastapi import APIRouter, Body, Depends, Form, HTTPException, Request
 from fastapi.responses import JSONResponse, RedirectResponse
 
@@ -12,6 +14,7 @@ from app.supabase_client import supabase_admin, supabase_auth
 from app.templating import base_ctx, templates
 
 router = APIRouter(tags=["auth"])
+logger = logging.getLogger("minait")
 
 
 @router.get("/signup")
@@ -39,10 +42,17 @@ def signup_submit(
     if result.user:
         # Save the name/phone from the form now — if email confirmation is
         # required, sign_up() returns a user without a session, and this is
-        # the only place we'll ever see this data.
-        supabase_admin().table("profiles").upsert(
-            {"id": result.user.id, "full_name": full_name, "phone": phone}
-        ).execute()
+        # the only place we'll ever see this data. on_conflict="id" makes
+        # this a true upsert (merge) instead of a plain insert, which is
+        # what was 409-ing when the same email signed up more than once.
+        # Never let a hiccup here take down the whole signup.
+        try:
+            supabase_admin().table("profiles").upsert(
+                {"id": result.user.id, "full_name": full_name, "phone": phone},
+                on_conflict="id",
+            ).execute()
+        except Exception:
+            logger.exception("Failed to upsert profile for user %s", result.user.id)
 
     if not result.session or not result.user:
         # Email confirmation is required by the Supabase project settings.
@@ -80,7 +90,12 @@ def create_session_from_tokens(payload: dict = Body(...)):
     if not result.user:
         raise HTTPException(status_code=401, detail="Invalid or expired session")
 
-    supabase_admin().table("profiles").upsert({"id": result.user.id}).execute()
+    try:
+        supabase_admin().table("profiles").upsert(
+            {"id": result.user.id}, on_conflict="id"
+        ).execute()
+    except Exception:
+        logger.exception("Failed to upsert profile for user %s", result.user.id)
 
     response = JSONResponse({"ok": True})
     set_session_cookies(response, access_token, refresh_token)
