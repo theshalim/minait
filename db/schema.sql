@@ -94,15 +94,19 @@ alter table services   enable row level security;
 alter table orders     enable row level security;
 alter table blog_posts enable row level security;
 
+drop policy if exists "profiles: read own" on profiles;
 create policy "profiles: read own" on profiles
   for select using (auth.uid() = id);
 
+drop policy if exists "services: public read active" on services;
 create policy "services: public read active" on services
   for select using (is_active = true);
 
+drop policy if exists "blog: public read published" on blog_posts;
 create policy "blog: public read published" on blog_posts
   for select using (is_published = true);
 
+drop policy if exists "orders: read own" on orders;
 create policy "orders: read own" on orders
   for select using (auth.uid() = user_id);
 
