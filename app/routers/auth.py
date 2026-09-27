@@ -1,6 +1,6 @@
 """Signup / login / logout using Supabase Auth."""
-from fastapi import APIRouter, Depends, Form, Request
-from fastapi.responses import RedirectResponse
+from fastapi import APIRouter, Body, Depends, Form, HTTPException, Request
+from fastapi.responses import JSONResponse, RedirectResponse
 
 from app.security import (
     CurrentUser,
@@ -36,6 +36,14 @@ def signup_submit(
             "signup.html", base_ctx(request, error=str(exc)), status_code=400
         )
 
+    if result.user:
+        # Save the name/phone from the form now — if email confirmation is
+        # required, sign_up() returns a user without a session, and this is
+        # the only place we'll ever see this data.
+        supabase_admin().table("profiles").upsert(
+            {"id": result.user.id, "full_name": full_name, "phone": phone}
+        ).execute()
+
     if not result.session or not result.user:
         # Email confirmation is required by the Supabase project settings.
         return templates.TemplateResponse(
@@ -47,12 +55,35 @@ def signup_submit(
             ),
         )
 
-    supabase_admin().table("profiles").upsert(
-        {"id": result.user.id, "full_name": full_name, "phone": phone}
-    ).execute()
-
     response = RedirectResponse("/dashboard", status_code=303)
     set_session_cookies(response, result.session.access_token, result.session.refresh_token)
+    return response
+
+
+@router.post("/auth/session")
+def create_session_from_tokens(payload: dict = Body(...)):
+    """Called by static/js/main.js after Supabase redirects back here with
+    `#access_token=...&refresh_token=...` in the URL fragment (email
+    confirmation and password-reset links both do this). The fragment never
+    reaches the server on its own, so the client-side script forwards it
+    here, we validate it against Supabase, and turn it into our normal
+    session cookies."""
+    access_token = payload.get("access_token")
+    refresh_token = payload.get("refresh_token")
+    if not access_token or not refresh_token:
+        raise HTTPException(status_code=400, detail="Missing tokens")
+
+    try:
+        result = supabase_auth().auth.get_user(access_token)
+    except Exception:
+        raise HTTPException(status_code=401, detail="Invalid or expired session")
+    if not result.user:
+        raise HTTPException(status_code=401, detail="Invalid or expired session")
+
+    supabase_admin().table("profiles").upsert({"id": result.user.id}).execute()
+
+    response = JSONResponse({"ok": True})
+    set_session_cookies(response, access_token, refresh_token)
     return response
 
 
