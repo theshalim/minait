@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Order {{ order.order_number }}{% endblock %}
+{% block content %}
+<div class="max-w-lg mx-auto px-5 py-16 text-center">
+  {% if just_paid and order.payment_status == "paid" %}
+    <div class="text-5xl mb-4">✅</div>
+    <h1 class="text-2xl font-extrabold mb-2">Payment received — thank you!</h1>
+  {% else %}
+    <div class="text-5xl mb-4">📦</div>
+    <h1 class="text-2xl font-extrabold mb-2">Order {{ order.order_number }}</h1>
+  {% endif %}
+
+  <div class="mt-8 text-left border border-slate-100 rounded-2xl p-6 space-y-3">
+    <div class="flex justify-between"><span class="text-slate-500">Service</span><span class="font-semibold">{{ order.service_title }}</span></div>
+    <div class="flex justify-between"><span class="text-slate-500">Amount</span><span class="font-semibold">{{ "%.0f"|format(order.amount) }} {{ order.currency }}</span></div>
+    <div class="flex justify-between"><span class="text-slate-500">Payment</span>
+      <span class="font-semibold {{ 'text-green-600' if order.payment_status == 'paid' else 'text-amber-600' }}">
+        {{ order.payment_status|capitalize }}
+      </span>
+    </div>
+    <div class="flex justify-between"><span class="text-slate-500">Status</span><span class="font-semibold">{{ order.status|replace('_',' ')|capitalize }}</span></div>
+  </div>
+
+  <p class="mt-6 text-sm text-slate-400">Bookmark this page to check progress anytime. A copy was sent to {{ order.customer_email }}.</p>
+  <a href="/" class="inline-block mt-6 text-brand font-semibold">← Back to home</a>
+</div>
+{% endblock %}

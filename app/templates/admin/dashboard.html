@@ -1,0 +1,37 @@
+{% extends "admin/layout.html" %}
+{% block title %}Admin — {{ site_name }}{% endblock %}
+{% block admin_content %}
+<h1 class="text-2xl font-extrabold mb-6">Overview</h1>
+
+<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-10">
+  {% for label, value in [
+    ("Total orders", stats.total_orders),
+    ("Pending orders", stats.pending_orders),
+    ("Revenue (paid)", "%.0f"|format(stats.revenue)),
+    ("Active services", stats.total_services),
+  ] %}
+  <div class="border border-slate-100 rounded-2xl p-5">
+    <div class="text-xs text-slate-400 mb-1">{{ label }}</div>
+    <div class="text-2xl font-extrabold">{{ value }}</div>
+  </div>
+  {% endfor %}
+</div>
+
+<h2 class="font-bold mb-3">Recent orders</h2>
+<div class="border border-slate-100 rounded-2xl divide-y divide-slate-100">
+  {% for o in recent_orders %}
+  <div class="flex items-center justify-between p-4 text-sm">
+    <div>
+      <div class="font-semibold">{{ o.service_title }}</div>
+      <div class="text-xs text-slate-400">{{ o.order_number }} · {{ o.customer_name }}</div>
+    </div>
+    <div class="text-right">
+      <div class="font-semibold">{{ "%.0f"|format(o.amount) }} {{ o.currency }}</div>
+      <div class="text-xs text-slate-400">{{ o.status|replace('_',' ')|capitalize }}</div>
+    </div>
+  </div>
+  {% else %}
+  <div class="p-6 text-center text-slate-400 text-sm">No orders yet.</div>
+  {% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,59 @@
+{% extends "admin/layout.html" %}
+{% block title %}{{ "Edit service" if service else "New service" }} — Admin{% endblock %}
+{% block admin_content %}
+<h1 class="text-2xl font-extrabold mb-6">{{ "Edit service" if service else "New service" }}</h1>
+
+<form method="post" action="{{ '/admin/services/%d/edit'|format(service.id) if service else '/admin/services/new' }}"
+      class="space-y-5 max-w-lg">
+  <div>
+    <label class="block text-sm font-medium mb-1">Title</label>
+    <input required name="title" value="{{ service.title if service else '' }}"
+           class="w-full border border-slate-200 rounded-lg px-4 py-2.5" />
+  </div>
+  <div>
+    <label class="block text-sm font-medium mb-1">Description</label>
+    <textarea name="description" rows="4" class="w-full border border-slate-200 rounded-lg px-4 py-2.5">{{ service.description if service else '' }}</textarea>
+  </div>
+  <div class="grid grid-cols-2 gap-4">
+    <div>
+      <label class="block text-sm font-medium mb-1">Price</label>
+      <input required type="number" step="0.01" name="price" value="{{ service.price if service else '' }}"
+             class="w-full border border-slate-200 rounded-lg px-4 py-2.5" />
+    </div>
+    <div>
+      <label class="block text-sm font-medium mb-1">Currency</label>
+      <input name="currency" value="{{ service.currency if service else 'BDT' }}"
+             class="w-full border border-slate-200 rounded-lg px-4 py-2.5" />
+    </div>
+  </div>
+  <div class="grid grid-cols-2 gap-4">
+    <div>
+      <label class="block text-sm font-medium mb-1">Category</label>
+      <input name="category" value="{{ service.category if service else 'General' }}"
+             class="w-full border border-slate-200 rounded-lg px-4 py-2.5" />
+    </div>
+    <div>
+      <label class="block text-sm font-medium mb-1">Icon (emoji)</label>
+      <input name="icon" value="{{ service.icon if service else '' }}" placeholder="🛠️"
+             class="w-full border border-slate-200 rounded-lg px-4 py-2.5" />
+    </div>
+  </div>
+  <div>
+    <label class="block text-sm font-medium mb-1">Image URL <span class="text-slate-400 font-normal">(optional)</span></label>
+    <input name="image_url" value="{{ service.image_url if service else '' }}"
+           class="w-full border border-slate-200 rounded-lg px-4 py-2.5" />
+  </div>
+  <div>
+    <label class="block text-sm font-medium mb-1">Sort order</label>
+    <input type="number" name="sort_order" value="{{ service.sort_order if service else 0 }}"
+           class="w-full border border-slate-200 rounded-lg px-4 py-2.5" />
+  </div>
+
+  <div class="flex gap-3">
+    <button type="submit" class="bg-brand text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-brand-dark">
+      {{ "Save changes" if service else "Create service" }}
+    </button>
+    <a href="/admin/services" class="px-6 py-2.5 rounded-lg font-semibold text-slate-500 hover:bg-slate-50">Cancel</a>
+  </div>
+</form>
+{% endblock %}

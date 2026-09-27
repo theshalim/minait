@@ -1,0 +1,39 @@
+{% extends "admin/layout.html" %}
+{% block title %}{{ "Edit post" if post else "New post" }} — Admin{% endblock %}
+{% block admin_content %}
+<h1 class="text-2xl font-extrabold mb-6">{{ "Edit post" if post else "New post" }}</h1>
+
+<form method="post" action="{{ '/admin/blog/%d/edit'|format(post.id) if post else '/admin/blog/new' }}" class="space-y-5 max-w-2xl">
+  <div>
+    <label class="block text-sm font-medium mb-1">Title</label>
+    <input required name="title" value="{{ post.title if post else '' }}"
+           class="w-full border border-slate-200 rounded-lg px-4 py-2.5" />
+  </div>
+  <div>
+    <label class="block text-sm font-medium mb-1">Excerpt</label>
+    <input name="excerpt" value="{{ post.excerpt if post else '' }}"
+           class="w-full border border-slate-200 rounded-lg px-4 py-2.5" />
+  </div>
+  <div>
+    <label class="block text-sm font-medium mb-1">Cover image URL <span class="text-slate-400 font-normal">(optional)</span></label>
+    <input name="cover_image_url" value="{{ post.cover_image_url if post else '' }}"
+           class="w-full border border-slate-200 rounded-lg px-4 py-2.5" />
+  </div>
+  <div>
+    <label class="block text-sm font-medium mb-1">Content <span class="text-slate-400 font-normal">(Markdown supported)</span></label>
+    <textarea required name="content_markdown" rows="14"
+              class="w-full border border-slate-200 rounded-lg px-4 py-2.5 font-mono text-sm">{{ post.content_markdown if post else '' }}</textarea>
+  </div>
+  <label class="flex items-center gap-2 text-sm font-medium">
+    <input type="checkbox" name="is_published" value="true" class="accent-brand" {{ "checked" if post and post.is_published else "" }} />
+    Published (visible on the public blog)
+  </label>
+
+  <div class="flex gap-3">
+    <button type="submit" class="bg-brand text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-brand-dark">
+      {{ "Save changes" if post else "Create post" }}
+    </button>
+    <a href="/admin/blog" class="px-6 py-2.5 rounded-lg font-semibold text-slate-500 hover:bg-slate-50">Cancel</a>
+  </div>
+</form>
+{% endblock %}

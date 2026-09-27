@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="max-w-6xl mx-auto px-5 py-10 grid gap-8 md:grid-cols-[200px_1fr]">
+  <aside class="space-y-1">
+    <div class="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2 px-3">Admin</div>
+    {% set links = [
+      ("/admin", "📊", "Dashboard"),
+      ("/admin/services", "🛠️", "Services"),
+      ("/admin/orders", "📦", "Orders"),
+      ("/admin/blog", "📝", "Blog"),
+    ] %}
+    {% for href, icon, label in links %}
+    <a href="{{ href }}"
+       class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium
+              {% if request.url.path == href or (href != '/admin' and request.url.path.startswith(href)) %}
+                bg-brand-light text-brand
+              {% else %}
+                text-slate-600 hover:bg-slate-50
+              {% endif %}">
+      <span>{{ icon }}</span> {{ label }}
+    </a>
+    {% endfor %}
+  </aside>
+  <section>
+    {% block admin_content %}{% endblock %}
+  </section>
+</div>
+{% endblock %}

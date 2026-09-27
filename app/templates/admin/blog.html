@@ -1,0 +1,30 @@
+{% extends "admin/layout.html" %}
+{% block title %}Blog — Admin{% endblock %}
+{% block admin_content %}
+<div class="flex items-center justify-between mb-6">
+  <h1 class="text-2xl font-extrabold">Blog posts</h1>
+  <a href="/admin/blog/new" class="bg-brand text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-brand-dark">+ New post</a>
+</div>
+
+<div class="border border-slate-100 rounded-2xl divide-y divide-slate-100">
+  {% for p in posts %}
+  <div class="flex items-center justify-between p-4">
+    <div>
+      <div class="font-semibold">{{ p.title }}</div>
+      <div class="text-xs text-slate-400">{{ p.created_at[:10] }}</div>
+    </div>
+    <div class="flex items-center gap-3 text-sm">
+      <span class="px-2 py-0.5 rounded-full text-xs font-medium {{ 'bg-green-100 text-green-700' if p.is_published else 'bg-slate-100 text-slate-500' }}">
+        {{ "Published" if p.is_published else "Draft" }}
+      </span>
+      <a href="/admin/blog/{{ p.id }}/edit" class="text-brand font-medium">Edit</a>
+      <form method="post" action="/admin/blog/{{ p.id }}/delete" class="inline" onsubmit="return confirm('Delete this post?');">
+        <button class="text-red-500 hover:text-red-700 font-medium">Delete</button>
+      </form>
+    </div>
+  </div>
+  {% else %}
+  <div class="p-6 text-center text-slate-400 text-sm">No posts yet — write your first one.</div>
+  {% endfor %}
+</div>
+{% endblock %}

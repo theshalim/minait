@@ -1,0 +1,38 @@
+{% extends "admin/layout.html" %}
+{% block title %}Orders — Admin{% endblock %}
+{% block admin_content %}
+<h1 class="text-2xl font-extrabold mb-6">Orders</h1>
+
+<div class="flex gap-2 mb-5 text-sm">
+  {% for value, label in [(None, "All"), ("pending", "Pending"), ("in_progress", "In progress"), ("completed", "Completed"), ("cancelled", "Cancelled")] %}
+  <a href="/admin/orders{{ '?status=' ~ value if value else '' }}"
+     class="px-3 py-1.5 rounded-full font-medium {{ 'bg-brand text-white' if active_status == value else 'bg-slate-100 text-slate-600 hover:bg-slate-200' }}">
+    {{ label }}
+  </a>
+  {% endfor %}
+</div>
+
+<div class="border border-slate-100 rounded-2xl divide-y divide-slate-100">
+  {% for o in orders %}
+  <div class="p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+    <div>
+      <div class="font-semibold">{{ o.service_title }} <span class="text-xs text-slate-400 font-normal">· {{ o.order_number }}</span></div>
+      <div class="text-xs text-slate-500 mt-0.5">{{ o.customer_name }} — {{ o.customer_email }}{% if o.customer_phone %} — {{ o.customer_phone }}{% endif %}</div>
+      <div class="text-xs text-slate-400 mt-0.5">{{ "%.0f"|format(o.amount) }} {{ o.currency }} · {{ o.payment_method }} ·
+        <span class="{{ 'text-green-600' if o.payment_status == 'paid' else 'text-amber-600' }}">{{ o.payment_status }}</span>
+      </div>
+    </div>
+    <form method="post" action="/admin/orders/{{ o.id }}/status" class="flex items-center gap-2">
+      <select name="status" class="border border-slate-200 rounded-lg px-3 py-1.5 text-sm">
+        {% for s in ["pending", "in_progress", "completed", "cancelled"] %}
+        <option value="{{ s }}" {{ "selected" if o.status == s else "" }}>{{ s|replace('_',' ')|capitalize }}</option>
+        {% endfor %}
+      </select>
+      <button class="bg-slate-900 text-white text-sm px-3 py-1.5 rounded-lg font-medium hover:bg-slate-700">Update</button>
+    </form>
+  </div>
+  {% else %}
+  <div class="p-6 text-center text-slate-400 text-sm">No orders here yet.</div>
+  {% endfor %}
+</div>
+{% endblock %}

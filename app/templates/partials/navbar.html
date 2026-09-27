@@ -1,0 +1,25 @@
+<header class="border-b border-slate-100 sticky top-0 bg-white/90 backdrop-blur z-40">
+  <div class="max-w-6xl mx-auto px-5 h-16 flex items-center justify-between">
+    <a href="/" class="flex items-center gap-2 font-extrabold text-lg tracking-tight">
+      <span class="w-8 h-8 rounded-lg bg-brand text-white flex items-center justify-center text-sm">M</span>
+      {{ site_name }}
+    </a>
+    <nav class="hidden md:flex items-center gap-8 text-sm font-medium text-slate-600">
+      <a href="/#services" class="hover:text-brand">Services</a>
+      <a href="/#how-it-works" class="hover:text-brand">How it works</a>
+      <a href="/blog" class="hover:text-brand">Blog</a>
+    </nav>
+    <div class="flex items-center gap-3 text-sm font-semibold">
+      {% if user %}
+        {% if user.is_admin %}
+          <a href="/admin" class="text-slate-600 hover:text-brand">Admin</a>
+        {% endif %}
+        <a href="/dashboard" class="text-slate-600 hover:text-brand">Dashboard</a>
+        <a href="/logout" class="text-slate-400 hover:text-red-500">Logout</a>
+      {% else %}
+        <a href="/login" class="text-slate-600 hover:text-brand">Log in</a>
+        <a href="/signup" class="bg-brand text-white px-4 py-2 rounded-lg hover:bg-brand-dark transition">Sign up</a>
+      {% endif %}
+    </div>
+  </div>
+</header>
