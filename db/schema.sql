@@ -114,6 +114,18 @@ create table if not exists site_stats (
 );
 
 -- ---------------------------------------------------------------------------
+-- faqs: pre-written question/answer pairs shown in the floating "Assistant"
+-- chat widget (site-wide). Not real AI — a simple, admin-managed FAQ list.
+-- ---------------------------------------------------------------------------
+create table if not exists faqs (
+  id          bigserial primary key,
+  question    text not null,
+  answer      text not null,
+  sort_order  integer not null default 0,
+  created_at  timestamptz not null default now()
+);
+
+-- ---------------------------------------------------------------------------
 -- Row Level Security (defense in depth).
 -- The FastAPI backend talks to Postgres with the Supabase SERVICE ROLE key,
 -- which bypasses RLS, and enforces auth/admin checks itself in Python.
@@ -126,6 +138,7 @@ alter table orders      enable row level security;
 alter table blog_posts  enable row level security;
 alter table hero_slides enable row level security;
 alter table site_stats  enable row level security;
+alter table faqs        enable row level security;
 
 drop policy if exists "profiles: read own" on profiles;
 create policy "profiles: read own" on profiles
@@ -149,6 +162,10 @@ create policy "hero_slides: public read active" on hero_slides
 
 drop policy if exists "site_stats: public read" on site_stats;
 create policy "site_stats: public read" on site_stats
+  for select using (true);
+
+drop policy if exists "faqs: public read" on faqs;
+create policy "faqs: public read" on faqs
   for select using (true);
 
 -- Make the first admin manually after signing up once, e.g.:

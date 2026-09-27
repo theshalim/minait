@@ -220,6 +220,39 @@ def admin_stat_delete(stat_id: int):
 
 
 # ---------------------------------------------------------------------------
+# FAQs: powers the floating "Assistant" widget shown on every page.
+# ---------------------------------------------------------------------------
+@router.get("/faqs")
+def admin_faqs(request: Request):
+    faqs = supabase_admin().table("faqs").select("*").order("sort_order").execute().data
+    return templates.TemplateResponse("admin/faqs.html", base_ctx(request, faqs=faqs))
+
+
+@router.post("/faqs/new")
+def admin_faq_create(question: str = Form(...), answer: str = Form(...), sort_order: int = Form(0)):
+    supabase_admin().table("faqs").insert(
+        {"question": question, "answer": answer, "sort_order": sort_order}
+    ).execute()
+    return RedirectResponse("/admin/faqs", status_code=303)
+
+
+@router.post("/faqs/{faq_id}/edit")
+def admin_faq_update(
+    faq_id: int, question: str = Form(...), answer: str = Form(...), sort_order: int = Form(0)
+):
+    supabase_admin().table("faqs").update(
+        {"question": question, "answer": answer, "sort_order": sort_order}
+    ).eq("id", faq_id).execute()
+    return RedirectResponse("/admin/faqs", status_code=303)
+
+
+@router.post("/faqs/{faq_id}/delete")
+def admin_faq_delete(faq_id: int):
+    supabase_admin().table("faqs").delete().eq("id", faq_id).execute()
+    return RedirectResponse("/admin/faqs", status_code=303)
+
+
+# ---------------------------------------------------------------------------
 # Orders tracker
 # ---------------------------------------------------------------------------
 @router.get("/orders")

@@ -61,6 +61,22 @@ def home(request: Request):
     )
 
 
+@router.get("/api/faqs")
+def api_faqs():
+    """Public, read-only. Powers the floating Assistant widget's FAQ list —
+    fetched lazily by main.js the first time someone opens it, rather than
+    on every page load."""
+    faqs = (
+        supabase_admin()
+        .table("faqs")
+        .select("question, answer")
+        .order("sort_order")
+        .execute()
+        .data
+    )
+    return faqs
+
+
 @router.get("/services/{slug}")
 def service_detail(request: Request, slug: str):
     res = (

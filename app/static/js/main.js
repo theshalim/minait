@@ -95,3 +95,90 @@
 
   restart();
 })();
+
+// Floating Assistant (FAQ) widget. Fetches /api/faqs once; if there's
+// nothing to show, the button never appears at all.
+(function () {
+  var fab = document.getElementById("assistant-fab");
+  var panel = document.getElementById("assistant-panel");
+  var body = document.getElementById("assistant-body");
+  var closeBtn = document.getElementById("assistant-close");
+  if (!fab || !panel || !body) return;
+
+  var faqs = [];
+
+  function escapeHtml(str) {
+    var div = document.createElement("div");
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  function renderList() {
+    if (!faqs.length) {
+      body.innerHTML = '<p class="p-4 text-sm text-slate-400">No questions yet.</p>';
+      return;
+    }
+    body.innerHTML = faqs
+      .map(function (faq, i) {
+        return (
+          '<button type="button" data-faq="' +
+          i +
+          '" class="faq-question w-full text-left px-4 py-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center justify-between gap-2 transition">' +
+          '<span class="text-sm font-medium text-slate-700 dark:text-slate-200">' +
+          escapeHtml(faq.question) +
+          '</span>' +
+          '<span class="text-slate-300 dark:text-slate-600 flex-shrink-0">&rsaquo;</span>' +
+          "</button>"
+        );
+      })
+      .join("");
+    body.querySelectorAll(".faq-question").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        renderAnswer(faqs[parseInt(btn.getAttribute("data-faq"), 10)]);
+      });
+    });
+  }
+
+  function renderAnswer(faq) {
+    body.innerHTML =
+      '<div class="p-4">' +
+      '<button type="button" id="faq-back" class="text-xs font-semibold text-brand mb-3">&lsaquo; Back</button>' +
+      '<div class="font-semibold text-sm text-slate-800 dark:text-slate-100 mb-2">' +
+      escapeHtml(faq.question) +
+      "</div>" +
+      '<div class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">' +
+      escapeHtml(faq.answer) +
+      "</div>" +
+      "</div>";
+    document.getElementById("faq-back").addEventListener("click", renderList);
+  }
+
+  function togglePanel() {
+    var isHidden = panel.hasAttribute("hidden");
+    if (isHidden) {
+      panel.removeAttribute("hidden");
+      renderList();
+    } else {
+      panel.setAttribute("hidden", "");
+    }
+  }
+
+  fetch("/api/faqs")
+    .then(function (res) {
+      return res.ok ? res.json() : [];
+    })
+    .then(function (data) {
+      faqs = Array.isArray(data) ? data : [];
+      if (faqs.length) {
+        fab.removeAttribute("hidden");
+      }
+    })
+    .catch(function () {});
+
+  fab.addEventListener("click", togglePanel);
+  if (closeBtn) {
+    closeBtn.addEventListener("click", function () {
+      panel.setAttribute("hidden", "");
+    });
+  }
+})();

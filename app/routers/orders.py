@@ -5,6 +5,9 @@ simple" UX goal. If the visitor is logged in, their profile pre-fills the
 form. Every order gets a unique, hard-to-guess order_number that also acts as
 the lookup key for the (public) order status page, like a receipt link.
 """
+import logging
+from urllib.parse import quote
+
 from fastapi import APIRouter, Depends, Form, HTTPException, Request
 from fastapi.responses import RedirectResponse
 
@@ -21,6 +24,7 @@ from app.templating import base_ctx, templates
 from app.utils import generate_order_number
 
 router = APIRouter(tags=["orders"])
+logger = logging.getLogger("minait")
 
 
 @router.get("/checkout/{slug}")
@@ -74,22 +78,32 @@ def create_order(
     notify_new_order(created)
 
     if payment_method == "stripe":
-        url = create_stripe_checkout_session(created)
-        return RedirectResponse(url, status_code=303)
+        try:
+            url = create_stripe_checkout_session(created)
+            return RedirectResponse(url, status_code=303)
+        except Exception:
+            logger.exception("Stripe checkout session failed for order %s", created["order_number"])
+            return RedirectResponse(
+                f"/orders/{created['order_number']}?gateway_error=1", status_code=303
+            )
 
     if payment_method == "sslcommerz":
-        url = create_sslcommerz_session(created)
-        return RedirectResponse(url, status_code=303)
+        try:
+            url = create_sslcommerz_session(created)
+            return RedirectResponse(url, status_code=303)
+        except Exception:
+            logger.exception("SSLCOMMERZ session failed for order %s", created["order_number"])
+            return RedirectResponse(
+                f"/orders/{created['order_number']}?gateway_error=1", status_code=303
+            )
 
     if payment_method == "whatsapp":
         wa_number = settings.WHATSAPP_NUMBER
         text = (
-            f"Hi Mina IT Service! I just placed order {created['order_number']} "
+            f"Hi {settings.SITE_NAME}! I just placed order {created['order_number']} "
             f"for '{svc['title']}' ({svc['price']} {svc['currency']}). "
             f"Name: {customer_name}."
         )
-        from urllib.parse import quote
-
         wa_url = f"https://wa.me/{wa_number}?text={quote(text)}"
         return RedirectResponse(wa_url, status_code=303)
 
@@ -97,7 +111,7 @@ def create_order(
 
 
 @router.get("/orders/{order_number}")
-def order_status(request: Request, order_number: str):
+def order_status(request: Request, order_number: str, gateway_error: bool = False):
     order = (
         supabase_admin()
         .table("orders")
@@ -109,7 +123,9 @@ def order_status(request: Request, order_number: str):
     )
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
-    return templates.TemplateResponse("order_status.html", base_ctx(request, order=order))
+    return templates.TemplateResponse(
+        "order_status.html", base_ctx(request, order=order, gateway_error=gateway_error)
+    )
 
 
 @router.get("/orders/{order_number}/thank-you")
