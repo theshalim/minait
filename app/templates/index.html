@@ -2,23 +2,23 @@
 {% block content %}
 
 <section class="max-w-6xl mx-auto px-5 pt-20 pb-16 text-center">
-  <span class="inline-block bg-brand-light text-brand text-xs font-semibold px-3 py-1 rounded-full mb-5">
-    Trusted IT services, delivered fast
+  <span class="inline-block bg-brand-light dark:bg-brand/10 text-brand text-xs font-semibold px-3 py-1 rounded-full mb-5">
+    {{ t('home.badge') }}
   </span>
   <h1 class="text-4xl sm:text-5xl font-extrabold tracking-tight leading-tight max-w-3xl mx-auto">
-    Get expert IT help without the runaround.
+    {{ t('home.title') }}
   </h1>
-  <p class="mt-5 text-lg text-slate-500 max-w-xl mx-auto">
-    Pick a service, tell us what you need, and pay securely — or just message us on WhatsApp. That's it.
+  <p class="mt-5 text-lg text-slate-500 dark:text-slate-400 max-w-xl mx-auto">
+    {{ t('home.subtitle') }}
   </p>
   <div class="mt-8 flex items-center justify-center gap-3">
     <a href="#services" class="bg-brand text-white px-6 py-3 rounded-xl font-semibold hover:bg-brand-dark transition">
-      Browse services
+      {{ t('home.browse_services') }}
     </a>
     {% if whatsapp_number %}
     <a href="https://wa.me/{{ whatsapp_number }}" target="_blank" rel="noopener"
-       class="border border-slate-200 px-6 py-3 rounded-xl font-semibold text-slate-700 hover:border-brand hover:text-brand transition">
-      💬 Chat with us
+       class="border border-slate-200 dark:border-slate-700 px-6 py-3 rounded-xl font-semibold text-slate-700 dark:text-slate-200 hover:border-brand hover:text-brand transition">
+      💬 {{ t('home.chat_with_us') }}
     </a>
     {% endif %}
   </div>
@@ -26,50 +26,50 @@
 
 <section id="services" class="max-w-6xl mx-auto px-5 py-16">
   <div class="text-center mb-10">
-    <h2 class="text-2xl sm:text-3xl font-bold">Our Services</h2>
-    <p class="text-slate-500 mt-2">Clear pricing. No surprises.</p>
+    <h2 class="text-2xl sm:text-3xl font-bold">{{ t('home.services_heading') }}</h2>
+    <p class="text-slate-500 dark:text-slate-400 mt-2">{{ t('home.services_sub') }}</p>
   </div>
 
   {% if services %}
   <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
     {% for s in services %}
     <a href="/services/{{ s.slug }}"
-       class="group border border-slate-100 rounded-2xl p-6 hover:shadow-lg hover:border-brand/30 transition flex flex-col">
-      <div class="w-12 h-12 rounded-xl bg-brand-light flex items-center justify-center text-2xl mb-4">
+       class="group border border-slate-100 dark:border-slate-800 rounded-2xl p-6 hover:shadow-lg hover:border-brand/30 transition flex flex-col">
+      <div class="w-12 h-12 rounded-xl bg-brand-light dark:bg-brand/10 flex items-center justify-center text-2xl mb-4">
         {{ s.icon or "🛠️" }}
       </div>
       <h3 class="font-bold text-lg mb-1 group-hover:text-brand">{{ s.title }}</h3>
-      <p class="text-sm text-slate-500 flex-1 line-clamp-3">{{ s.description }}</p>
+      <p class="text-sm text-slate-500 dark:text-slate-400 flex-1 line-clamp-3">{{ s.description }}</p>
       <div class="mt-4 flex items-center justify-between">
         <span class="font-extrabold">{{ "%.0f"|format(s.price) }} {{ s.currency }}</span>
-        <span class="text-brand text-sm font-semibold">Order now →</span>
+        <span class="text-brand text-sm font-semibold">{{ t('home.order_now') }}</span>
       </div>
     </a>
     {% endfor %}
   </div>
   {% else %}
-  <p class="text-center text-slate-400">Services are coming soon — check back shortly.</p>
+  <p class="text-center text-slate-400 dark:text-slate-500">{{ t('home.no_services') }}</p>
   {% endif %}
 </section>
 
-<section id="how-it-works" class="bg-slate-50 py-16">
+<section id="how-it-works" class="bg-slate-50 dark:bg-slate-900/60 py-16">
   <div class="max-w-6xl mx-auto px-5">
     <div class="text-center mb-10">
-      <h2 class="text-2xl sm:text-3xl font-bold">How it works</h2>
-      <p class="text-slate-500 mt-2">Three steps. No confusion.</p>
+      <h2 class="text-2xl sm:text-3xl font-bold">{{ t('home.how_it_works_heading') }}</h2>
+      <p class="text-slate-500 dark:text-slate-400 mt-2">{{ t('home.how_it_works_sub') }}</p>
     </div>
     <div class="grid gap-6 sm:grid-cols-3">
       {% for step in [
-        ("1", "Choose a service", "Browse our catalog and pick exactly what you need."),
-        ("2", "Order in minutes", "Fill a short form, or just message us on WhatsApp."),
-        ("3", "We get to work", "Pay securely and track progress from your dashboard."),
+        ("1", t('home.step1_title'), t('home.step1_desc')),
+        ("2", t('home.step2_title'), t('home.step2_desc')),
+        ("3", t('home.step3_title'), t('home.step3_desc')),
       ] %}
-      <div class="bg-white rounded-2xl p-6 border border-slate-100 text-center">
+      <div class="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-100 dark:border-slate-800 text-center">
         <div class="w-10 h-10 rounded-full bg-brand text-white font-bold flex items-center justify-center mx-auto mb-4">
           {{ step[0] }}
         </div>
         <h3 class="font-semibold mb-1">{{ step[1] }}</h3>
-        <p class="text-sm text-slate-500">{{ step[2] }}</p>
+        <p class="text-sm text-slate-500 dark:text-slate-400">{{ step[2] }}</p>
       </div>
       {% endfor %}
     </div>
@@ -79,18 +79,18 @@
 {% if posts %}
 <section class="max-w-6xl mx-auto px-5 py-16">
   <div class="flex items-end justify-between mb-8">
-    <h2 class="text-2xl sm:text-3xl font-bold">From the blog</h2>
-    <a href="/blog" class="text-brand font-semibold text-sm">View all →</a>
+    <h2 class="text-2xl sm:text-3xl font-bold">{{ t('home.blog_heading') }}</h2>
+    <a href="/blog" class="text-brand font-semibold text-sm">{{ t('home.view_all') }}</a>
   </div>
   <div class="grid gap-6 sm:grid-cols-3">
     {% for p in posts %}
-    <a href="/blog/{{ p.slug }}" class="block border border-slate-100 rounded-2xl overflow-hidden hover:shadow-lg transition">
+    <a href="/blog/{{ p.slug }}" class="block border border-slate-100 dark:border-slate-800 rounded-2xl overflow-hidden hover:shadow-lg transition">
       {% if p.cover_image_url %}
       <img src="{{ p.cover_image_url }}" alt="" class="w-full h-36 object-cover" />
       {% endif %}
       <div class="p-5">
         <h3 class="font-bold mb-1">{{ p.title }}</h3>
-        <p class="text-sm text-slate-500 line-clamp-2">{{ p.excerpt }}</p>
+        <p class="text-sm text-slate-500 dark:text-slate-400 line-clamp-2">{{ p.excerpt }}</p>
       </div>
     </a>
     {% endfor %}

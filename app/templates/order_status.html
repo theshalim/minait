@@ -10,18 +10,18 @@
     <h1 class="text-2xl font-extrabold mb-2">Order {{ order.order_number }}</h1>
   {% endif %}
 
-  <div class="mt-8 text-left border border-slate-100 rounded-2xl p-6 space-y-3">
-    <div class="flex justify-between"><span class="text-slate-500">Service</span><span class="font-semibold">{{ order.service_title }}</span></div>
-    <div class="flex justify-between"><span class="text-slate-500">Amount</span><span class="font-semibold">{{ "%.0f"|format(order.amount) }} {{ order.currency }}</span></div>
-    <div class="flex justify-between"><span class="text-slate-500">Payment</span>
-      <span class="font-semibold {{ 'text-green-600' if order.payment_status == 'paid' else 'text-amber-600' }}">
+  <div class="mt-8 text-left border border-slate-100 dark:border-slate-800 rounded-2xl p-6 space-y-3">
+    <div class="flex justify-between"><span class="text-slate-500 dark:text-slate-400">Service</span><span class="font-semibold">{{ order.service_title }}</span></div>
+    <div class="flex justify-between"><span class="text-slate-500 dark:text-slate-400">Amount</span><span class="font-semibold">{{ "%.0f"|format(order.amount) }} {{ order.currency }}</span></div>
+    <div class="flex justify-between"><span class="text-slate-500 dark:text-slate-400">Payment</span>
+      <span class="font-semibold {{ 'text-green-600 dark:text-green-400' if order.payment_status == 'paid' else 'text-amber-600 dark:text-amber-400' }}">
         {{ order.payment_status|capitalize }}
       </span>
     </div>
-    <div class="flex justify-between"><span class="text-slate-500">Status</span><span class="font-semibold">{{ order.status|replace('_',' ')|capitalize }}</span></div>
+    <div class="flex justify-between"><span class="text-slate-500 dark:text-slate-400">Status</span><span class="font-semibold">{{ order.status|replace('_',' ')|capitalize }}</span></div>
   </div>
 
-  <p class="mt-6 text-sm text-slate-400">Bookmark this page to check progress anytime. A copy was sent to {{ order.customer_email }}.</p>
-  <a href="/" class="inline-block mt-6 text-brand font-semibold">← Back to home</a>
+  <p class="mt-6 text-sm text-slate-400">{{ t('order.bookmark') }} {{ order.customer_email }}.</p>
+  <a href="/" class="inline-block mt-6 text-brand font-semibold">{{ t('order.back_home') }}</a>
 </div>
 {% endblock %}

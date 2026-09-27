@@ -13,9 +13,9 @@
     <a href="{{ href }}"
        class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium
               {% if request.url.path == href or (href != '/admin' and request.url.path.startswith(href)) %}
-                bg-brand-light text-brand
+                bg-brand-light dark:bg-brand/10 text-brand
               {% else %}
-                text-slate-600 hover:bg-slate-50
+                text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800
               {% endif %}">
       <span>{{ icon }}</span> {{ label }}
     </a>

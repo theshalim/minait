@@ -1,26 +1,26 @@
-<footer class="border-t border-slate-100 mt-20">
+<footer class="border-t border-slate-100 dark:border-slate-800 mt-20">
   <div class="max-w-6xl mx-auto px-5 py-12 grid gap-8 sm:grid-cols-3 text-sm">
     <div>
       <img src="/static/img/logo.png" alt="{{ site_name }}" class="h-7 w-auto mb-3" />
-      <p class="text-slate-500">Straightforward IT services, ordered online in minutes.</p>
+      <p class="text-slate-500 dark:text-slate-400">{{ t('footer.tagline') }}</p>
     </div>
     <div>
-      <div class="font-semibold mb-2 text-slate-800">Explore</div>
-      <ul class="space-y-1 text-slate-500">
-        <li><a href="/#services" class="hover:text-brand">Services</a></li>
-        <li><a href="/blog" class="hover:text-brand">Blog</a></li>
-        <li><a href="/#how-it-works" class="hover:text-brand">How it works</a></li>
+      <div class="font-semibold mb-2 text-slate-800 dark:text-slate-200">{{ t('footer.explore') }}</div>
+      <ul class="space-y-1 text-slate-500 dark:text-slate-400">
+        <li><a href="/#services" class="hover:text-brand">{{ t('nav.services') }}</a></li>
+        <li><a href="/blog" class="hover:text-brand">{{ t('nav.blog') }}</a></li>
+        <li><a href="/#how-it-works" class="hover:text-brand">{{ t('nav.how_it_works') }}</a></li>
       </ul>
     </div>
     <div>
-      <div class="font-semibold mb-2 text-slate-800">Talk to us</div>
+      <div class="font-semibold mb-2 text-slate-800 dark:text-slate-200">{{ t('footer.talk_to_us') }}</div>
       {% if whatsapp_number %}
       <a href="https://wa.me/{{ whatsapp_number }}" target="_blank" rel="noopener"
-         class="inline-flex items-center gap-2 text-green-600 hover:text-green-700 font-medium">
-        💬 Chat on WhatsApp
+         class="inline-flex items-center gap-2 text-green-600 dark:text-green-400 hover:text-green-700 font-medium">
+        💬 {{ t('footer.chat_whatsapp') }}
       </a>
       {% endif %}
     </div>
   </div>
-  <div class="text-center text-xs text-slate-400 pb-8">© {{ site_name }}. All rights reserved.</div>
+  <div class="text-center text-xs text-slate-400 dark:text-slate-600 pb-8">© {{ site_name }}. {{ t('footer.rights') }}</div>
 </footer>

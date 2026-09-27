@@ -1,6 +1,9 @@
 """The "control everything" admin panel: services, orders, blog — no code
 edits required to run the business day to day."""
-from fastapi import APIRouter, Depends, Form, HTTPException, Request
+import logging
+import uuid
+
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile
 from fastapi.responses import RedirectResponse
 
 from app.security import CurrentUser, require_admin
@@ -9,6 +12,31 @@ from app.templating import base_ctx, templates
 from app.utils import slugify
 
 router = APIRouter(prefix="/admin", tags=["admin"], dependencies=[Depends(require_admin)])
+logger = logging.getLogger("minait")
+
+IMAGE_BUCKET = "service-images"
+
+
+async def _upload_image(file: UploadFile | None) -> str | None:
+    """Uploads a submitted file to Supabase Storage and returns its public
+    URL, or None if nothing was uploaded (or the upload failed — in which
+    case the caller falls back to the manually-typed image URL field
+    instead of blowing up the whole form submission)."""
+    if not file or not file.filename:
+        return None
+    try:
+        data = await file.read()
+        if not data:
+            return None
+        ext = file.filename.rsplit(".", 1)[-1].lower() if "." in file.filename else "jpg"
+        path = f"{uuid.uuid4().hex}.{ext}"
+        supabase_admin().storage.from_(IMAGE_BUCKET).upload(
+            path, data, {"content-type": file.content_type or "image/jpeg"}
+        )
+        return supabase_admin().storage.from_(IMAGE_BUCKET).get_public_url(path)
+    except Exception:
+        logger.exception("Image upload failed")
+        return None
 
 
 # ---------------------------------------------------------------------------
@@ -47,7 +75,7 @@ def admin_service_new(request: Request):
 
 
 @router.post("/services/new")
-def admin_service_create(
+async def admin_service_create(
     request: Request,
     title: str = Form(...),
     description: str = Form(""),
@@ -56,8 +84,10 @@ def admin_service_create(
     category: str = Form("General"),
     icon: str = Form(""),
     image_url: str = Form(""),
+    image_file: UploadFile = File(None),
     sort_order: int = Form(0),
 ):
+    uploaded_url = await _upload_image(image_file)
     supabase_admin().table("services").insert(
         {
             "title": title,
@@ -67,7 +97,7 @@ def admin_service_create(
             "currency": currency,
             "category": category,
             "icon": icon,
-            "image_url": image_url,
+            "image_url": uploaded_url or image_url,
             "sort_order": sort_order,
         }
     ).execute()
@@ -83,7 +113,7 @@ def admin_service_edit_page(request: Request, service_id: int):
 
 
 @router.post("/services/{service_id}/edit")
-def admin_service_update(
+async def admin_service_update(
     request: Request,
     service_id: int,
     title: str = Form(...),
@@ -93,8 +123,10 @@ def admin_service_update(
     category: str = Form("General"),
     icon: str = Form(""),
     image_url: str = Form(""),
+    image_file: UploadFile = File(None),
     sort_order: int = Form(0),
 ):
+    uploaded_url = await _upload_image(image_file)
     supabase_admin().table("services").update(
         {
             "title": title,
@@ -103,7 +135,7 @@ def admin_service_update(
             "currency": currency,
             "category": category,
             "icon": icon,
-            "image_url": image_url,
+            "image_url": uploaded_url or image_url,
             "sort_order": sort_order,
         }
     ).eq("id", service_id).execute()
@@ -162,22 +194,24 @@ def admin_blog_new(request: Request):
 
 
 @router.post("/blog/new")
-def admin_blog_create(
+async def admin_blog_create(
     request: Request,
     user: CurrentUser = Depends(require_admin),
     title: str = Form(...),
     excerpt: str = Form(""),
     content_markdown: str = Form(...),
     cover_image_url: str = Form(""),
+    cover_image_file: UploadFile = File(None),
     is_published: bool = Form(False),
 ):
+    uploaded_url = await _upload_image(cover_image_file)
     supabase_admin().table("blog_posts").insert(
         {
             "title": title,
             "slug": slugify(title),
             "excerpt": excerpt,
             "content_markdown": content_markdown,
-            "cover_image_url": cover_image_url,
+            "cover_image_url": uploaded_url or cover_image_url,
             "is_published": is_published,
             "author_id": user.id,
         }
@@ -194,21 +228,23 @@ def admin_blog_edit_page(request: Request, post_id: int):
 
 
 @router.post("/blog/{post_id}/edit")
-def admin_blog_update(
+async def admin_blog_update(
     request: Request,
     post_id: int,
     title: str = Form(...),
     excerpt: str = Form(""),
     content_markdown: str = Form(...),
     cover_image_url: str = Form(""),
+    cover_image_file: UploadFile = File(None),
     is_published: bool = Form(False),
 ):
+    uploaded_url = await _upload_image(cover_image_file)
     supabase_admin().table("blog_posts").update(
         {
             "title": title,
             "excerpt": excerpt,
             "content_markdown": content_markdown,
-            "cover_image_url": cover_image_url,
+            "cover_image_url": uploaded_url or cover_image_url,
             "is_published": is_published,
         }
     ).eq("id", post_id).execute()

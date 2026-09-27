@@ -2,13 +2,13 @@
 {% block title %}{{ post.title }} — {{ site_name }}{% endblock %}
 {% block content %}
 <article class="max-w-2xl mx-auto px-5 py-16">
-  <a href="/blog" class="text-sm text-slate-400 hover:text-brand">← All articles</a>
+  <a href="/blog" class="text-sm text-slate-400 hover:text-brand">{{ t('blog.back') }}</a>
   <div class="text-xs text-slate-400 mt-4">{{ post.created_at[:10] }}</div>
   <h1 class="text-3xl font-extrabold mt-2 mb-6">{{ post.title }}</h1>
   {% if post.cover_image_url %}
   <img src="{{ post.cover_image_url }}" alt="" class="w-full rounded-2xl mb-8" />
   {% endif %}
-  <div class="prose prose-slate max-w-none leading-relaxed">
+  <div class="prose prose-slate dark:prose-invert max-w-none leading-relaxed">
     {{ post.content_html | safe }}
   </div>
 </article>

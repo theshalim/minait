@@ -1,11 +1,25 @@
 """Public, unauthenticated pages: homepage, service detail, blog."""
 from fastapi import APIRouter, HTTPException, Request
+from fastapi.responses import RedirectResponse
 
+from app.i18n import LANG_COOKIE, SUPPORTED_LANGS
 from app.supabase_client import supabase_admin
 from app.templating import base_ctx, templates
 from app.utils import render_markdown
 
 router = APIRouter(tags=["pages"])
+
+
+@router.get("/set-lang/{code}")
+def set_lang(code: str, next: str = "/"):
+    if code not in SUPPORTED_LANGS:
+        code = "en"
+    # Only ever redirect back to a path on this same site.
+    if not next.startswith("/"):
+        next = "/"
+    response = RedirectResponse(next, status_code=303)
+    response.set_cookie(LANG_COOKIE, code, max_age=60 * 60 * 24 * 365, samesite="lax")
+    return response
 
 
 @router.get("/")

@@ -2,25 +2,25 @@
 {% block title %}Log in — {{ site_name }}{% endblock %}
 {% block content %}
 <div class="max-w-sm mx-auto px-5 py-20">
-  <h1 class="text-2xl font-extrabold mb-6 text-center">Welcome back</h1>
+  <h1 class="text-2xl font-extrabold mb-6 text-center">{{ t('login.title') }}</h1>
 
   {% if error %}
-  <div class="bg-red-50 text-red-600 text-sm px-4 py-3 rounded-lg mb-5">{{ error }}</div>
+  <div class="bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 text-sm px-4 py-3 rounded-lg mb-5">{{ error }}</div>
   {% endif %}
 
   <form method="post" action="/login" class="space-y-4">
     <div>
-      <label class="block text-sm font-medium mb-1">Email</label>
-      <input required type="email" name="email" class="w-full border border-slate-200 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand/40" />
+      <label class="block text-sm font-medium mb-1">{{ t('login.email') }}</label>
+      <input required type="email" name="email" class="w-full border border-slate-200 dark:border-slate-700 dark:bg-slate-900 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand/40" />
     </div>
     <div>
-      <label class="block text-sm font-medium mb-1">Password</label>
-      <input required type="password" name="password" class="w-full border border-slate-200 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand/40" />
+      <label class="block text-sm font-medium mb-1">{{ t('login.password') }}</label>
+      <input required type="password" name="password" class="w-full border border-slate-200 dark:border-slate-700 dark:bg-slate-900 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand/40" />
     </div>
-    <button type="submit" class="w-full bg-brand text-white py-2.5 rounded-lg font-semibold hover:bg-brand-dark transition">Log in</button>
+    <button type="submit" class="w-full bg-brand text-white py-2.5 rounded-lg font-semibold hover:bg-brand-dark transition">{{ t('login.submit') }}</button>
   </form>
-  <p class="text-center text-sm text-slate-500 mt-6">
-    New here? <a href="/signup" class="text-brand font-semibold">Create an account</a>
+  <p class="text-center text-sm text-slate-500 dark:text-slate-400 mt-6">
+    {{ t('login.no_account') }} <a href="/signup" class="text-brand font-semibold">{{ t('login.create_account') }}</a>
   </p>
 </div>
 {% endblock %}

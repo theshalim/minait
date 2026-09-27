@@ -3,7 +3,8 @@
 {% block admin_content %}
 <h1 class="text-2xl font-extrabold mb-6">{{ "Edit service" if service else "New service" }}</h1>
 
-<form method="post" action="{{ '/admin/services/%d/edit'|format(service.id) if service else '/admin/services/new' }}"
+<form method="post" enctype="multipart/form-data"
+      action="{{ '/admin/services/%d/edit'|format(service.id) if service else '/admin/services/new' }}"
       class="space-y-5 max-w-lg">
   <div>
     <label class="block text-sm font-medium mb-1">Title</label>
@@ -39,9 +40,15 @@
     </div>
   </div>
   <div>
-    <label class="block text-sm font-medium mb-1">Image URL <span class="text-slate-400 font-normal">(optional)</span></label>
-    <input name="image_url" value="{{ service.image_url if service else '' }}"
-           class="w-full border border-slate-200 rounded-lg px-4 py-2.5" />
+    <label class="block text-sm font-medium mb-1">Thumbnail / image</label>
+    {% if service and service.image_url %}
+    <img src="{{ service.image_url }}" alt="" class="w-32 h-20 object-cover rounded-lg mb-2 border border-slate-200" />
+    {% endif %}
+    <input type="file" name="image_file" accept="image/*"
+           class="w-full border border-slate-200 rounded-lg px-4 py-2.5 file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:bg-brand-light file:text-brand file:font-medium" />
+    <p class="text-xs text-slate-400 mt-1">Upload a file, or paste an image URL below instead — uploading a file always wins.</p>
+    <input name="image_url" value="{{ service.image_url if service else '' }}" placeholder="https://... (optional, used only if no file is uploaded)"
+           class="w-full border border-slate-200 rounded-lg px-4 py-2.5 mt-2" />
   </div>
   <div>
     <label class="block text-sm font-medium mb-1">Sort order</label>

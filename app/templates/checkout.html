@@ -2,53 +2,53 @@
 {% block title %}Checkout — {{ service.title }}{% endblock %}
 {% block content %}
 <div class="max-w-xl mx-auto px-5 py-16">
-  <h1 class="text-2xl font-extrabold mb-1">Complete your order</h1>
-  <p class="text-slate-500 mb-8">{{ service.title }} — <span class="font-semibold text-slate-800">{{ "%.0f"|format(service.price) }} {{ service.currency }}</span></p>
+  <h1 class="text-2xl font-extrabold mb-1">{{ t('checkout.title') }}</h1>
+  <p class="text-slate-500 dark:text-slate-400 mb-8">{{ service.title }} — <span class="font-semibold text-slate-800 dark:text-slate-200">{{ "%.0f"|format(service.price) }} {{ service.currency }}</span></p>
 
   <form method="post" action="/orders" class="space-y-5">
     <input type="hidden" name="service_id" value="{{ service.id }}" />
 
     <div>
-      <label class="block text-sm font-medium mb-1">Full name</label>
+      <label class="block text-sm font-medium mb-1">{{ t('checkout.full_name') }}</label>
       <input required name="customer_name" value="{{ user.full_name if user else '' }}"
-             class="w-full border border-slate-200 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand/40" />
+             class="w-full border border-slate-200 dark:border-slate-700 dark:bg-slate-900 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand/40" />
     </div>
     <div>
-      <label class="block text-sm font-medium mb-1">Email</label>
+      <label class="block text-sm font-medium mb-1">{{ t('checkout.email') }}</label>
       <input required type="email" name="customer_email" value="{{ user.email if user else '' }}"
-             class="w-full border border-slate-200 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand/40" />
+             class="w-full border border-slate-200 dark:border-slate-700 dark:bg-slate-900 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand/40" />
     </div>
     <div>
-      <label class="block text-sm font-medium mb-1">Phone</label>
+      <label class="block text-sm font-medium mb-1">{{ t('checkout.phone') }}</label>
       <input name="customer_phone" value="{{ user.phone if user else '' }}"
-             class="w-full border border-slate-200 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand/40" />
+             class="w-full border border-slate-200 dark:border-slate-700 dark:bg-slate-900 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand/40" />
     </div>
     <div>
-      <label class="block text-sm font-medium mb-1">Notes <span class="text-slate-400 font-normal">(optional)</span></label>
+      <label class="block text-sm font-medium mb-1">{{ t('checkout.notes') }} <span class="text-slate-400 font-normal">{{ t('checkout.optional') }}</span></label>
       <textarea name="notes" rows="3"
-                class="w-full border border-slate-200 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand/40"></textarea>
+                class="w-full border border-slate-200 dark:border-slate-700 dark:bg-slate-900 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand/40"></textarea>
     </div>
 
     <div>
-      <label class="block text-sm font-medium mb-2">How would you like to proceed?</label>
+      <label class="block text-sm font-medium mb-2">{{ t('checkout.payment_method') }}</label>
       <div class="space-y-2">
-        <label class="flex items-center gap-3 border border-slate-200 rounded-lg px-4 py-3 cursor-pointer has-[:checked]:border-brand has-[:checked]:bg-brand-light">
+        <label class="flex items-center gap-3 border border-slate-200 dark:border-slate-700 rounded-lg px-4 py-3 cursor-pointer has-[:checked]:border-brand has-[:checked]:bg-brand-light dark:has-[:checked]:bg-brand/10">
           <input type="radio" name="payment_method" value="stripe" checked class="accent-brand" />
-          <span class="font-medium">💳 Pay by card (Stripe)</span>
+          <span class="font-medium">💳 {{ t('checkout.pay_card') }}</span>
         </label>
-        <label class="flex items-center gap-3 border border-slate-200 rounded-lg px-4 py-3 cursor-pointer has-[:checked]:border-brand has-[:checked]:bg-brand-light">
+        <label class="flex items-center gap-3 border border-slate-200 dark:border-slate-700 rounded-lg px-4 py-3 cursor-pointer has-[:checked]:border-brand has-[:checked]:bg-brand-light dark:has-[:checked]:bg-brand/10">
           <input type="radio" name="payment_method" value="sslcommerz" class="accent-brand" />
-          <span class="font-medium">🇧🇩 bKash / Nagad / Rocket (SSLCOMMERZ)</span>
+          <span class="font-medium">🇧🇩 {{ t('checkout.pay_local') }}</span>
         </label>
-        <label class="flex items-center gap-3 border border-slate-200 rounded-lg px-4 py-3 cursor-pointer has-[:checked]:border-brand has-[:checked]:bg-brand-light">
+        <label class="flex items-center gap-3 border border-slate-200 dark:border-slate-700 rounded-lg px-4 py-3 cursor-pointer has-[:checked]:border-brand has-[:checked]:bg-brand-light dark:has-[:checked]:bg-brand/10">
           <input type="radio" name="payment_method" value="whatsapp" class="accent-brand" />
-          <span class="font-medium">💬 Just message us on WhatsApp</span>
+          <span class="font-medium">💬 {{ t('checkout.pay_whatsapp') }}</span>
         </label>
       </div>
     </div>
 
     <button type="submit" class="w-full bg-brand text-white py-3 rounded-xl font-semibold hover:bg-brand-dark transition">
-      Confirm order
+      {{ t('checkout.confirm_order') }}
     </button>
   </form>
 </div>

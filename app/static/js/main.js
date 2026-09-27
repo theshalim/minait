@@ -35,3 +35,17 @@
     })
     .catch(cleanUrl);
 })();
+
+// Dark/light theme toggle. The <html class="dark"> state itself is set
+// inline in base.html (before first paint, to avoid a flash) — this just
+// wires up the button and remembers the choice.
+(function () {
+  var btn = document.getElementById("theme-toggle");
+  if (!btn) return;
+  btn.addEventListener("click", function () {
+    var isDark = document.documentElement.classList.toggle("dark");
+    try {
+      localStorage.setItem("theme", isDark ? "dark" : "light");
+    } catch (e) {}
+  });
+})();
