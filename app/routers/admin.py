@@ -161,92 +161,30 @@ def admin_service_delete(service_id: int):
 
 # ---------------------------------------------------------------------------
 # Homepage content: hero slider + stat counters.
-# However many slides/stats exist (and are active), that's how many show
-# up on the homepage — sort_order controls the left-to-right / slide order.
+# However many slide images / stats exist, that's how many show up on the
+# homepage. Slide images carry their own text (designed into the picture),
+# so there's nothing to type here — just the picture and its order.
 # ---------------------------------------------------------------------------
 @router.get("/home")
 def admin_home(request: Request):
-    slides = supabase_admin().table("hero_slides").select("*").order("sort_order").execute().data
+    slides = supabase_admin().table("hero_slides").select("*").order("sort_order").order("id").execute().data
     stats = supabase_admin().table("site_stats").select("*").order("sort_order").execute().data
     return templates.TemplateResponse(
         "admin/home.html", base_ctx(request, slides=slides, stats=stats)
     )
 
 
-@router.get("/home/slides/new")
-def admin_slide_new(request: Request):
-    return templates.TemplateResponse("admin/slide_form.html", base_ctx(request, slide=None))
-
-
 @router.post("/home/slides/new")
-async def admin_slide_create(
-    request: Request,
-    heading: str = Form(...),
-    subheading: str = Form(""),
-    button_label: str = Form(""),
-    button_url: str = Form(""),
-    image_url: str = Form(""),
-    image_file: UploadFile = File(None),
-    sort_order: int = Form(0),
-):
+async def admin_slide_create(image_url: str = Form(""), image_file: UploadFile = File(None)):
     uploaded_url = await _upload_image(image_file)
     final_image = uploaded_url or image_url
     if not final_image:
-        raise HTTPException(status_code=400, detail="A slide needs an image — upload one or paste a URL.")
+        raise HTTPException(status_code=400, detail="Choose an image to upload — or paste an image URL.")
+    next_order = (
+        supabase_admin().table("hero_slides").select("id", count="exact").execute().count or 0
+    )
     supabase_admin().table("hero_slides").insert(
-        {
-            "heading": heading,
-            "subheading": subheading,
-            "button_label": button_label,
-            "button_url": button_url,
-            "image_url": final_image,
-            "sort_order": sort_order,
-        }
-    ).execute()
-    return RedirectResponse("/admin/home", status_code=303)
-
-
-@router.get("/home/slides/{slide_id}/edit")
-def admin_slide_edit_page(request: Request, slide_id: int):
-    slide = supabase_admin().table("hero_slides").select("*").eq("id", slide_id).maybe_single().execute().data
-    if not slide:
-        raise HTTPException(status_code=404, detail="Slide not found")
-    return templates.TemplateResponse("admin/slide_form.html", base_ctx(request, slide=slide))
-
-
-@router.post("/home/slides/{slide_id}/edit")
-async def admin_slide_update(
-    request: Request,
-    slide_id: int,
-    heading: str = Form(...),
-    subheading: str = Form(""),
-    button_label: str = Form(""),
-    button_url: str = Form(""),
-    image_url: str = Form(""),
-    image_file: UploadFile = File(None),
-    sort_order: int = Form(0),
-):
-    uploaded_url = await _upload_image(image_file)
-    update = {
-        "heading": heading,
-        "subheading": subheading,
-        "button_label": button_label,
-        "button_url": button_url,
-        "sort_order": sort_order,
-    }
-    if uploaded_url or image_url:
-        update["image_url"] = uploaded_url or image_url
-    supabase_admin().table("hero_slides").update(update).eq("id", slide_id).execute()
-    return RedirectResponse("/admin/home", status_code=303)
-
-
-@router.post("/home/slides/{slide_id}/toggle")
-def admin_slide_toggle(slide_id: int):
-    slide = supabase_admin().table("hero_slides").select("is_active").eq("id", slide_id).maybe_single().execute().data
-    if not slide:
-        raise HTTPException(status_code=404, detail="Slide not found")
-    supabase_admin().table("hero_slides").update({"is_active": not slide["is_active"]}).eq(
-        "id", slide_id
+        {"image_url": final_image, "heading": "", "sort_order": next_order}
     ).execute()
     return RedirectResponse("/admin/home", status_code=303)
 
