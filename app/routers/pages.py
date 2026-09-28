@@ -2,8 +2,8 @@
 from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import RedirectResponse
 
-from app.i18n import LANG_COOKIE, SUPPORTED_LANGS
-from app.supabase_client import supabase_admin
+from app.i18n import LANG_COOKIE, SUPPORTED_LANGS, get_locale, localized
+from app.supabase_client import fetch_one, supabase_admin
 from app.templating import base_ctx, templates
 from app.utils import render_markdown
 
@@ -15,13 +15,15 @@ def set_lang(code: str, next: str = "/"):
     if code not in SUPPORTED_LANGS:
         code = "en"
     # Only ever redirect back to a path on this same site.
-    if not next.startswith("/"):
+    if not next.startswith("/") or next.startswith("//"):
         next = "/"
     response = RedirectResponse(next, status_code=303)
     response.set_cookie(LANG_COOKIE, code, max_age=60 * 60 * 24 * 365, samesite="lax")
     return response
 
 
+# Public pages select "*" so the optional Bangla (`*_bn`) columns come along
+# whenever they exist, without breaking if the database hasn't got them yet.
 @router.get("/")
 def home(request: Request):
     services = (
@@ -36,7 +38,7 @@ def home(request: Request):
     posts = (
         supabase_admin()
         .table("blog_posts")
-        .select("id, title, slug, excerpt, cover_image_url, created_at")
+        .select("*")
         .eq("is_published", True)
         .order("created_at", desc=True)
         .limit(3)
@@ -62,33 +64,23 @@ def home(request: Request):
 
 
 @router.get("/api/faqs")
-def api_faqs():
+def api_faqs(request: Request):
     """Public, read-only. Powers the floating Assistant widget's FAQ list —
     fetched lazily by main.js the first time someone opens it, rather than
-    on every page load."""
-    faqs = (
-        supabase_admin()
-        .table("faqs")
-        .select("question, answer")
-        .order("sort_order")
-        .execute()
-        .data
-    )
-    return faqs
+    on every page load. Answers come in the visitor's language."""
+    lang = get_locale(request)
+    faqs = supabase_admin().table("faqs").select("*").order("sort_order").execute().data
+    return [
+        {"question": localized(f, "question", lang), "answer": localized(f, "answer", lang)}
+        for f in faqs
+    ]
 
 
 @router.get("/services/{slug}")
 def service_detail(request: Request, slug: str):
-    res = (
-        supabase_admin()
-        .table("services")
-        .select("*")
-        .eq("slug", slug)
-        .eq("is_active", True)
-        .maybe_single()
-        .execute()
+    service = fetch_one(
+        supabase_admin().table("services").select("*").eq("slug", slug).eq("is_active", True)
     )
-    service = res.data
     if not service:
         raise HTTPException(status_code=404, detail="Service not found")
     return templates.TemplateResponse("service_detail.html", base_ctx(request, service=service))
@@ -99,7 +91,7 @@ def blog_list(request: Request):
     posts = (
         supabase_admin()
         .table("blog_posts")
-        .select("id, title, slug, excerpt, cover_image_url, created_at")
+        .select("*")
         .eq("is_published", True)
         .order("created_at", desc=True)
         .execute()
@@ -110,17 +102,10 @@ def blog_list(request: Request):
 
 @router.get("/blog/{slug}")
 def blog_post(request: Request, slug: str):
-    res = (
-        supabase_admin()
-        .table("blog_posts")
-        .select("*")
-        .eq("slug", slug)
-        .eq("is_published", True)
-        .maybe_single()
-        .execute()
+    post = fetch_one(
+        supabase_admin().table("blog_posts").select("*").eq("slug", slug).eq("is_published", True)
     )
-    post = res.data
     if not post:
         raise HTTPException(status_code=404, detail="Post not found")
-    post["content_html"] = render_markdown(post["content_markdown"])
+    post["content_html"] = render_markdown(localized(post, "content_markdown", get_locale(request)))
     return templates.TemplateResponse("blog_post.html", base_ctx(request, post=post))

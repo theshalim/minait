@@ -6,7 +6,6 @@ form. Every order gets a unique, hard-to-guess order_number that also acts as
 the lookup key for the (public) order status page, like a receipt link.
 """
 import logging
-from urllib.parse import quote
 
 from fastapi import APIRouter, Depends, Form, HTTPException, Request
 from fastapi.responses import RedirectResponse
@@ -19,9 +18,9 @@ from app.payments import (
     retrieve_stripe_session,
 )
 from app.security import CurrentUser, get_optional_user
-from app.supabase_client import supabase_admin
+from app.supabase_client import fetch_one, supabase_admin
 from app.templating import base_ctx, templates
-from app.utils import generate_order_number
+from app.utils import generate_order_number, whatsapp_link
 
 router = APIRouter(tags=["orders"])
 logger = logging.getLogger("minait")
@@ -29,19 +28,15 @@ logger = logging.getLogger("minait")
 
 @router.get("/checkout/{slug}")
 def checkout_page(request: Request, slug: str, user: CurrentUser | None = Depends(get_optional_user)):
-    res = (
-        supabase_admin()
-        .table("services")
-        .select("*")
-        .eq("slug", slug)
-        .eq("is_active", True)
-        .maybe_single()
-        .execute()
+    service = fetch_one(
+        supabase_admin().table("services").select("*").eq("slug", slug).eq("is_active", True)
     )
-    service = res.data
     if not service:
         raise HTTPException(status_code=404, detail="Service not found")
-    return templates.TemplateResponse("checkout.html", base_ctx(request, service=service))
+    return templates.TemplateResponse(
+        "checkout.html",
+        base_ctx(request, service=service, payment_methods=settings.payment_methods()),
+    )
 
 
 @router.post("/orders")
@@ -55,9 +50,11 @@ def create_order(
     payment_method: str = Form(...),  # 'stripe' | 'sslcommerz' | 'whatsapp'
     user: CurrentUser | None = Depends(get_optional_user),
 ):
-    svc = supabase_admin().table("services").select("*").eq("id", service_id).maybe_single().execute().data
+    svc = fetch_one(supabase_admin().table("services").select("*").eq("id", service_id))
     if not svc or not svc["is_active"]:
         raise HTTPException(status_code=404, detail="Service not found")
+    if payment_method not in settings.payment_methods():
+        payment_method = "whatsapp"
 
     order = {
         "order_number": generate_order_number(),
@@ -97,30 +94,20 @@ def create_order(
                 f"/orders/{created['order_number']}?gateway_error=1", status_code=303
             )
 
-    if payment_method == "whatsapp":
-        wa_number = settings.WHATSAPP_NUMBER
+    if payment_method == "whatsapp" and settings.WHATSAPP_NUMBER:
         text = (
             f"Hi {settings.SITE_NAME}! I just placed order {created['order_number']} "
             f"for '{svc['title']}' ({svc['price']} {svc['currency']}). "
             f"Name: {customer_name}."
         )
-        wa_url = f"https://wa.me/{wa_number}?text={quote(text)}"
-        return RedirectResponse(wa_url, status_code=303)
+        return RedirectResponse(whatsapp_link(settings.WHATSAPP_NUMBER, text), status_code=303)
 
     return RedirectResponse(f"/orders/{created['order_number']}", status_code=303)
 
 
 @router.get("/orders/{order_number}")
 def order_status(request: Request, order_number: str, gateway_error: bool = False):
-    order = (
-        supabase_admin()
-        .table("orders")
-        .select("*")
-        .eq("order_number", order_number)
-        .maybe_single()
-        .execute()
-        .data
-    )
+    order = fetch_one(supabase_admin().table("orders").select("*").eq("order_number", order_number))
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
     return templates.TemplateResponse(
@@ -130,15 +117,7 @@ def order_status(request: Request, order_number: str, gateway_error: bool = Fals
 
 @router.get("/orders/{order_number}/thank-you")
 def order_thank_you(request: Request, order_number: str, session_id: str | None = None):
-    order = (
-        supabase_admin()
-        .table("orders")
-        .select("*")
-        .eq("order_number", order_number)
-        .maybe_single()
-        .execute()
-        .data
-    )
+    order = fetch_one(supabase_admin().table("orders").select("*").eq("order_number", order_number))
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
 

@@ -42,5 +42,26 @@ class Settings:
     TELEGRAM_CHAT_ID: str = _env("TELEGRAM_CHAT_ID")
     DISCORD_WEBHOOK_URL: str = _env("DISCORD_WEBHOOK_URL")
 
+    # A gateway only shows up at checkout once its keys are filled in.
+    @property
+    def stripe_enabled(self) -> bool:
+        return bool(self.STRIPE_SECRET_KEY)
+
+    @property
+    def sslcommerz_enabled(self) -> bool:
+        return bool(self.SSLCOMMERZ_STORE_ID and self.SSLCOMMERZ_STORE_PASSWORD)
+
+    def payment_methods(self) -> list[str]:
+        """Payment choices offered at checkout, in display order. WhatsApp
+        is always offered (and is the default): with no WhatsApp number
+        set, the order is still saved and the customer sees its status
+        page instead."""
+        methods = ["whatsapp"]
+        if self.sslcommerz_enabled:
+            methods.append("sslcommerz")
+        if self.stripe_enabled:
+            methods.append("stripe")
+        return methods
+
 
 settings = Settings()

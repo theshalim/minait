@@ -1,8 +1,8 @@
 {% extends "base.html" %}
-{% block title %}Your dashboard — {{ site_name }}{% endblock %}
+{% block title %}{{ t('nav.dashboard') }} — {{ site_name }}{% endblock %}
 {% block content %}
 <div class="max-w-4xl mx-auto px-5 py-16">
-  <h1 class="text-2xl font-extrabold mb-1">Hi {{ user.full_name or user.email }} 👋</h1>
+  <h1 class="text-2xl font-extrabold mb-1">{{ t('dashboard.hi') }} {{ user.full_name or user.email }} 👋</h1>
   <p class="text-slate-500 dark:text-slate-400 mb-8">{{ t('dashboard.subtitle') }}</p>
 
   {% if orders %}
@@ -20,7 +20,7 @@
           {% elif o.status == 'in_progress' %}bg-amber-100 dark:bg-amber-950/50 text-amber-700 dark:text-amber-400
           {% elif o.status == 'cancelled' %}bg-red-100 dark:bg-red-950/50 text-red-700 dark:text-red-400
           {% else %}bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300{% endif %}">
-          {{ o.status|replace('_',' ')|capitalize }}
+          {{ t('status.' ~ o.status) }}
         </span>
       </div>
     </a>
@@ -32,5 +32,28 @@
     <a href="/#services" class="text-brand font-semibold">{{ t('dashboard.browse') }}</a>
   </div>
   {% endif %}
+
+  <div id="password" class="mt-12 max-w-sm">
+    <h2 class="font-bold text-lg mb-3">{{ t('dashboard.password_heading') }}</h2>
+    {% if password_error %}
+    <div class="bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 text-sm px-4 py-3 rounded-lg mb-4">{{ password_error }}</div>
+    {% endif %}
+    {% if password_message %}
+    <div class="bg-green-50 dark:bg-green-950/40 text-green-700 dark:text-green-400 text-sm px-4 py-3 rounded-lg mb-4">{{ password_message }}</div>
+    {% endif %}
+    <form method="post" action="/dashboard/password#password" class="space-y-3">
+      <div>
+        <label class="block text-sm font-medium mb-1">{{ t('dashboard.current_password') }}</label>
+        <input required type="password" name="current_password" autocomplete="current-password"
+               class="w-full border border-slate-200 dark:border-slate-700 dark:bg-slate-900 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand/40" />
+      </div>
+      <div>
+        <label class="block text-sm font-medium mb-1">{{ t('dashboard.new_password') }}</label>
+        <input required type="password" name="new_password" minlength="6" autocomplete="new-password"
+               class="w-full border border-slate-200 dark:border-slate-700 dark:bg-slate-900 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand/40" />
+      </div>
+      <button type="submit" class="bg-slate-900 dark:bg-slate-700 text-white text-sm px-5 py-2.5 rounded-lg font-semibold hover:bg-slate-700">{{ t('dashboard.password_submit') }}</button>
+    </form>
+  </div>
 </div>
 {% endblock %}

@@ -1,16 +1,16 @@
 {% extends "base.html" %}
-{% block title %}Checkout — {{ service.title }}{% endblock %}
+{% block title %}{{ t('checkout.title') }} — {{ loc(service, 'title') }}{% endblock %}
 {% block content %}
 <div class="max-w-xl mx-auto px-5 py-16">
   <h1 class="text-2xl font-extrabold mb-1">{{ t('checkout.title') }}</h1>
-  <p class="text-slate-500 dark:text-slate-400 mb-8">{{ service.title }} — <span class="font-semibold text-slate-800 dark:text-slate-200">{{ "%.0f"|format(service.price) }} {{ service.currency }}</span></p>
+  <p class="text-slate-500 dark:text-slate-400 mb-8">{{ loc(service, 'title') }} — <span class="font-semibold text-slate-800 dark:text-slate-200">{{ "%.0f"|format(service.price) }} {{ service.currency }}</span></p>
 
   <form method="post" action="/orders" class="space-y-5">
     <input type="hidden" name="service_id" value="{{ service.id }}" />
 
     <div>
       <label class="block text-sm font-medium mb-1">{{ t('checkout.full_name') }}</label>
-      <input required name="customer_name" value="{{ user.full_name if user else '' }}"
+      <input required name="customer_name" value="{{ user.full_name if user and user.full_name else '' }}"
              class="w-full border border-slate-200 dark:border-slate-700 dark:bg-slate-900 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand/40" />
     </div>
     <div>
@@ -20,8 +20,9 @@
     </div>
     <div>
       <label class="block text-sm font-medium mb-1">{{ t('checkout.phone') }}</label>
-      <input name="customer_phone" value="{{ user.phone if user else '' }}"
+      <input required type="tel" name="customer_phone" value="{{ user.phone if user and user.phone else '' }}" placeholder="01XXXXXXXXX"
              class="w-full border border-slate-200 dark:border-slate-700 dark:bg-slate-900 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand/40" />
+      <p class="text-xs text-slate-400 mt-1">{{ t('checkout.phone_hint') }}</p>
     </div>
     <div>
       <label class="block text-sm font-medium mb-1">{{ t('checkout.notes') }} <span class="text-slate-400 font-normal">{{ t('checkout.optional') }}</span></label>
@@ -32,18 +33,13 @@
     <div>
       <label class="block text-sm font-medium mb-2">{{ t('checkout.payment_method') }}</label>
       <div class="space-y-2">
+        {% set labels = {"whatsapp": "💬 " ~ t('checkout.pay_whatsapp'), "sslcommerz": "🇧🇩 " ~ t('checkout.pay_local'), "stripe": "💳 " ~ t('checkout.pay_card')} %}
+        {% for method in payment_methods %}
         <label class="flex items-center gap-3 border border-slate-200 dark:border-slate-700 rounded-lg px-4 py-3 cursor-pointer has-[:checked]:border-brand has-[:checked]:bg-brand-light dark:has-[:checked]:bg-brand/10">
-          <input type="radio" name="payment_method" value="stripe" checked class="accent-brand" />
-          <span class="font-medium">💳 {{ t('checkout.pay_card') }}</span>
+          <input type="radio" name="payment_method" value="{{ method }}" {{ "checked" if loop.first else "" }} class="accent-brand" />
+          <span class="font-medium">{{ labels[method] }}</span>
         </label>
-        <label class="flex items-center gap-3 border border-slate-200 dark:border-slate-700 rounded-lg px-4 py-3 cursor-pointer has-[:checked]:border-brand has-[:checked]:bg-brand-light dark:has-[:checked]:bg-brand/10">
-          <input type="radio" name="payment_method" value="sslcommerz" class="accent-brand" />
-          <span class="font-medium">🇧🇩 {{ t('checkout.pay_local') }}</span>
-        </label>
-        <label class="flex items-center gap-3 border border-slate-200 dark:border-slate-700 rounded-lg px-4 py-3 cursor-pointer has-[:checked]:border-brand has-[:checked]:bg-brand-light dark:has-[:checked]:bg-brand/10">
-          <input type="radio" name="payment_method" value="whatsapp" class="accent-brand" />
-          <span class="font-medium">💬 {{ t('checkout.pay_whatsapp') }}</span>
-        </label>
+        {% endfor %}
       </div>
     </div>
 

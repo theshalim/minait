@@ -1,10 +1,10 @@
 {% extends "base.html" %}
-{% block title %}Page not found — {{ site_name }}{% endblock %}
+{% block title %}{{ t('error.404_title') }} — {{ site_name }}{% endblock %}
 {% block content %}
 <div class="max-w-md mx-auto px-5 py-24 text-center">
   <div class="text-6xl mb-4">🔍</div>
-  <h1 class="text-2xl font-extrabold mb-2">Page not found</h1>
-  <p class="text-slate-500 dark:text-slate-400 mb-6">The page you're looking for doesn't exist or has moved.</p>
+  <h1 class="text-2xl font-extrabold mb-2">{{ t('error.404_title') }}</h1>
+  <p class="text-slate-500 dark:text-slate-400 mb-6">{{ t('error.404_body') }}</p>
   <a href="/" class="text-brand font-semibold">{{ t('order.back_home') }}</a>
 </div>
 {% endblock %}

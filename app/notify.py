@@ -4,6 +4,8 @@ Fires on: new order placed, payment received. Failures here must never break
 the request that triggered them, so every call is best-effort and swallows
 its own errors.
 """
+from html import escape
+
 import httpx
 
 from app.config import settings
@@ -42,7 +44,14 @@ def notify_admin(text: str) -> None:
     _send_discord(text)
 
 
+def _clean(order: dict) -> dict:
+    # Messages are sent as Telegram HTML: a customer typing "<" or "&" in
+    # their name would otherwise make Telegram reject the whole message.
+    return {k: escape(str(v)) if v is not None else None for k, v in order.items()}
+
+
 def notify_new_order(order: dict) -> None:
+    order = _clean(order)
     text = (
         f"🆕 <b>New order — {order['order_number']}</b>\n"
         f"Service: {order['service_title']}\n"
@@ -55,6 +64,7 @@ def notify_new_order(order: dict) -> None:
 
 
 def notify_payment_received(order: dict) -> None:
+    order = _clean(order)
     text = (
         f"💰 <b>Payment received — {order['order_number']}</b>\n"
         f"Service: {order['service_title']}\n"

@@ -7,12 +7,16 @@ from fastapi.staticfiles import StaticFiles
 
 from app.config import settings
 from app.routers import admin, auth, dashboard, orders, pages, webhooks
+from app.security import refresh_session_middleware
 from app.templating import base_ctx, templates
 
 STATIC_DIR = Path(__file__).parent / "static"
 logger = logging.getLogger("minait")
 
 app = FastAPI(title=settings.SITE_NAME)
+
+# Keeps logged-in users logged in past the ~1h Supabase access-token lifetime.
+app.middleware("http")(refresh_session_middleware)
 
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 

@@ -126,6 +126,20 @@ create table if not exists faqs (
 );
 
 -- ---------------------------------------------------------------------------
+-- Optional Bangla copies of admin-written content. Shown on the বাংলা site
+-- when filled in; empty means "show the English text there too".
+-- Safe to re-run: existing databases just gain the new columns.
+-- ---------------------------------------------------------------------------
+alter table services   add column if not exists title_bn            text;
+alter table services   add column if not exists description_bn      text;
+alter table blog_posts add column if not exists title_bn            text;
+alter table blog_posts add column if not exists excerpt_bn          text;
+alter table blog_posts add column if not exists content_markdown_bn text;
+alter table faqs       add column if not exists question_bn         text;
+alter table faqs       add column if not exists answer_bn           text;
+alter table site_stats add column if not exists label_bn            text;
+
+-- ---------------------------------------------------------------------------
 -- Row Level Security (defense in depth).
 -- The FastAPI backend talks to Postgres with the Supabase SERVICE ROLE key,
 -- which bypasses RLS, and enforces auth/admin checks itself in Python.

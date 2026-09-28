@@ -106,6 +106,8 @@
   if (!fab || !panel || !body) return;
 
   var faqs = [];
+  var emptyLabel = panel.getAttribute("data-empty") || "No questions yet.";
+  var backLabel = panel.getAttribute("data-back") || "Back";
 
   function escapeHtml(str) {
     var div = document.createElement("div");
@@ -115,7 +117,7 @@
 
   function renderList() {
     if (!faqs.length) {
-      body.innerHTML = '<p class="p-4 text-sm text-slate-400">No questions yet.</p>';
+      body.innerHTML = '<p class="p-4 text-sm text-slate-400">' + escapeHtml(emptyLabel) + "</p>";
       return;
     }
     body.innerHTML = faqs
@@ -142,7 +144,9 @@
   function renderAnswer(faq) {
     body.innerHTML =
       '<div class="p-4">' +
-      '<button type="button" id="faq-back" class="text-xs font-semibold text-brand mb-3">&lsaquo; Back</button>' +
+      '<button type="button" id="faq-back" class="text-xs font-semibold text-brand mb-3">&lsaquo; ' +
+      escapeHtml(backLabel) +
+      "</button>" +
       '<div class="font-semibold text-sm text-slate-800 dark:text-slate-100 mb-2">' +
       escapeHtml(faq.question) +
       "</div>" +

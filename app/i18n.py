@@ -52,7 +52,7 @@ TRANSLATIONS = {
         "checkout.title": "Complete your order",
         "checkout.full_name": "Full name",
         "checkout.email": "Email",
-        "checkout.phone": "Phone",
+        "checkout.phone": "Phone (WhatsApp)",
         "checkout.notes": "Notes",
         "checkout.optional": "(optional)",
         "checkout.payment_method": "How would you like to proceed?",
@@ -83,8 +83,58 @@ TRANSLATIONS = {
         "blog.heading": "Blog",
         "blog.empty": "No articles yet — check back soon.",
         "blog.back": "← All articles",
-        "order.bookmark": "Bookmark this page to check progress anytime. A copy was sent to",
+        "order.bookmark": "Bookmark this page to check your order's progress anytime.",
         "order.back_home": "← Back to home",
+        "checkout.phone_hint": "We'll message you about your order on this number.",
+        "login.invalid": "Invalid email or password.",
+        "login.forgot": "Forgot password?",
+        "signup.failed": "Couldn't create the account. This email may already be registered — try logging in.",
+        "signup.check_email": "Account created! Please check your email to confirm, then log in.",
+        "forgot.title": "Forgot your password?",
+        "forgot.body": "Enter the email you signed up with. We'll reset your password and send you a new one on WhatsApp.",
+        "forgot.email": "Your account email",
+        "forgot.submit": "Request a new password",
+        "forgot.sent": "Request received! We'll contact you on your phone number with a new password soon.",
+        "forgot.wa_text": "Hi! I forgot my password. My account email is: {email}",
+        "dashboard.hi": "Hi",
+        "dashboard.password_heading": "Change password",
+        "dashboard.current_password": "Current password",
+        "dashboard.new_password": "New password (at least 6 characters)",
+        "dashboard.password_submit": "Change password",
+        "dashboard.password_changed": "Password changed.",
+        "dashboard.password_wrong": "Current password is wrong.",
+        "dashboard.password_short": "New password must be at least 6 characters.",
+        "dashboard.password_failed": "Couldn't change the password right now. Please try again.",
+        "order.title": "Order",
+        "order.paid_title": "Payment received — thank you!",
+        "order.service": "Service",
+        "order.amount": "Amount",
+        "order.payment": "Payment",
+        "order.status": "Status",
+        "order.gateway_error_title": "Online payment isn't available for this order right now.",
+        "order.gateway_error_body": "Your order is saved — message us on WhatsApp and we'll get it sorted.",
+        "order.gateway_error_button": "Message us on WhatsApp",
+        "order.gateway_error_wa_text": "Hi! I just tried to pay for order {order_number} but the payment page did not work.",
+        "payment.unpaid": "Unpaid",
+        "payment.paid": "Paid",
+        "payment.failed": "Failed",
+        "payment.refunded": "Refunded",
+        "status.pending": "Pending",
+        "status.in_progress": "In progress",
+        "status.completed": "Completed",
+        "status.cancelled": "Cancelled",
+        "assistant.label": "Assistant",
+        "assistant.title": "Ask us anything",
+        "assistant.subtitle": "Quick answers, no waiting",
+        "assistant.empty": "No questions yet.",
+        "assistant.back": "Back",
+        "assistant.close": "Close",
+        "error.404_title": "Page not found",
+        "error.404_body": "The page you're looking for doesn't exist or has moved.",
+        "error.403_title": "Admins only",
+        "error.403_body": "You don't have access to this page.",
+        "error.500_title": "Something went wrong",
+        "error.500_body": "That's on us, not you. Please try again in a moment.",
     },
     "bn": {
         "nav.services": "সার্ভিস",
@@ -123,7 +173,7 @@ TRANSLATIONS = {
         "checkout.title": "আপনার অর্ডার সম্পূর্ণ করুন",
         "checkout.full_name": "পুরো নাম",
         "checkout.email": "ইমেইল",
-        "checkout.phone": "ফোন",
+        "checkout.phone": "ফোন (হোয়াটসঅ্যাপ)",
         "checkout.notes": "নোট",
         "checkout.optional": "(ঐচ্ছিক)",
         "checkout.payment_method": "কীভাবে এগোতে চান?",
@@ -154,8 +204,58 @@ TRANSLATIONS = {
         "blog.heading": "ব্লগ",
         "blog.empty": "এখনো কোনো লেখা নেই — শীঘ্রই আসছে।",
         "blog.back": "← সব লেখা",
-        "order.bookmark": "অগ্রগতি দেখতে এই পেজটা বুকমার্ক করে রাখুন। একটা কপি পাঠানো হয়েছে",
+        "order.bookmark": "যেকোনো সময় অর্ডারের অগ্রগতি দেখতে এই পেজটা বুকমার্ক করে রাখুন।",
         "order.back_home": "← হোমে ফিরে যান",
+        "checkout.phone_hint": "এই নম্বরে আমরা আপনার অর্ডারের আপডেট জানাব।",
+        "login.invalid": "ইমেইল বা পাসওয়ার্ড ভুল।",
+        "login.forgot": "পাসওয়ার্ড ভুলে গেছেন?",
+        "signup.failed": "অ্যাকাউন্ট তৈরি করা যায়নি। এই ইমেইল দিয়ে হয়তো আগেই অ্যাকাউন্ট আছে — লগ ইন করে দেখুন।",
+        "signup.check_email": "অ্যাকাউন্ট তৈরি হয়েছে! ইমেইল চেক করে কনফার্ম করুন, তারপর লগ ইন করুন।",
+        "forgot.title": "পাসওয়ার্ড ভুলে গেছেন?",
+        "forgot.body": "যে ইমেইল দিয়ে অ্যাকাউন্ট খুলেছিলেন সেটা লিখুন। আমরা পাসওয়ার্ড রিসেট করে হোয়াটসঅ্যাপে নতুন পাসওয়ার্ড পাঠিয়ে দেব।",
+        "forgot.email": "আপনার অ্যাকাউন্টের ইমেইল",
+        "forgot.submit": "নতুন পাসওয়ার্ড চাই",
+        "forgot.sent": "অনুরোধ পেয়েছি! শীঘ্রই আপনার ফোন নম্বরে নতুন পাসওয়ার্ড জানিয়ে দেব।",
+        "forgot.wa_text": "হ্যালো! আমি পাসওয়ার্ড ভুলে গেছি। আমার অ্যাকাউন্টের ইমেইল: {email}",
+        "dashboard.hi": "হ্যালো",
+        "dashboard.password_heading": "পাসওয়ার্ড পরিবর্তন",
+        "dashboard.current_password": "বর্তমান পাসওয়ার্ড",
+        "dashboard.new_password": "নতুন পাসওয়ার্ড (কমপক্ষে ৬ অক্ষর)",
+        "dashboard.password_submit": "পাসওয়ার্ড পরিবর্তন করুন",
+        "dashboard.password_changed": "পাসওয়ার্ড পরিবর্তন হয়েছে।",
+        "dashboard.password_wrong": "বর্তমান পাসওয়ার্ড ভুল।",
+        "dashboard.password_short": "নতুন পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে।",
+        "dashboard.password_failed": "এই মুহূর্তে পাসওয়ার্ড পরিবর্তন করা যায়নি। একটু পর আবার চেষ্টা করুন।",
+        "order.title": "অর্ডার",
+        "order.paid_title": "পেমেন্ট পেয়েছি — ধন্যবাদ!",
+        "order.service": "সার্ভিস",
+        "order.amount": "পরিমাণ",
+        "order.payment": "পেমেন্ট",
+        "order.status": "অবস্থা",
+        "order.gateway_error_title": "এই মুহূর্তে এই অর্ডারের অনলাইন পেমেন্ট চালু নেই।",
+        "order.gateway_error_body": "আপনার অর্ডার সেভ হয়েছে — হোয়াটসঅ্যাপে মেসেজ দিন, আমরা ব্যবস্থা করে দেব।",
+        "order.gateway_error_button": "হোয়াটসঅ্যাপে মেসেজ দিন",
+        "order.gateway_error_wa_text": "হ্যালো! আমি {order_number} অর্ডারের পেমেন্ট করতে চেয়েছিলাম কিন্তু পেমেন্ট পেজ কাজ করেনি।",
+        "payment.unpaid": "বাকি",
+        "payment.paid": "পরিশোধিত",
+        "payment.failed": "ব্যর্থ",
+        "payment.refunded": "ফেরত দেওয়া হয়েছে",
+        "status.pending": "অপেক্ষমাণ",
+        "status.in_progress": "কাজ চলছে",
+        "status.completed": "সম্পন্ন",
+        "status.cancelled": "বাতিল",
+        "assistant.label": "সহকারী",
+        "assistant.title": "যেকোনো প্রশ্ন করুন",
+        "assistant.subtitle": "অপেক্ষা ছাড়াই দ্রুত উত্তর",
+        "assistant.empty": "এখনো কোনো প্রশ্ন নেই।",
+        "assistant.back": "ফিরে যান",
+        "assistant.close": "বন্ধ করুন",
+        "error.404_title": "পেজটি পাওয়া যায়নি",
+        "error.404_body": "আপনি যে পেজটি খুঁজছেন সেটি নেই বা সরিয়ে ফেলা হয়েছে।",
+        "error.403_title": "শুধু অ্যাডমিনদের জন্য",
+        "error.403_body": "এই পেজ দেখার অনুমতি আপনার নেই।",
+        "error.500_title": "কিছু একটা সমস্যা হয়েছে",
+        "error.500_body": "সমস্যাটা আমাদের দিকে, আপনার না। একটু পর আবার চেষ্টা করুন।",
     },
 }
 
@@ -165,11 +265,23 @@ def get_locale(request: Request) -> str:
     return lang if lang in SUPPORTED_LANGS else DEFAULT_LANG
 
 
+def localized(row: dict | None, field: str, locale: str) -> str:
+    """Admin-written content (services, FAQs, blog, stats) has an optional
+    Bangla copy in a `<field>_bn` column. Show it on the Bangla site when
+    it's filled in; otherwise fall back to the main (English) text."""
+    if not row:
+        return ""
+    if locale == "bn" and row.get(f"{field}_bn"):
+        return row[f"{field}_bn"]
+    return row.get(field) or ""
+
+
 def make_translator(locale: str):
     table = TRANSLATIONS.get(locale, TRANSLATIONS[DEFAULT_LANG])
     fallback = TRANSLATIONS[DEFAULT_LANG]
 
-    def t(key: str) -> str:
-        return table.get(key) or fallback.get(key) or key
+    def t(key: str, **values) -> str:
+        text = table.get(key) or fallback.get(key) or key
+        return text.format(**values) if values else text
 
     return t

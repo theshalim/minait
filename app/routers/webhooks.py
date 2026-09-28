@@ -5,21 +5,13 @@ from fastapi.responses import JSONResponse, RedirectResponse
 
 from app.notify import notify_payment_received
 from app.payments import construct_stripe_webhook_event, validate_sslcommerz_payment
-from app.supabase_client import supabase_admin
+from app.supabase_client import fetch_one, supabase_admin
 
 router = APIRouter(prefix="/webhooks", tags=["webhooks"])
 
 
 def _mark_paid(order_number: str, payment_ref: str) -> dict | None:
-    existing = (
-        supabase_admin()
-        .table("orders")
-        .select("*")
-        .eq("order_number", order_number)
-        .maybe_single()
-        .execute()
-        .data
-    )
+    existing = fetch_one(supabase_admin().table("orders").select("*").eq("order_number", order_number))
     if not existing or existing["payment_status"] == "paid":
         return existing
     updated = (

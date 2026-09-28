@@ -1,41 +1,41 @@
 {% extends "base.html" %}
-{% block title %}Order {{ order.order_number }}{% endblock %}
+{% block title %}{{ t('order.title') }} {{ order.order_number }}{% endblock %}
 {% block content %}
 <div class="max-w-lg mx-auto px-5 py-16 text-center">
   {% if just_paid and order.payment_status == "paid" %}
     <div class="text-5xl mb-4">✅</div>
-    <h1 class="text-2xl font-extrabold mb-2">Payment received — thank you!</h1>
+    <h1 class="text-2xl font-extrabold mb-2">{{ t('order.paid_title') }}</h1>
   {% else %}
     <div class="text-5xl mb-4">📦</div>
-    <h1 class="text-2xl font-extrabold mb-2">Order {{ order.order_number }}</h1>
+    <h1 class="text-2xl font-extrabold mb-2">{{ t('order.title') }} {{ order.order_number }}</h1>
   {% endif %}
 
   {% if gateway_error %}
   <div class="mt-6 text-left bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900 rounded-2xl p-4">
-    <p class="text-sm text-amber-800 dark:text-amber-300 font-medium">Online payment isn't available for this order right now.</p>
-    <p class="text-sm text-amber-700 dark:text-amber-400 mt-1">Your order is saved — message us on WhatsApp and we'll get it sorted.</p>
+    <p class="text-sm text-amber-800 dark:text-amber-300 font-medium">{{ t('order.gateway_error_title') }}</p>
+    <p class="text-sm text-amber-700 dark:text-amber-400 mt-1">{{ t('order.gateway_error_body') }}</p>
     {% if whatsapp_number %}
-    <a href="https://wa.me/{{ whatsapp_number }}?text={{ ('Hi! I just tried to pay for order ' ~ order.order_number ~ ' but the payment page did not work.') | urlencode }}"
+    <a href="https://wa.me/{{ whatsapp_number }}?text={{ t('order.gateway_error_wa_text', order_number=order.order_number) | urlencode }}"
        target="_blank" rel="noopener"
        class="inline-block mt-3 bg-amber-600 text-white text-sm font-semibold px-4 py-2 rounded-lg hover:bg-amber-700 transition">
-      Message us on WhatsApp
+      {{ t('order.gateway_error_button') }}
     </a>
     {% endif %}
   </div>
   {% endif %}
 
   <div class="mt-6 text-left border border-slate-100 dark:border-slate-800 rounded-2xl p-6 space-y-3">
-    <div class="flex justify-between"><span class="text-slate-500 dark:text-slate-400">Service</span><span class="font-semibold">{{ order.service_title }}</span></div>
-    <div class="flex justify-between"><span class="text-slate-500 dark:text-slate-400">Amount</span><span class="font-semibold">{{ "%.0f"|format(order.amount) }} {{ order.currency }}</span></div>
-    <div class="flex justify-between"><span class="text-slate-500 dark:text-slate-400">Payment</span>
+    <div class="flex justify-between"><span class="text-slate-500 dark:text-slate-400">{{ t('order.service') }}</span><span class="font-semibold">{{ order.service_title }}</span></div>
+    <div class="flex justify-between"><span class="text-slate-500 dark:text-slate-400">{{ t('order.amount') }}</span><span class="font-semibold">{{ "%.0f"|format(order.amount) }} {{ order.currency }}</span></div>
+    <div class="flex justify-between"><span class="text-slate-500 dark:text-slate-400">{{ t('order.payment') }}</span>
       <span class="font-semibold {{ 'text-green-600 dark:text-green-400' if order.payment_status == 'paid' else 'text-amber-600 dark:text-amber-400' }}">
-        {{ order.payment_status|capitalize }}
+        {{ t('payment.' ~ order.payment_status) }}
       </span>
     </div>
-    <div class="flex justify-between"><span class="text-slate-500 dark:text-slate-400">Status</span><span class="font-semibold">{{ order.status|replace('_',' ')|capitalize }}</span></div>
+    <div class="flex justify-between"><span class="text-slate-500 dark:text-slate-400">{{ t('order.status') }}</span><span class="font-semibold">{{ t('status.' ~ order.status) }}</span></div>
   </div>
 
-  <p class="mt-6 text-sm text-slate-400">{{ t('order.bookmark') }} {{ order.customer_email }}.</p>
+  <p class="mt-6 text-sm text-slate-400">{{ t('order.bookmark') }}</p>
   <a href="/" class="inline-block mt-6 text-brand font-semibold">{{ t('order.back_home') }}</a>
 </div>
 {% endblock %}

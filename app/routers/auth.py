@@ -1,9 +1,17 @@
-"""Signup / login / logout using Supabase Auth."""
+"""Signup / login / logout / forgot-password using Supabase Auth.
+
+No emails are sent (free-tier mail limits make them unreliable), so
+"forgot password" becomes a request to the admin over WhatsApp/Telegram; the
+admin sets a new password from /admin/users."""
 import logging
+from html import escape
 
 from fastapi import APIRouter, Body, Depends, Form, HTTPException, Request
 from fastapi.responses import JSONResponse, RedirectResponse
 
+from app.config import settings
+from app.i18n import get_locale, make_translator
+from app.notify import notify_admin
 from app.security import (
     CurrentUser,
     clear_session_cookies,
@@ -12,6 +20,7 @@ from app.security import (
 )
 from app.supabase_client import supabase_admin, supabase_auth
 from app.templating import base_ctx, templates
+from app.utils import whatsapp_link
 
 router = APIRouter(tags=["auth"])
 logger = logging.getLogger("minait")
@@ -35,8 +44,9 @@ def signup_submit(
     try:
         result = supabase_auth().auth.sign_up({"email": email, "password": password})
     except Exception as exc:  # noqa: BLE001 - surface a friendly message
+        t = make_translator(get_locale(request))
         return templates.TemplateResponse(
-            "signup.html", base_ctx(request, error=str(exc)), status_code=400
+            "signup.html", base_ctx(request, error=f"{t('signup.failed')} ({exc})"), status_code=400
         )
 
     if result.user:
@@ -61,7 +71,7 @@ def signup_submit(
             base_ctx(
                 request,
                 error=None,
-                message="Account created! Please check your email to confirm, then log in.",
+                message=make_translator(get_locale(request))("signup.check_email"),
             ),
         )
 
@@ -118,7 +128,7 @@ def login_submit(request: Request, email: str = Form(...), password: str = Form(
     except Exception:
         return templates.TemplateResponse(
             "login.html",
-            base_ctx(request, error="Invalid email or password."),
+            base_ctx(request, error=make_translator(get_locale(request))("login.invalid")),
             status_code=401,
         )
 
@@ -132,3 +142,25 @@ def logout():
     response = RedirectResponse("/", status_code=303)
     clear_session_cookies(response)
     return response
+
+
+@router.get("/forgot-password")
+def forgot_password_page(request: Request):
+    return templates.TemplateResponse("forgot_password.html", base_ctx(request, sent=False))
+
+
+@router.post("/forgot-password")
+def forgot_password_submit(request: Request, email: str = Form(...)):
+    email = email.strip()
+    notify_admin(
+        f"🔑 <b>Password reset request</b>\n"
+        f"Email: {escape(email)}\n"
+        f"Set a new password at {settings.SITE_URL}/admin/users"
+    )
+    if settings.WHATSAPP_NUMBER:
+        t = make_translator(get_locale(request))
+        return RedirectResponse(
+            whatsapp_link(settings.WHATSAPP_NUMBER, t("forgot.wa_text", email=email)),
+            status_code=303,
+        )
+    return templates.TemplateResponse("forgot_password.html", base_ctx(request, sent=True))

@@ -6,13 +6,23 @@
 <form method="post" enctype="multipart/form-data"
       action="{{ '/admin/blog/%d/edit'|format(post.id) if post else '/admin/blog/new' }}" class="space-y-5 max-w-2xl">
   <div>
-    <label class="block text-sm font-medium mb-1">Title</label>
+    <label class="block text-sm font-medium mb-1">Title <span class="text-slate-400 font-normal">(English)</span></label>
     <input required name="title" value="{{ post.title if post else '' }}"
            class="w-full border border-slate-200 rounded-lg px-4 py-2.5" />
   </div>
   <div>
-    <label class="block text-sm font-medium mb-1">Excerpt</label>
-    <input name="excerpt" value="{{ post.excerpt if post else '' }}"
+    <label class="block text-sm font-medium mb-1">শিরোনাম <span class="text-slate-400 font-normal">(Bangla, optional)</span></label>
+    <input name="title_bn" value="{{ (post.title_bn or '') if post else '' }}"
+           class="w-full border border-slate-200 rounded-lg px-4 py-2.5" />
+  </div>
+  <div>
+    <label class="block text-sm font-medium mb-1">Excerpt <span class="text-slate-400 font-normal">(English)</span></label>
+    <input name="excerpt" value="{{ (post.excerpt or '') if post else '' }}"
+           class="w-full border border-slate-200 rounded-lg px-4 py-2.5" />
+  </div>
+  <div>
+    <label class="block text-sm font-medium mb-1">সারাংশ <span class="text-slate-400 font-normal">(Bangla, optional)</span></label>
+    <input name="excerpt_bn" value="{{ (post.excerpt_bn or '') if post else '' }}"
            class="w-full border border-slate-200 rounded-lg px-4 py-2.5" />
   </div>
   <div>
@@ -27,9 +37,15 @@
            class="w-full border border-slate-200 rounded-lg px-4 py-2.5 mt-2" />
   </div>
   <div>
-    <label class="block text-sm font-medium mb-1">Content <span class="text-slate-400 font-normal">(Markdown supported)</span></label>
+    <label class="block text-sm font-medium mb-1">Content <span class="text-slate-400 font-normal">(English, Markdown supported)</span></label>
     <textarea required name="content_markdown" rows="14"
               class="w-full border border-slate-200 rounded-lg px-4 py-2.5 font-mono text-sm">{{ post.content_markdown if post else '' }}</textarea>
+  </div>
+  <div>
+    <label class="block text-sm font-medium mb-1">লেখা <span class="text-slate-400 font-normal">(Bangla, optional, Markdown supported)</span></label>
+    <textarea name="content_markdown_bn" rows="14"
+              class="w-full border border-slate-200 rounded-lg px-4 py-2.5 font-mono text-sm">{{ (post.content_markdown_bn or '') if post else '' }}</textarea>
+    <p class="text-xs text-slate-400 mt-1">Shown when a visitor switches the site to বাংলা. Leave empty to show the English text there too.</p>
   </div>
   <label class="flex items-center gap-2 text-sm font-medium">
     <input type="checkbox" name="is_published" value="true" class="accent-brand" {{ "checked" if post and post.is_published else "" }} />

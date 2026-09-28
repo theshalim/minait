@@ -44,22 +44,22 @@
 
   <!-- Floating Assistant (FAQ) widget — hidden until /api/faqs confirms there's
        something to show. See main.js for the fetch/toggle logic. -->
-  <button id="assistant-fab" type="button" aria-label="Assistant" hidden
+  <button id="assistant-fab" type="button" aria-label="{{ t('assistant.label') }}" hidden
           class="fixed bottom-6 right-6 z-50 w-16 h-16 rounded-full bg-gradient-to-br from-brand to-brand-dark text-white
                  shadow-[0_10px_30px_-6px_rgba(20,184,166,0.55)] hover:shadow-[0_14px_36px_-6px_rgba(20,184,166,0.65)]
                  hover:scale-105 active:scale-95 flex items-center justify-center transition">
     <span class="text-2xl font-extrabold leading-none">?</span>
   </button>
 
-  <div id="assistant-panel" hidden
+  <div id="assistant-panel" hidden data-empty="{{ t('assistant.empty') }}" data-back="{{ t('assistant.back') }}"
        class="fixed bottom-[5.75rem] right-4 sm:right-6 z-50 w-[calc(100vw-2rem)] max-w-sm
               bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-100 dark:border-slate-800 overflow-hidden">
     <div class="flex items-center justify-between px-5 py-4 bg-gradient-to-br from-brand to-brand-dark text-white">
       <div>
-        <div class="font-bold">Ask us anything</div>
-        <div class="text-xs text-white/80">Quick answers, no waiting</div>
+        <div class="font-bold">{{ t('assistant.title') }}</div>
+        <div class="text-xs text-white/80">{{ t('assistant.subtitle') }}</div>
       </div>
-      <button id="assistant-close" type="button" aria-label="Close"
+      <button id="assistant-close" type="button" aria-label="{{ t('assistant.close') }}"
               class="w-8 h-8 rounded-full hover:bg-white/20 flex items-center justify-center transition flex-shrink-0">
         <span class="text-xl leading-none">&times;</span>
       </button>

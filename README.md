@@ -24,13 +24,14 @@ minait/
 │   ├── utils.py             # slugify, order numbers, markdown rendering
 │   ├── routers/
 │   │   ├── pages.py         # home, service detail, blog (public)
-│   │   ├── auth.py          # signup / login / logout
+│   │   ├── auth.py          # signup / login / logout / forgot password
 │   │   ├── orders.py        # checkout, order creation, order status
 │   │   ├── dashboard.py     # client dashboard
-│   │   ├── admin.py         # services/orders/blog CRUD (admin only)
+│   │   ├── admin.py         # services/orders/blog/customers (admin only)
 │   │   └── webhooks.py      # Stripe + SSLCOMMERZ payment confirmations
 │   ├── templates/           # Jinja2 templates (Tailwind via CDN)
 │   └── static/              # css/js served at /static
+├── tests/                  # pytest suite (fake Supabase, no keys needed)
 ├── db/
 │   └── schema.sql           # run once in Supabase/Neon SQL editor
 ├── vercel.json
@@ -96,7 +97,38 @@ id (message the bot once, then hit `https://api.telegram.org/bot<token>/getUpdat
 `TELEGRAM_BOT_TOKEN` / `TELEGRAM_CHAT_ID`. Optionally also set `DISCORD_WEBHOOK_URL`. You'll get
 a push the second an order is placed or paid.
 
-## 8. Notes & next steps
+## 8. No emails: passwords and customer updates go through WhatsApp
+
+The site sends no email (free-tier mail limits make it unreliable), so:
+
+- **Forgot password:** the login page links to `/forgot-password`. The customer types their
+  email, the admin gets a Telegram/Discord alert and the customer is taken to WhatsApp. The
+  admin opens **Admin → Customers**, sets a new password, and presses **Send on WhatsApp**.
+  Logged-in customers can change their own password from their dashboard.
+- **Order updates:** in **Admin → Orders**, the **WhatsApp customer** button opens a chat with
+  the customer, with the order's current status already written in Bangla and English. Checkout
+  asks for the phone (WhatsApp) number for this reason.
+- **WhatsApp / cash payments:** set the order's **Payment** to *Paid* in **Admin → Orders**
+  so it counts in the dashboard revenue.
+
+## 9. Bangla content
+
+Services, blog posts, FAQs and stat counters have optional Bangla fields in the admin panel.
+Visitors on the বাংলা site see the Bangla text when it is filled in, otherwise the English text.
+These columns come from `db/schema.sql`; **re-run it in the Supabase SQL editor after updating**
+(it is safe to re-run and only adds what is missing).
+
+## 10. Tests
+
+The tests run the whole app against an in-memory fake of Supabase, so they need no keys or
+internet:
+
+```bash
+pip install -r requirements.txt -r requirements-dev.txt
+python -m pytest
+```
+
+## 11. Notes & next steps
 
 - Tailwind is loaded via the CDN `<script>` for a zero-build deploy that fits the free-tier
   constraint end to end. For a production performance pass, swap it for a compiled Tailwind

@@ -1,9 +1,14 @@
 {% extends "admin/layout.html" %}
 {% block title %}Orders — Admin{% endblock %}
 {% block admin_content %}
-<h1 class="text-2xl font-extrabold mb-6">Orders</h1>
+<h1 class="text-2xl font-extrabold mb-2">Orders</h1>
+<p class="text-sm text-slate-500 mb-6">
+  Change the work status and the payment status, then press Save. For WhatsApp or cash orders, set Payment to
+  <strong>Paid</strong> once the money arrives, so it counts in the dashboard's revenue.
+  Customers get no email — use <strong>WhatsApp customer</strong> to send them the new status.
+</p>
 
-<div class="flex gap-2 mb-5 text-sm">
+<div class="flex flex-wrap gap-2 mb-5 text-sm">
   {% for value, label in [(None, "All"), ("pending", "Pending"), ("in_progress", "In progress"), ("completed", "Completed"), ("cancelled", "Cancelled")] %}
   <a href="/admin/orders{{ '?status=' ~ value if value else '' }}"
      class="px-3 py-1.5 rounded-full font-medium {{ 'bg-brand text-white' if active_status == value else 'bg-slate-100 text-slate-600 hover:bg-slate-200' }}">
@@ -14,22 +19,42 @@
 
 <div class="border border-slate-100 rounded-2xl divide-y divide-slate-100">
   {% for o in orders %}
-  <div class="p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+  <div id="order-{{ o.id }}" class="p-4 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
     <div>
       <div class="font-semibold">{{ o.service_title }} <span class="text-xs text-slate-400 font-normal">· {{ o.order_number }}</span></div>
       <div class="text-xs text-slate-500 mt-0.5">{{ o.customer_name }} — {{ o.customer_email }}{% if o.customer_phone %} — {{ o.customer_phone }}{% endif %}</div>
       <div class="text-xs text-slate-400 mt-0.5">{{ "%.0f"|format(o.amount) }} {{ o.currency }} · {{ o.payment_method }} ·
         <span class="{{ 'text-green-600' if o.payment_status == 'paid' else 'text-amber-600' }}">{{ o.payment_status }}</span>
+        {% if o.created_at %} · {{ o.created_at[:10] }}{% endif %}
       </div>
+      {% if o.notes %}<div class="text-xs text-slate-500 mt-1 italic">“{{ o.notes }}”</div>{% endif %}
     </div>
-    <form method="post" action="/admin/orders/{{ o.id }}/status" class="flex items-center gap-2">
-      <select name="status" class="border border-slate-200 rounded-lg px-3 py-1.5 text-sm">
-        {% for s in ["pending", "in_progress", "completed", "cancelled"] %}
-        <option value="{{ s }}" {{ "selected" if o.status == s else "" }}>{{ s|replace('_',' ')|capitalize }}</option>
-        {% endfor %}
-      </select>
-      <button class="bg-slate-900 text-white text-sm px-3 py-1.5 rounded-lg font-medium hover:bg-slate-700">Update</button>
-    </form>
+    <div class="flex flex-wrap items-center gap-2">
+      <form method="post" action="/admin/orders/{{ o.id }}/status" class="flex flex-wrap items-center gap-2">
+        <input type="hidden" name="back" value="{{ active_status or '' }}" />
+        <label class="text-xs text-slate-400">Work
+          <select name="status" class="border border-slate-200 rounded-lg px-2 py-1.5 text-sm text-slate-800">
+            {% for s in order_statuses %}
+            <option value="{{ s }}" {{ "selected" if o.status == s else "" }}>{{ s|replace('_',' ')|capitalize }}</option>
+            {% endfor %}
+          </select>
+        </label>
+        <label class="text-xs text-slate-400">Payment
+          <select name="payment_status" class="border border-slate-200 rounded-lg px-2 py-1.5 text-sm text-slate-800">
+            {% for s in payment_statuses %}
+            <option value="{{ s }}" {{ "selected" if o.payment_status == s else "" }}>{{ s|capitalize }}</option>
+            {% endfor %}
+          </select>
+        </label>
+        <button class="bg-slate-900 text-white text-sm px-3 py-1.5 rounded-lg font-medium hover:bg-slate-700">Save</button>
+      </form>
+      {% if o.wa_link %}
+      <a href="{{ o.wa_link }}" target="_blank" rel="noopener"
+         class="bg-green-600 text-white text-sm px-3 py-1.5 rounded-lg font-medium hover:bg-green-700">WhatsApp customer</a>
+      {% else %}
+      <span class="text-xs text-slate-400" title="The customer didn't leave a usable phone number">No phone</span>
+      {% endif %}
+    </div>
   </div>
   {% else %}
   <div class="p-6 text-center text-slate-400 text-sm">No orders here yet.</div>

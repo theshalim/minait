@@ -1,0 +1,50 @@
+{% extends "admin/layout.html" %}
+{% block title %}Customers — Admin{% endblock %}
+{% block admin_content %}
+<h1 class="text-2xl font-extrabold mb-2">Customers</h1>
+<p class="text-sm text-slate-500 mb-6">
+  Everyone who has signed up. The site sends no emails, so when a customer forgets their password
+  (you'll get a Telegram/WhatsApp message), type a new one here, press <strong>Set password</strong>,
+  then send it to them with the WhatsApp button that appears. They can change it later from their dashboard.
+</p>
+
+{% if error %}
+<div class="bg-red-50 text-red-600 text-sm px-4 py-3 rounded-lg mb-5">{{ error }}</div>
+{% endif %}
+{% if message %}
+<div class="bg-green-50 text-green-700 text-sm px-4 py-3 rounded-lg mb-5">{{ message }}</div>
+{% endif %}
+
+<div class="border border-slate-100 rounded-2xl divide-y divide-slate-100">
+  {% for u in users %}
+  <div class="p-4 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+    <div>
+      <div class="font-semibold">
+        {{ u.full_name or "—" }}
+        {% if u.is_admin %}<span class="ml-1 text-xs px-2 py-0.5 rounded-full bg-brand-light text-brand font-medium">Admin</span>{% endif %}
+      </div>
+      <div class="text-xs text-slate-500 mt-0.5">{{ u.email }}{% if u.phone %} — {{ u.phone }}{% endif %}</div>
+      <div class="text-xs text-slate-400 mt-0.5">Joined {{ u.created_at }}</div>
+    </div>
+    <div class="flex flex-wrap items-center gap-2">
+      <form method="post" action="/admin/users/{{ u.id }}/password" class="flex items-center gap-2"
+            onsubmit="return confirm('Set this new password for this customer?');">
+        <input name="new_password" required minlength="6" placeholder="New password"
+               class="w-40 border border-slate-200 rounded-lg px-3 py-1.5 text-sm" />
+        <button class="bg-slate-900 text-white text-sm px-3 py-1.5 rounded-lg font-medium hover:bg-slate-700">Set password</button>
+      </form>
+      {% if reset_user_id == u.id %}
+        {% if reset_wa_link %}
+        <a href="{{ reset_wa_link }}" target="_blank" rel="noopener"
+           class="bg-green-600 text-white text-sm px-3 py-1.5 rounded-lg font-medium hover:bg-green-700">Send on WhatsApp</a>
+        {% else %}
+        <span class="text-xs text-amber-600">No phone saved — tell them the new password yourself.</span>
+        {% endif %}
+      {% endif %}
+    </div>
+  </div>
+  {% else %}
+  <div class="p-6 text-center text-slate-400 text-sm">No one has signed up yet.</div>
+  {% endfor %}
+</div>
+{% endblock %}

@@ -62,7 +62,7 @@
     {% for stat in stats %}
     <div>
       <div class="text-3xl sm:text-4xl font-extrabold text-brand">{{ stat.value }}</div>
-      <div class="text-sm text-slate-500 dark:text-slate-400 mt-1">{{ stat.label }}</div>
+      <div class="text-sm text-slate-500 dark:text-slate-400 mt-1">{{ loc(stat, 'label') }}</div>
     </div>
     {% endfor %}
   </div>
@@ -84,7 +84,7 @@
               hover:-translate-y-1 transition-all duration-300 flex flex-col">
       {% if s.image_url %}
       <div class="aspect-[16/9] overflow-hidden">
-        <img src="{{ s.image_url }}" alt="{{ s.title }}"
+        <img src="{{ s.image_url }}" alt="{{ loc(s, 'title') }}"
              class="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
       </div>
       {% else %}
@@ -96,9 +96,9 @@
       <div class="p-6 flex flex-col flex-1">
         <div class="flex items-center gap-2 mb-2">
           {% if s.image_url and s.icon %}<span class="text-xl">{{ s.icon }}</span>{% endif %}
-          <h3 class="font-bold text-xl group-hover:text-brand transition">{{ s.title }}</h3>
+          <h3 class="font-bold text-xl group-hover:text-brand transition">{{ loc(s, 'title') }}</h3>
         </div>
-        <p class="text-sm text-slate-500 dark:text-slate-400 flex-1 line-clamp-4 leading-relaxed">{{ s.description }}</p>
+        <p class="text-sm text-slate-500 dark:text-slate-400 flex-1 line-clamp-4 leading-relaxed">{{ loc(s, 'description') }}</p>
         <div class="mt-6 flex items-center justify-between pt-4 border-t border-slate-100 dark:border-slate-800">
           <span class="font-extrabold text-lg">{{ "%.0f"|format(s.price) }} {{ s.currency }}</span>
           <span class="inline-flex items-center gap-1 text-brand text-sm font-semibold">
@@ -151,8 +151,8 @@
       <img src="{{ p.cover_image_url }}" alt="" class="w-full h-36 object-cover" />
       {% endif %}
       <div class="p-5">
-        <h3 class="font-bold mb-1">{{ p.title }}</h3>
-        <p class="text-sm text-slate-500 dark:text-slate-400 line-clamp-2">{{ p.excerpt }}</p>
+        <h3 class="font-bold mb-1">{{ loc(p, 'title') }}</h3>
+        <p class="text-sm text-slate-500 dark:text-slate-400 line-clamp-2">{{ loc(p, 'excerpt') }}</p>
       </div>
     </a>
     {% endfor %}

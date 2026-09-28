@@ -10,6 +10,7 @@
   <p class="text-xs text-slate-400 mt-1">
     Just the picture — no text fields, because the text is already designed into the image itself.
     Every image you add becomes one more slide in the homepage's auto-rotating carousel, in the order added.
+    "Hide" takes a slide off the homepage without deleting it; "Show" puts it back.
     Recommended size: <strong>1600×900px</strong> (16:9 landscape), JPG or PNG, under 2MB.
   </p>
 </div>
@@ -24,8 +25,16 @@
 <div class="border border-slate-100 dark:border-slate-800 rounded-2xl divide-y divide-slate-100 dark:divide-slate-800 mb-12">
   {% for s in slides %}
   <div class="flex items-center gap-4 p-4">
-    <img src="{{ s.image_url }}" alt="" class="w-28 h-16 object-cover rounded-lg border border-slate-200 dark:border-slate-700 flex-shrink-0" />
-    <div class="flex-1 text-xs text-slate-400">Slide {{ loop.index }}</div>
+    <img src="{{ s.image_url }}" alt="" class="w-28 h-16 object-cover rounded-lg border border-slate-200 dark:border-slate-700 flex-shrink-0 {{ '' if s.is_active else 'opacity-40 grayscale' }}" />
+    <div class="flex-1 text-xs text-slate-400">
+      Slide {{ loop.index }}
+      <span class="ml-2 px-2 py-0.5 rounded-full font-medium {{ 'bg-green-100 text-green-700' if s.is_active else 'bg-slate-100 text-slate-500' }}">
+        {{ "Showing" if s.is_active else "Hidden" }}
+      </span>
+    </div>
+    <form method="post" action="/admin/home/slides/{{ s.id }}/toggle">
+      <button class="text-slate-500 hover:text-slate-800 text-sm font-medium">{{ "Hide" if s.is_active else "Show" }}</button>
+    </form>
     <form method="post" action="/admin/home/slides/{{ s.id }}/delete" onsubmit="return confirm('Delete this slide?');">
       <button class="text-red-500 hover:text-red-700 text-sm font-medium">Delete</button>
     </form>
@@ -47,7 +56,9 @@
     <input name="value" value="{{ stat.value }}" placeholder="10+"
            class="w-24 border border-slate-200 dark:border-slate-700 dark:bg-slate-900 rounded-lg px-3 py-2 text-sm font-bold text-center" />
     <input name="label" value="{{ stat.label }}" placeholder="Clients served"
-           class="flex-1 border border-slate-200 dark:border-slate-700 dark:bg-slate-900 rounded-lg px-3 py-2 text-sm" />
+           class="flex-1 min-w-0 border border-slate-200 dark:border-slate-700 dark:bg-slate-900 rounded-lg px-3 py-2 text-sm" />
+    <input name="label_bn" value="{{ stat.label_bn or '' }}" placeholder="বাংলা লেবেল (optional)"
+           class="flex-1 min-w-0 border border-slate-200 dark:border-slate-700 dark:bg-slate-900 rounded-lg px-3 py-2 text-sm" />
     <input name="sort_order" type="number" value="{{ stat.sort_order }}" title="Sort order"
            class="w-16 border border-slate-200 dark:border-slate-700 dark:bg-slate-900 rounded-lg px-2 py-2 text-sm text-center" />
     <button class="bg-slate-900 text-white text-sm px-3 py-2 rounded-lg font-medium hover:bg-slate-700">Save</button>
@@ -63,7 +74,9 @@
   <input name="value" placeholder="10+" required
          class="w-24 border border-slate-200 dark:border-slate-700 dark:bg-slate-900 rounded-lg px-3 py-2 text-sm font-bold text-center" />
   <input name="label" placeholder="Clients served" required
-         class="flex-1 border border-slate-200 dark:border-slate-700 dark:bg-slate-900 rounded-lg px-3 py-2 text-sm" />
+         class="flex-1 min-w-0 border border-slate-200 dark:border-slate-700 dark:bg-slate-900 rounded-lg px-3 py-2 text-sm" />
+  <input name="label_bn" placeholder="বাংলা লেবেল (optional)"
+         class="flex-1 min-w-0 border border-slate-200 dark:border-slate-700 dark:bg-slate-900 rounded-lg px-3 py-2 text-sm" />
   <input name="sort_order" type="number" value="0" title="Sort order"
          class="w-16 border border-slate-200 dark:border-slate-700 dark:bg-slate-900 rounded-lg px-2 py-2 text-sm text-center" />
   <button class="bg-brand text-white text-sm px-4 py-2 rounded-lg font-semibold hover:bg-brand-dark">+ Add</button>

@@ -7,13 +7,23 @@
       action="{{ '/admin/services/%d/edit'|format(service.id) if service else '/admin/services/new' }}"
       class="space-y-5 max-w-lg">
   <div>
-    <label class="block text-sm font-medium mb-1">Title</label>
+    <label class="block text-sm font-medium mb-1">Title <span class="text-slate-400 font-normal">(English)</span></label>
     <input required name="title" value="{{ service.title if service else '' }}"
            class="w-full border border-slate-200 rounded-lg px-4 py-2.5" />
   </div>
   <div>
-    <label class="block text-sm font-medium mb-1">Description</label>
+    <label class="block text-sm font-medium mb-1">শিরোনাম <span class="text-slate-400 font-normal">(Bangla, optional)</span></label>
+    <input name="title_bn" value="{{ (service.title_bn or '') if service else '' }}"
+           class="w-full border border-slate-200 rounded-lg px-4 py-2.5" />
+  </div>
+  <div>
+    <label class="block text-sm font-medium mb-1">Description <span class="text-slate-400 font-normal">(English)</span></label>
     <textarea name="description" rows="4" class="w-full border border-slate-200 rounded-lg px-4 py-2.5">{{ service.description if service else '' }}</textarea>
+  </div>
+  <div>
+    <label class="block text-sm font-medium mb-1">বিবরণ <span class="text-slate-400 font-normal">(Bangla, optional)</span></label>
+    <textarea name="description_bn" rows="4" class="w-full border border-slate-200 rounded-lg px-4 py-2.5">{{ (service.description_bn or '') if service else '' }}</textarea>
+    <p class="text-xs text-slate-400 mt-1">Shown when a visitor switches the site to বাংলা. Leave empty to show the English text there too.</p>
   </div>
   <div class="grid grid-cols-2 gap-4">
     <div>
