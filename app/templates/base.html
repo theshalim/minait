@@ -82,7 +82,7 @@
     <span class="text-2xl font-extrabold leading-none">?</span>
   </button>
 
-  <div id="assistant-panel" hidden data-empty="{{ t('assistant.empty') }}" data-back="{{ t('assistant.back') }}"
+  <div id="assistant-panel" hidden data-empty="{{ t('assistant.empty') }}" data-back="{{ t('assistant.back') }}" data-no-match="{{ t('assistant.no_match') }}"
        class="fixed bottom-[5.25rem] sm:bottom-[5.75rem] right-4 sm:right-6 z-50 w-[calc(100vw-2rem)] max-w-sm
               bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-100 dark:border-slate-800 overflow-hidden">
     <div class="flex items-center justify-between px-5 py-4 bg-gradient-to-br from-brand to-brand-dark text-white">
@@ -95,7 +95,11 @@
         <span class="text-xl leading-none">&times;</span>
       </button>
     </div>
-    <div id="assistant-body" class="max-h-96 overflow-y-auto p-2"></div>
+    <div id="assistant-search-wrap" hidden class="px-3 pt-3">
+      <input id="assistant-search" type="search" placeholder="{{ t('assistant.search') }}" aria-label="{{ t('assistant.search') }}"
+             class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3.5 py-2 text-sm outline-none focus:border-brand focus:ring-4 focus:ring-brand/10" />
+    </div>
+    <div id="assistant-body" class="max-h-[60vh] sm:max-h-96 overflow-y-auto p-2"></div>
   </div>
   {% endblock %}
 

@@ -129,22 +129,55 @@
     return div.innerHTML;
   }
 
+  var search = document.getElementById("assistant-search");
+  var searchWrap = document.getElementById("assistant-search-wrap");
+  var noMatchLabel = panel.getAttribute("data-no-match") || "No matching questions.";
+
+  // Questions grouped under their topic (in the order topics first appear),
+  // filtered by the search box.
   function renderList() {
+    if (searchWrap) searchWrap.hidden = faqs.length < 6;
     if (!faqs.length) {
       body.innerHTML = '<p class="p-4 text-sm text-slate-400">' + escapeHtml(emptyLabel) + "</p>";
       return;
     }
-    body.innerHTML = faqs
-      .map(function (faq, i) {
+    var needle = search ? search.value.trim().toLowerCase() : "";
+    var order = [];
+    var groups = {};
+    faqs.forEach(function (faq, i) {
+      if (needle && (faq.question + " " + faq.answer).toLowerCase().indexOf(needle) === -1) return;
+      var topic = faq.topic || "";
+      if (!groups[topic]) {
+        groups[topic] = [];
+        order.push(topic);
+      }
+      groups[topic].push(i);
+    });
+    if (!order.length) {
+      body.innerHTML = '<p class="p-4 text-sm text-slate-400">' + escapeHtml(noMatchLabel) + "</p>";
+      return;
+    }
+    body.innerHTML = order
+      .map(function (topic) {
+        var heading = topic
+          ? '<div class="px-4 pt-4 pb-1 text-[11px] font-semibold text-slate-400">' + escapeHtml(topic) + "</div>"
+          : "";
         return (
-          '<button type="button" data-faq="' +
-          i +
-          '" class="faq-question w-full text-left px-4 py-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center justify-between gap-2 transition">' +
-          '<span class="text-sm font-medium text-slate-700 dark:text-slate-200">' +
-          escapeHtml(faq.question) +
-          '</span>' +
-          '<span class="text-slate-300 dark:text-slate-600 flex-shrink-0">&rsaquo;</span>' +
-          "</button>"
+          heading +
+          groups[topic]
+            .map(function (i) {
+              return (
+                '<button type="button" data-faq="' +
+                i +
+                '" class="faq-question w-full text-left px-4 py-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center justify-between gap-2 transition">' +
+                '<span class="text-sm font-medium text-slate-700 dark:text-slate-200">' +
+                escapeHtml(faqs[i].question) +
+                "</span>" +
+                '<span class="text-slate-300 dark:text-slate-600 flex-shrink-0">&rsaquo;</span>' +
+                "</button>"
+              );
+            })
+            .join("")
         );
       })
       .join("");
@@ -154,8 +187,10 @@
       });
     });
   }
+  if (search) search.addEventListener("input", renderList);
 
   function renderAnswer(faq) {
+    if (searchWrap) searchWrap.hidden = true;
     body.innerHTML =
       '<div class="p-4">' +
       '<button type="button" id="faq-back" class="text-xs font-semibold text-brand mb-3">&lsaquo; ' +
@@ -164,6 +199,7 @@
       '<div class="font-semibold text-sm text-slate-800 dark:text-slate-100 mb-2">' +
       escapeHtml(faq.question) +
       "</div>" +
+      (faq.topic ? '<div class="text-[11px] font-semibold text-slate-400 mb-1">' + escapeHtml(faq.topic) + "</div>" : "") +
       '<div class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">' +
       escapeHtml(faq.answer) +
       "</div>" +

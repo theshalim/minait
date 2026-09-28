@@ -7,11 +7,54 @@
 
 {{ catalog_list(services, "/admin/services", "service") }}
 
+<div id="slides" class="mt-14 scroll-mt-28">
+{{ section_title("Services page banner slides", "Each slide has its own picture, heading and short text, and they fade from one to the next every few seconds. With no slides, the banner shows the default heading and the banner picture below. Picture: landscape, about 1200×900px.") }}
+</div>
+{% if slides is none %}
+<div class="alert-err mb-4">Banner slides need the new database columns — run <strong>db/schema.sql</strong> again in the Supabase SQL editor.</div>
+{% else %}
+<div class="space-y-3 mb-4">
+  {% for sl in slides %}
+  <form id="slide-{{ sl.id }}" method="post" action="/admin/home/slides/{{ sl.id }}/edit" class="panel p-4 sm:p-5 grid gap-4 sm:grid-cols-[160px_1fr] scroll-mt-28">
+    <div class="aspect-[4/3] rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-800">
+      <img src="{{ sl.image_url }}" alt="" class="w-full h-full object-cover {{ '' if sl.is_active else 'opacity-40 grayscale' }}" />
+    </div>
+    <div class="grid gap-2.5 sm:grid-cols-2 content-start">
+      <input name="heading" value="{{ sl.heading or '' }}" placeholder="Heading (English)" aria-label="Heading" class="input font-medium" />
+      <input name="heading_bn" value="{{ sl.heading_bn or '' }}" placeholder="শিরোনাম (বাংলা)" aria-label="Bangla heading" class="input font-medium" />
+      <textarea name="subheading" rows="2" placeholder="Short text (English)" aria-label="Text" class="input">{{ sl.subheading or '' }}</textarea>
+      <textarea name="subheading_bn" rows="2" placeholder="ছোট লেখা (বাংলা)" aria-label="Bangla text" class="input">{{ sl.subheading_bn or '' }}</textarea>
+      <div class="sm:col-span-2 flex flex-wrap items-center justify-between gap-2">
+        <div class="flex items-center gap-2">
+          <input name="sort_order" type="number" value="{{ sl.sort_order }}" title="Order" aria-label="Order" class="input w-20 text-center" />
+          <span class="{{ 'badge-green' if sl.is_active else 'badge-gray' }}">{{ "Showing" if sl.is_active else "Hidden" }}</span>
+        </div>
+        <div class="flex gap-1">
+          <button type="submit" formaction="/admin/home/slides/{{ sl.id }}/delete" formnovalidate onclick="return confirm('Delete this slide?');" class="btn-danger btn-sm">Delete</button>
+          <button type="submit" formaction="/admin/home/slides/{{ sl.id }}/toggle" formnovalidate class="btn-ghost btn-sm">{{ "Hide" if sl.is_active else "Show" }}</button>
+          <button class="btn-dark btn-sm">Save</button>
+        </div>
+      </div>
+    </div>
+  </form>
+  {% endfor %}
+</div>
+<form method="post" action="/admin/home/slides/new" enctype="multipart/form-data" class="panel border-dashed p-4 sm:p-5 grid gap-3 sm:grid-cols-2">
+  <input type="hidden" name="page" value="services" />
+  <div class="sm:col-span-2">{{ image_input("Picture", "image_file", "image_url") }}</div>
+  <input name="heading" placeholder="Heading (English)" aria-label="Heading" class="input font-medium" />
+  <input name="heading_bn" placeholder="শিরোনাম (বাংলা)" aria-label="Bangla heading" class="input font-medium" />
+  <textarea name="subheading" rows="2" placeholder="Short text (English)" aria-label="Text" class="input"></textarea>
+  <textarea name="subheading_bn" rows="2" placeholder="ছোট লেখা (বাংলা)" aria-label="Bangla text" class="input"></textarea>
+  <div class="sm:col-span-2 flex justify-end"><button class="btn-dark">+ Add slide</button></div>
+</form>
+{% endif %}
+
 <div class="mt-14">
 {{ section_title("Page settings", "The Services page banner picture, the homepage slider speed and the moving \"We cover your tech stack\" names.") }}
 </div>
 <form method="post" action="/admin/services/settings" enctype="multipart/form-data" class="panel p-5 sm:p-6 space-y-5 max-w-2xl">
-  {{ image_input("Banner picture (Services page)", "hero_file", "hero_url", contact.services_hero_image or "", "Landscape, about 1200×900px. Leave empty to use the default picture.") }}
+  {{ image_input("Default banner picture (used when there are no slides)", "hero_file", "hero_url", contact.services_hero_image or "", "Landscape, about 1200×900px. Leave empty to use the built-in picture.") }}
   <div>
     <label class="label" for="seconds">Homepage slider: next service every</label>
     <div class="flex items-center gap-2">

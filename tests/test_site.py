@@ -466,3 +466,85 @@ def test_quote_wording_everywhere(client, db):
             assert word in html and gone not in html, (lang, path)
     admin_login(client, db)
     assert ">Requests<" in client.get("/admin/orders").text or "Requests" in client.get("/admin").text
+
+
+# ---------------------------------------------------------------------------
+# Services page banner slides, FAQ topics
+# ---------------------------------------------------------------------------
+def test_services_banner_slides_from_admin(client, db):
+    admin_login(client, db)
+    assert "Services of Mina IT" in client.get("/services").text  # default banner, no slides yet
+    client.post("/admin/home/slides/new", data={"page": "services", "image_url": "https://img/s1.jpg",
+                                                "heading": "Cloud made simple", "heading_bn": "সহজ ক্লাউড",
+                                                "subheading": "We move you to the cloud."})
+    client.post("/admin/home/slides/new", data={"page": "services", "image_url": "https://img/s2.jpg",
+                                                "heading": "Safe networks"})
+    rows = db.tables["hero_slides"]
+    assert [r["page"] for r in rows] == ["services", "services"]
+    html = client.get("/services").text
+    assert "Cloud made simple" in html and "Safe networks" in html and html.count('class="hero-dot') == 2
+    assert "bg-[#00202f]" in html  # logo colour
+    assert "https://img/s1.jpg" not in client.get("/").text  # not on the homepage slider
+    client.cookies.set("lang", "bn")
+    assert "সহজ ক্লাউড" in client.get("/services").text
+
+    sid = rows[1]["id"]
+    r = client.post(f"/admin/home/slides/{sid}/toggle")
+    assert r.headers["location"] == "/admin/services#slides"
+    assert "Safe networks" not in client.get("/services").text
+    client.post(f"/admin/home/slides/{rows[0]['id']}/edit", data={"heading": "Cloud, simply", "sort_order": "3"})
+    assert db.tables["hero_slides"][0]["heading"] == "Cloud, simply"
+    assert client.post(f"/admin/home/slides/{sid}/delete").headers["location"] == "/admin/services#slides"
+
+
+def test_home_slides_stay_on_home(client, db):
+    admin_login(client, db)
+    r = client.post("/admin/home/slides/new", data={"image_url": "https://img/h.jpg"})
+    assert r.headers["location"] == "/admin/home" and db.tables["hero_slides"][0]["page"] == "home"
+    assert "https://img/h.jpg" in client.get("/").text and "https://img/h.jpg" not in client.get("/services").text
+
+
+def test_admin_services_warns_before_schema_update(client, db, monkeypatch):
+    admin_login(client, db)
+    import app.slides as slides
+
+    original = slides.supabase_admin
+
+    class Broken:
+        def table(self, name):
+            q = original().table(name)
+            real_eq = q.eq
+
+            def eq(col, val):
+                if col == "page":
+                    raise Exception('column hero_slides.page does not exist')
+                return real_eq(col, val)
+
+            q.eq = eq
+            return q
+
+    monkeypatch.setattr(slides, "supabase_admin", lambda: Broken())
+    assert "Banner slides need the new database columns" in client.get("/admin/services").text
+    assert client.get("/services").status_code == 200 and client.get("/").status_code == 200
+
+
+def test_faq_topics_in_admin_and_widget(client, db):
+    admin_login(client, db)
+    client.post("/admin/faqs/new", data={"question": "Cost?", "answer": "Depends.", "category": "Price",
+                                         "category_bn": "দাম"})
+    faq = db.tables["faqs"][0]
+    assert faq["category"] == "Price" and faq["category_bn"] == "দাম"
+    assert client.get("/api/faqs").json()[0]["topic"] == "Price"
+    html = client.get("/").text
+    assert 'id="assistant-search"' in html and "data-no-match=" in html
+
+
+def test_sample_faq_file_is_valid_sql_with_both_languages():
+    import pglast
+
+    stmt = pglast.parse_sql(open("db/sample_faqs.sql", encoding="utf8").read())[0].stmt
+    rows = stmt.selectStmt.fromClause[0].subquery.valuesLists
+    assert len(rows) >= 30
+    for row in rows:
+        values = [getattr(getattr(c, "val", None), "sval", None) for c in row[:6]]
+        assert all(values), values[:3]  # topic, question and answer in English and Bangla

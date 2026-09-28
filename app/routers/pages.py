@@ -8,6 +8,7 @@ from app.i18n import LANG_COOKIE, SUPPORTED_LANGS, get_locale, localized, make_t
 from app.supabase_client import fetch_one, supabase_admin
 from app.templating import base_ctx, templates
 from app.site_settings import get_site_settings
+from app.slides import page_slides
 from app.utils import render_markdown
 
 router = APIRouter(tags=["pages"])
@@ -66,7 +67,7 @@ def home(request: Request):
             request,
             services=_active("services"),
             posts=posts,
-            slides=_active("hero_slides"),
+            slides=page_slides("home", active_only=True),
             stats=stats,
             products=_optional(lambda: _active("products")),
             features=_optional(
@@ -117,6 +118,7 @@ def services_page(request: Request):
             groups=group_services(services),
             has_services=bool(services),
             hero_image=contact.get("services_hero_image") or DEFAULT_SERVICES_HERO,
+            banner_slides=page_slides("services", active_only=True) or [],
             tech=tech_stack(contact),
         ),
     )
@@ -152,7 +154,11 @@ def api_faqs(request: Request):
     lang = get_locale(request)
     faqs = supabase_admin().table("faqs").select("*").order("sort_order").execute().data
     return [
-        {"question": localized(f, "question", lang), "answer": localized(f, "answer", lang)}
+        {
+            "topic": localized(f, "category", lang),
+            "question": localized(f, "question", lang),
+            "answer": localized(f, "answer", lang),
+        }
         for f in faqs
     ]
 

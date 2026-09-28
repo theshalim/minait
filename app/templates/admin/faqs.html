@@ -2,11 +2,15 @@
 {% from "admin/_ui.html" import page_header, empty %}
 {% block title %}FAQs — Admin{% endblock %}
 {% block admin_content %}
-{{ page_header("FAQs", "Powers the floating \"?\" assistant on every page: visitors pick a question and see your answer. Bangla boxes are optional. If the list is empty, the button stays hidden.") }}
+{{ page_header("FAQs", "Powers the floating \"?\" assistant on every page: visitors pick a question and see your answer. Bangla boxes are optional. Questions with the same Topic are grouped together, and a search box appears once there are 6 or more. If the list is empty, the button stays hidden.") }}
 
 <div class="space-y-3 mb-4">
   {% for faq in faqs %}
   <form method="post" action="/admin/faqs/{{ faq.id }}/edit" class="panel p-4 sm:p-5 space-y-2.5">
+    <div class="grid gap-2.5 sm:grid-cols-2">
+      <input name="category" value="{{ faq.category or '' }}" list="faq-topics" placeholder="Topic (e.g. Price & payment)" aria-label="Topic" class="input text-[13px]" />
+      <input name="category_bn" value="{{ faq.category_bn or '' }}" placeholder="বিষয় (বাংলা, optional)" aria-label="Bangla topic" class="input text-[13px]" />
+    </div>
     <div class="flex items-center gap-2">
       <input name="sort_order" type="number" value="{{ faq.sort_order }}" title="Order" aria-label="Order" class="input w-16 text-center flex-shrink-0" />
       <input name="question" value="{{ faq.question }}" placeholder="Question (English)" class="input font-medium" />
@@ -25,6 +29,10 @@
 </div>
 
 <form method="post" action="/admin/faqs/new" class="panel border-dashed p-4 sm:p-5 space-y-2.5">
+    <div class="grid gap-2.5 sm:grid-cols-2">
+      <input name="category" value="" list="faq-topics" placeholder="Topic (e.g. Price & payment)" aria-label="Topic" class="input text-[13px]" />
+      <input name="category_bn" value="" placeholder="বিষয় (বাংলা, optional)" aria-label="Bangla topic" class="input text-[13px]" />
+    </div>
   <div class="flex items-center gap-2">
     <input name="sort_order" type="number" value="0" title="Order" aria-label="Order" class="input w-16 text-center flex-shrink-0" />
     <input name="question" required placeholder="e.g. Do you offer 24/7 support?" class="input font-medium" />
@@ -34,4 +42,7 @@
   <textarea name="answer_bn" rows="2" placeholder="উত্তর (বাংলা, optional)" class="input"></textarea>
   <div class="flex justify-end"><button class="btn-dark btn-sm">+ Add FAQ</button></div>
 </form>
+<datalist id="faq-topics">
+  {% for topic in faqs | map(attribute='category') | select | unique %}<option value="{{ topic }}">{% endfor %}
+</datalist>
 {% endblock %}

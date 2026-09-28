@@ -3,16 +3,45 @@
 {% block content %}
 
 {# ================================ Banner ================================ #}
-<section class="bg-[#0b1533] text-white">
-  <div class="container-x py-12 sm:py-16 grid gap-10 md:grid-cols-2 items-center">
+{# Colours come from the logo: deep navy-teal #00202F with a soft glow of
+   the logo's teal #00C8A0. With slides from Admin -> Services it becomes a
+   fading slider (same script as the homepage hero); without, one banner. #}
+{% macro banner_slide(image, heading, text, first) %}
+<div class="hero-slide col-start-1 row-start-1 transition-opacity duration-700 {{ 'opacity-100 z-10' if first else 'opacity-0 z-0 pointer-events-none' }}">
+  <div class="grid gap-10 md:grid-cols-2 items-center">
     <div>
-      <span class="inline-block rounded-full bg-white/10 px-3 py-1 text-xs font-medium text-white/80">{{ t('services.badge') }}</span>
-      <h1 class="mt-5 text-3xl sm:text-5xl font-medium tracking-tight leading-tight">{{ t('services.hero_title') }}</h1>
-      <p class="mt-5 text-[15px] sm:text-base text-white/70 leading-relaxed max-w-lg">{{ t('services.intro') }}</p>
+      <span class="inline-flex items-center gap-2 rounded-full bg-[#00c8a0]/10 ring-1 ring-[#00c8a0]/25 px-3 py-1 text-xs font-medium text-[#5eead4]">
+        <span class="w-1.5 h-1.5 rounded-full bg-[#00c8a0]"></span>{{ t('services.badge') }}
+      </span>
+      <h1 class="mt-5 text-3xl sm:text-5xl font-medium tracking-tight leading-tight">{{ heading }}</h1>
+      {% if text %}<p class="mt-5 text-[15px] sm:text-base text-slate-300/80 leading-relaxed max-w-lg">{{ text }}</p>{% endif %}
     </div>
-    <div class="aspect-[4/3] rounded-3xl overflow-hidden bg-white/5">
-      <img src="{{ hero_image }}" alt="" class="w-full h-full object-cover" />
+    <div class="aspect-[4/3] rounded-3xl overflow-hidden bg-white/5 ring-1 ring-white/10 shadow-[0_30px_80px_-30px_rgba(0,200,160,0.35)]">
+      <img src="{{ image }}" alt="" class="w-full h-full object-cover" />
     </div>
+  </div>
+</div>
+{% endmacro %}
+<section class="relative overflow-hidden text-white bg-[#00202f]">
+  <div class="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_80%_at_85%_20%,rgba(0,200,160,0.22),transparent_60%),radial-gradient(50%_60%_at_0%_100%,rgba(0,200,160,0.10),transparent_60%)]"></div>
+  <div class="relative container-x py-12 sm:py-16">
+    {% if banner_slides %}
+    <div id="hero-slider" class="grid">
+      {% for sl in banner_slides %}
+      {{ banner_slide(sl.image_url, loc(sl, 'heading') or t('services.hero_title'), loc(sl, 'subheading'), loop.first) }}
+      {% endfor %}
+    </div>
+    {% if banner_slides|length > 1 %}
+    <div class="mt-8 flex gap-2">
+      {% for sl in banner_slides %}
+      <button type="button" class="hero-dot h-2 rounded-full transition-all {{ 'bg-white w-6' if loop.first else 'bg-white/50 w-2' }}"
+              data-goto="{{ loop.index0 }}" aria-label="Slide {{ loop.index }}"></button>
+      {% endfor %}
+    </div>
+    {% endif %}
+    {% else %}
+    <div class="grid">{{ banner_slide(hero_image, t('services.hero_title'), t('services.intro'), true) }}</div>
+    {% endif %}
   </div>
 </section>
 

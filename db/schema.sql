@@ -227,6 +227,17 @@ alter table faqs       add column if not exists question_bn         text;
 alter table faqs       add column if not exists answer_bn           text;
 alter table site_stats add column if not exists label_bn            text;
 
+-- Banner slides: hero_slides also feeds the Services page banner
+-- (page = 'services'), where each slide has its own heading and text.
+alter table hero_slides add column if not exists page          text not null default 'home';
+alter table hero_slides add column if not exists heading_bn    text;
+alter table hero_slides add column if not exists subheading_bn text;
+alter table hero_slides alter column heading drop not null;
+
+-- FAQ topics, so the "?" assistant can group its questions.
+alter table faqs add column if not exists category    text not null default '';
+alter table faqs add column if not exists category_bn text;
+
 -- Services are grouped by category on the Services page; this is the
 -- group name on the Bangla site.
 alter table services add column if not exists category_bn text;

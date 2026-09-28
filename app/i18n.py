@@ -133,6 +133,8 @@ TRANSLATIONS = {
         "services.more": "More services",
         "tech.heading": "Yes. We cover your tech stack.",
         "tech.sub": "Our team works with almost every modern technology.",
+        "assistant.search": "Search questions…",
+        "assistant.no_match": "No matching questions.",
     },
     "bn": {
         "nav.services": "সার্ভিস",
@@ -252,6 +254,8 @@ TRANSLATIONS = {
         "services.more": "আরও সার্ভিস",
         "tech.heading": "হ্যাঁ, আপনার টেক স্ট্যাক আমরা জানি।",
         "tech.sub": "প্রায় সব আধুনিক প্রযুক্তিতে আমাদের টিম কাজ করে।",
+        "assistant.search": "প্রশ্ন খুঁজুন…",
+        "assistant.no_match": "মিলে যায় এমন কোনো প্রশ্ন নেই।",
     },
 }
 

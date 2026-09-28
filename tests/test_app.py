@@ -46,10 +46,11 @@ def test_set_lang_refuses_offsite_redirect(client):
 
 
 def test_faq_api_answers_in_visitor_language(client, db):
-    db.add("faqs", question="Price?", question_bn="দাম?", answer="Cheap", answer_bn="সস্তা")
-    assert client.get("/api/faqs").json() == [{"question": "Price?", "answer": "Cheap"}]
+    db.add("faqs", question="Price?", question_bn="দাম?", answer="Cheap", answer_bn="সস্তা",
+           category="Money", category_bn="টাকা")
+    assert client.get("/api/faqs").json() == [{"topic": "Money", "question": "Price?", "answer": "Cheap"}]
     client.cookies.set("lang", "bn")
-    assert client.get("/api/faqs").json() == [{"question": "দাম?", "answer": "সস্তা"}]
+    assert client.get("/api/faqs").json() == [{"topic": "টাকা", "question": "দাম?", "answer": "সস্তা"}]
 
 
 def test_assistant_widget_text_is_translated(client):

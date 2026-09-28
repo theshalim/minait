@@ -12,6 +12,7 @@ from app.i18n import make_translator
 from app.icons import ICONS as SERVICE_ICONS
 from app.security import CurrentUser, check_password, require_admin
 from app.site_settings import save_site_settings
+from app.slides import page_slides
 from app.supabase_client import fetch_one, supabase_admin
 from app.templating import base_ctx, templates
 from app.utils import generate_order_number, unique_slug, whatsapp_link, whatsapp_number
@@ -83,7 +84,10 @@ def admin_dashboard(request: Request, user: CurrentUser = Depends(require_admin)
 @router.get("/services")
 def admin_services(request: Request):
     services = supabase_admin().table("services").select("*").order("sort_order").execute().data
-    return templates.TemplateResponse("admin/services.html", base_ctx(request, services=services, service=None))
+    return templates.TemplateResponse(
+        "admin/services.html",
+        base_ctx(request, services=services, service=None, slides=page_slides("services")),
+    )
 
 
 @router.post("/services/settings")
@@ -212,7 +216,7 @@ def admin_service_delete(service_id: int):
 # ---------------------------------------------------------------------------
 @router.get("/home")
 def admin_home(request: Request):
-    slides = supabase_admin().table("hero_slides").select("*").order("sort_order").order("id").execute().data
+    slides = page_slides("home")
     stats = supabase_admin().table("site_stats").select("*").order("sort_order").execute().data
     try:
         features = supabase_admin().table("features").select("*").order("sort_order").execute().data
@@ -269,36 +273,78 @@ def admin_contact_save(contact_email: str = Form(""), contact_phone: str = Form(
     return RedirectResponse("/admin/home#contact", status_code=303)
 
 
+def _slides_url(page: str) -> str:
+    return "/admin/services#slides" if page == "services" else "/admin/home"
+
+
 @router.post("/home/slides/new")
-async def admin_slide_create(image_url: str = Form(""), image_file: UploadFile = File(None)):
+async def admin_slide_create(
+    image_url: str = Form(""),
+    image_file: UploadFile = File(None),
+    page: str = Form("home"),
+    heading: str = Form(""),
+    heading_bn: str = Form(""),
+    subheading: str = Form(""),
+    subheading_bn: str = Form(""),
+):
+    """Adds a banner slide. Homepage slides are just a picture; Services page
+    slides also carry a heading and text (English + Bangla)."""
+    page = "services" if page == "services" else "home"
     uploaded_url = await _upload_image(image_file)
     final_image = uploaded_url or image_url
     if not final_image:
         raise HTTPException(status_code=400, detail="Choose an image to upload — or paste an image URL.")
-    next_order = (
-        supabase_admin().table("hero_slides").select("id", count="exact").execute().count or 0
-    )
-    supabase_admin().table("hero_slides").insert(
-        {"image_url": final_image, "heading": "", "sort_order": next_order}
-    ).execute()
-    return RedirectResponse("/admin/home", status_code=303)
+    existing = page_slides(page) or []
+    row = {"image_url": final_image, "heading": heading.strip(), "sort_order": len(existing)}
+    if page == "services":
+        row.update(page=page, heading_bn=heading_bn.strip(), subheading=subheading.strip(),
+                   subheading_bn=subheading_bn.strip())
+    else:
+        row["page"] = "home"
+    try:
+        supabase_admin().table("hero_slides").insert(row).execute()
+    except Exception:
+        if page != "home":
+            raise  # needs the new columns from db/schema.sql
+        # Before db/schema.sql adds `page`, homepage slides still work.
+        supabase_admin().table("hero_slides").insert(
+            {"image_url": final_image, "heading": "", "sort_order": len(existing)}
+        ).execute()
+    return RedirectResponse(_slides_url(page), status_code=303)
+
+
+@router.post("/home/slides/{slide_id}/edit")
+def admin_slide_update(
+    slide_id: int,
+    heading: str = Form(""),
+    heading_bn: str = Form(""),
+    subheading: str = Form(""),
+    subheading_bn: str = Form(""),
+    sort_order: int = Form(0),
+):
+    supabase_admin().table("hero_slides").update(
+        {"heading": heading.strip(), "heading_bn": heading_bn.strip(), "subheading": subheading.strip(),
+         "subheading_bn": subheading_bn.strip(), "sort_order": sort_order}
+    ).eq("id", slide_id).execute()
+    return RedirectResponse(f"/admin/services#slide-{slide_id}", status_code=303)
 
 
 @router.post("/home/slides/{slide_id}/toggle")
 def admin_slide_toggle(slide_id: int):
-    slide = fetch_one(supabase_admin().table("hero_slides").select("is_active").eq("id", slide_id))
+    slide = fetch_one(supabase_admin().table("hero_slides").select("*").eq("id", slide_id))
     if not slide:
         raise HTTPException(status_code=404, detail="Slide not found")
     supabase_admin().table("hero_slides").update({"is_active": not slide["is_active"]}).eq(
         "id", slide_id
     ).execute()
-    return RedirectResponse("/admin/home", status_code=303)
+    return RedirectResponse(_slides_url(slide.get("page") or "home"), status_code=303)
 
 
 @router.post("/home/slides/{slide_id}/delete")
 def admin_slide_delete(slide_id: int):
+    slide = fetch_one(supabase_admin().table("hero_slides").select("*").eq("id", slide_id)) or {}
     supabase_admin().table("hero_slides").delete().eq("id", slide_id).execute()
-    return RedirectResponse("/admin/home", status_code=303)
+    return RedirectResponse(_slides_url(slide.get("page") or "home"), status_code=303)
 
 
 @router.post("/home/stats/new")
@@ -346,6 +392,8 @@ def admin_faq_create(
     question_bn: str = Form(""),
     answer: str = Form(...),
     answer_bn: str = Form(""),
+    category: str = Form(""),
+    category_bn: str = Form(""),
     sort_order: int = Form(0),
 ):
     supabase_admin().table("faqs").insert(
@@ -354,6 +402,8 @@ def admin_faq_create(
             "question_bn": question_bn,
             "answer": answer,
             "answer_bn": answer_bn,
+            "category": category.strip(),
+            "category_bn": category_bn.strip(),
             "sort_order": sort_order,
         }
     ).execute()
@@ -367,6 +417,8 @@ def admin_faq_update(
     question_bn: str = Form(""),
     answer: str = Form(...),
     answer_bn: str = Form(""),
+    category: str = Form(""),
+    category_bn: str = Form(""),
     sort_order: int = Form(0),
 ):
     supabase_admin().table("faqs").update(
@@ -375,6 +427,8 @@ def admin_faq_update(
             "question_bn": question_bn,
             "answer": answer,
             "answer_bn": answer_bn,
+            "category": category.strip(),
+            "category_bn": category_bn.strip(),
             "sort_order": sort_order,
         }
     ).eq("id", faq_id).execute()
