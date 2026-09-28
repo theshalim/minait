@@ -33,12 +33,6 @@
   {# The glass capsule of pill buttons (original design, kept on request). #}
   <div class="inline-flex flex-wrap sm:flex-nowrap items-center justify-center gap-2 sm:gap-3 p-2.5 sm:p-3 rounded-[2rem] sm:rounded-full bg-gradient-to-b from-white to-slate-50 dark:from-slate-900 dark:to-slate-950 backdrop-blur-xl border border-white dark:border-slate-800 shadow-[0_20px_40px_-12px_rgba(15,23,42,0.18)]">
     {% if whatsapp_number %}
-    <a href="https://wa.me/{{ whatsapp_number }}" target="_blank" rel="noopener"
-       class="px-5 sm:px-6 py-3.5 sm:py-4 rounded-full font-semibold text-sm sm:text-base text-slate-600 dark:text-slate-300
-              bg-white dark:bg-slate-800 shadow-[0_2px_6px_rgba(15,23,42,0.08)] hover:shadow-[0_4px_14px_rgba(15,23,42,0.14)]
-              hover:text-brand transition">
-      {{ t('home.chat_with_us') }}
-    </a>
     <a href="https://wa.me/{{ whatsapp_number }}?text={{ t('home.schedule_text', site=site_name) | urlencode }}"
        target="_blank" rel="noopener"
        class="px-5 sm:px-6 py-3.5 sm:py-4 rounded-full font-semibold text-sm sm:text-base text-slate-600 dark:text-slate-300
