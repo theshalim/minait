@@ -87,6 +87,9 @@ no extra config needed.
 - The Stripe / SSLCOMMERZ code (`app/payments.py`, `app/routers/webhooks.py`) is kept but not
   linked from the site any more; there is no public checkout form.
 
+- The footer's **Talk to us** shows Chat (WhatsApp), the email and the phone number set in
+  **Admin → Home page → Contact info**.
+
 ## 7. Instant order notifications
 
 Create a Telegram bot via [@BotFather](https://t.me/BotFather), get the bot token and your chat

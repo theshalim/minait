@@ -204,6 +204,9 @@ def db(monkeypatch):
     monkeypatch.setattr(supabase_client, "create_client", lambda *a, **k: fake)
     supabase_client.get_admin_client.cache_clear()
     supabase_client.get_auth_client.cache_clear()
+    import app.site_settings as site_settings
+
+    site_settings._cache["at"] = 0.0  # each test starts with fresh settings
     # Outgoing notifications must never hit the network in tests.
     sent = []
     import app.notify as notify

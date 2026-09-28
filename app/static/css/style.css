@@ -39,3 +39,11 @@
   from { transform: translateX(0); }
   to { transform: translateX(-50%); }
 }
+
+/* Bangla: extra (or negative) letter-spacing pulls conjuncts and vowel signs
+   apart, so it's switched off everywhere on the Bangla site. */
+html[lang="bn"] .eyebrow,
+html[lang="bn"] [class*="tracking-"] {
+  letter-spacing: normal !important;
+  text-transform: none !important;
+}

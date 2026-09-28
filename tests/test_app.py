@@ -74,7 +74,7 @@ def test_order_status_page_is_translated(client, db):
            customer_email="r@x.com", amount=1000, currency="BDT", payment_method="whatsapp")
     client.cookies.set("lang", "bn")
     html = client.get("/orders/MINA-1?gateway_error=1").text
-    for bangla in ("পরিমাণ", "অপেক্ষমাণ", "বাকি", "হোয়াটসঅ্যাপে মেসেজ দিন"):
+    for bangla in ("পরিমাণ", "অপেক্ষমাণ", "বাকি", "মেসেজ দিন"):
         assert bangla in html
     for english in ("Amount", "Pending", "Unpaid", "A copy was sent"):
         assert english not in html

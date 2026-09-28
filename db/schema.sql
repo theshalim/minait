@@ -174,6 +174,15 @@ create table if not exists clients (
 );
 
 -- ---------------------------------------------------------------------------
+-- site_settings: small admin-editable values, e.g. the footer's contact
+-- email and phone (Admin -> Home page -> Contact info).
+-- ---------------------------------------------------------------------------
+create table if not exists site_settings (
+  key    text primary key,
+  value  text not null default ''
+);
+
+-- ---------------------------------------------------------------------------
 -- Optional Bangla copies of admin-written content. Shown on the বাংলা site
 -- when filled in; empty means "show the English text there too".
 -- Safe to re-run: existing databases just gain the new columns.
@@ -207,6 +216,11 @@ alter table faqs        enable row level security;
 alter table products     enable row level security;
 alter table testimonials enable row level security;
 alter table clients      enable row level security;
+alter table site_settings enable row level security;
+
+drop policy if exists "site_settings: public read" on site_settings;
+create policy "site_settings: public read" on site_settings
+  for select using (true);
 
 drop policy if exists "products: public read active" on products;
 create policy "products: public read active" on products

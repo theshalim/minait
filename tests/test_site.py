@@ -209,3 +209,38 @@ def test_admin_adds_chat_order_manually(client, db):
     assert client.get(f"/orders/{order['order_number']}").status_code == 200  # tracking link works
     client.post(f"/admin/orders/{order['id']}/delete")
     assert db.tables["orders"] == []
+
+
+# ---------------------------------------------------------------------------
+# Footer contact, less WhatsApp, no "how it works"
+# ---------------------------------------------------------------------------
+def test_admin_sets_footer_contact_email_and_phone(client, db):
+    assert "mailto:" not in client.get("/").text  # hidden until set
+    admin_login(client, db)
+    r = client.post("/admin/home/contact", data={"contact_email": "hello@mina.it", "contact_phone": "01711 111111"})
+    assert r.headers["location"] == "/admin/home#contact"
+    html = client.get("/products").text
+    assert 'href="mailto:hello@mina.it"' in html and 'href="tel:01711111111"' in html
+    assert 'value="hello@mina.it"' in client.get("/admin/home").text
+
+
+def test_contact_settings_missing_table_is_harmless(client, db):
+    db.missing_tables.add("site_settings")
+    assert client.get("/").status_code == 200
+
+
+def test_whatsapp_not_named_on_the_bangla_site(client, db):
+    db.add("services", title="Repair", slug="repair", price=1000)
+    client.cookies.set("lang", "bn")
+    for path in ("/", "/services", "/products", "/services/repair"):
+        html = client.get(path).text
+        assert "হোয়াটসঅ্যাপ" not in html, path
+        assert "যেভাবে কাজ করে" not in html and "how-it-works" not in html, path
+    assert "অর্ডার করুন" in client.get("/services").text
+
+
+def test_bangla_text_has_no_letter_spacing(client):
+    css = client.get("/static/css/style.css").text
+    assert 'html[lang="bn"] .eyebrow' in css and "letter-spacing: normal !important" in css
+    client.cookies.set("lang", "bn")
+    assert '<html lang="bn"' in client.get("/").text

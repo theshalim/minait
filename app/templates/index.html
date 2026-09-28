@@ -23,20 +23,35 @@
 </section>
 {% else %}
 <section class="container-x pt-16 sm:pt-24 text-center">
-  <span class="inline-block eyebrow text-brand-dark dark:text-brand">{{ t('home.badge') }}</span>
+  <span class="inline-block bg-brand-light dark:bg-brand/10 text-brand text-xs font-semibold px-3 py-1 rounded-full">{{ t('home.badge') }}</span>
   <h1 class="mt-5 text-4xl sm:text-6xl font-medium tracking-tight leading-[1.1] max-w-3xl mx-auto">{{ t('home.title') }}</h1>
   <p class="mt-6 text-base sm:text-lg text-slate-500 dark:text-slate-400 max-w-xl mx-auto leading-relaxed">{{ t('home.subtitle') }}</p>
 </section>
 {% endif %}
 
 <section class="container-x pt-10 sm:pt-12 text-center">
-  <div class="flex flex-wrap items-center justify-center gap-2.5">
-    <a href="/services" class="btn-dark px-7 py-3 text-[15px]">{{ t('home.browse_services') }}</a>
+  {# The glass capsule of pill buttons (original design, kept on request). #}
+  <div class="inline-flex flex-wrap sm:flex-nowrap items-center justify-center gap-2 sm:gap-3 p-2.5 sm:p-3 rounded-[2rem] sm:rounded-full bg-gradient-to-b from-white to-slate-50 dark:from-slate-900 dark:to-slate-950 backdrop-blur-xl border border-white dark:border-slate-800 shadow-[0_20px_40px_-12px_rgba(15,23,42,0.18)]">
     {% if whatsapp_number %}
-    <a href="https://wa.me/{{ whatsapp_number }}" target="_blank" rel="noopener" class="btn-outline px-6 py-3 text-[15px]">{{ t('home.chat_with_us') }}</a>
+    <a href="https://wa.me/{{ whatsapp_number }}" target="_blank" rel="noopener"
+       class="px-5 sm:px-6 py-3.5 sm:py-4 rounded-full font-semibold text-sm sm:text-base text-slate-600 dark:text-slate-300
+              bg-white dark:bg-slate-800 shadow-[0_2px_6px_rgba(15,23,42,0.08)] hover:shadow-[0_4px_14px_rgba(15,23,42,0.14)]
+              hover:text-brand transition">
+      {{ t('home.chat_with_us') }}
+    </a>
     <a href="https://wa.me/{{ whatsapp_number }}?text={{ t('home.schedule_text', site=site_name) | urlencode }}"
-       target="_blank" rel="noopener" class="btn-outline px-6 py-3 text-[15px]">{{ t('home.schedule_call') }}</a>
+       target="_blank" rel="noopener"
+       class="px-5 sm:px-6 py-3.5 sm:py-4 rounded-full font-semibold text-sm sm:text-base text-slate-600 dark:text-slate-300
+              bg-white dark:bg-slate-800 shadow-[0_2px_6px_rgba(15,23,42,0.08)] hover:shadow-[0_4px_14px_rgba(15,23,42,0.14)]
+              hover:text-brand transition">
+      {{ t('home.schedule_call') }}
+    </a>
     {% endif %}
+    <a href="/services"
+       class="bg-gradient-to-b from-brand to-brand-dark text-white px-8 sm:px-11 py-4 sm:py-5 rounded-full font-semibold text-base sm:text-lg
+              shadow-[0_8px_20px_-4px_rgba(20,184,166,0.5)] hover:shadow-[0_10px_26px_-4px_rgba(20,184,166,0.6)] hover:-translate-y-0.5 transition">
+      {{ t('home.browse_services') }}
+    </a>
   </div>
 
   {% if stats %}
@@ -86,24 +101,6 @@
   {% else %}
   <p class="text-center text-slate-400 dark:text-slate-500">{{ t('home.no_services') }}</p>
   {% endif %}
-</section>
-
-{# ============================= How it works ============================= #}
-<section id="how-it-works" class="container-x pt-20 sm:pt-28">
-  <h2 class="section-title text-center mb-10 sm:mb-14">{{ t('home.how_it_works_heading') }}</h2>
-  <div class="grid gap-4 sm:gap-5 sm:grid-cols-3">
-    {% for step in [
-      ("01", t('home.step1_title'), t('home.step1_desc')),
-      ("02", t('home.step2_title'), t('home.step2_desc')),
-      ("03", t('home.step3_title'), t('home.step3_desc')),
-    ] %}
-    <div class="rounded-3xl border border-slate-200/80 dark:border-slate-800 p-7">
-      <div class="text-sm font-medium text-brand-dark dark:text-brand">{{ step[0] }}</div>
-      <h3 class="mt-6 text-lg font-medium tracking-tight">{{ step[1] }}</h3>
-      <p class="mt-2 text-sm text-slate-500 dark:text-slate-400 leading-relaxed">{{ step[2] }}</p>
-    </div>
-    {% endfor %}
-  </div>
 </section>
 
 {# ============================ Client saying ============================ #}

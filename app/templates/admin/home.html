@@ -2,7 +2,17 @@
 {% from "admin/_ui.html" import page_header, section_title, empty %}
 {% block title %}Home page — Admin{% endblock %}
 {% block admin_content %}
-{{ page_header("Home page", "The hero slider and the number counters on the homepage. Changes go live immediately. Testimonials and client logos are under Clients.") }}
+{{ page_header("Home page", "Contact info, the hero slider and the number counters. Changes go live immediately. Testimonials and client logos are under Clients.") }}
+
+{# ============================= Contact info ============================= #}
+<div id="contact" class="scroll-mt-28">
+{{ section_title("Contact info", "Shown in the footer of every page under \"Talk to us\", next to the Chat button. Leave a box empty to hide it.") }}
+</div>
+<form method="post" action="/admin/home/contact" class="panel p-4 sm:p-5 grid gap-4 sm:grid-cols-[1fr_1fr_auto] sm:items-end mb-14">
+  <div><label class="label">Email</label><input name="contact_email" type="email" value="{{ contact.contact_email or '' }}" placeholder="hello@minait.com" class="input" /></div>
+  <div><label class="label">Phone number</label><input name="contact_phone" type="tel" value="{{ contact.contact_phone or '' }}" placeholder="01XXXXXXXXX" class="input" /></div>
+  <button class="btn-dark">Save</button>
+</form>
 
 {# ============================= Hero slides ============================= #}
 {{ section_title("Hero slider", "Just the picture — the text is designed into the image. Each image is one slide, rotating every 5 seconds. Size: 1600×900px (16:9), JPG or PNG, under 2MB. \"Hide\" takes a slide off the homepage without deleting it.") }}

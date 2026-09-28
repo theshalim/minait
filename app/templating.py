@@ -6,6 +6,7 @@ from fastapi.templating import Jinja2Templates
 from app.config import settings
 from app.i18n import format_date, get_locale, localized, make_translator
 from app.security import get_optional_user
+from app.site_settings import get_site_settings
 
 TEMPLATES_DIR = Path(__file__).parent / "templates"
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
@@ -22,6 +23,7 @@ def base_ctx(request: Request, **extra) -> dict:
         "site_name": settings.SITE_NAME,
         "whatsapp_number": settings.WHATSAPP_NUMBER,
         "site_url": settings.SITE_URL.rstrip("/"),
+        "contact": get_site_settings(),
         "lang": lang,
         "t": make_translator(lang),
         "loc": lambda row, field: localized(row, field, lang),

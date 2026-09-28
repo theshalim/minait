@@ -10,6 +10,7 @@ from fastapi.responses import RedirectResponse
 from app.config import settings
 from app.i18n import make_translator
 from app.security import CurrentUser, check_password, require_admin
+from app.site_settings import save_site_settings
 from app.supabase_client import fetch_one, supabase_admin
 from app.templating import base_ctx, templates
 from app.utils import generate_order_number, unique_slug, whatsapp_link, whatsapp_number
@@ -196,6 +197,12 @@ def admin_home(request: Request):
     return templates.TemplateResponse(
         "admin/home.html", base_ctx(request, slides=slides, stats=stats)
     )
+
+
+@router.post("/home/contact")
+def admin_contact_save(contact_email: str = Form(""), contact_phone: str = Form("")):
+    save_site_settings({"contact_email": contact_email, "contact_phone": contact_phone})
+    return RedirectResponse("/admin/home#contact", status_code=303)
 
 
 @router.post("/home/slides/new")
