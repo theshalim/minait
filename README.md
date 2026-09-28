@@ -1,8 +1,8 @@
 # Mina IT Service
 
-Ultra-simple, conversion-focused ordering site for IT services — browse services, order in
-under a minute (card, bKash/Nagad, or WhatsApp), track orders from a client dashboard, and run
-the whole business from a no-code admin panel.
+Minimal, conversion-focused site for IT services and products — visitors browse, then order
+by chatting on WhatsApp. One admin runs everything (orders, services, products, homepage,
+client testimonials and logos, blog, FAQs) from a no-code admin panel.
 
 **Stack:** FastAPI (Python serverless) · Jinja2 + Tailwind CSS (CDN, no build step) · Supabase
 (Postgres + Auth) · Stripe & SSLCOMMERZ · Telegram/Discord instant notifications · Vercel Hobby
@@ -23,11 +23,10 @@ minait/
 │   ├── notify.py            # Telegram / Discord instant admin notifications
 │   ├── utils.py             # slugify, order numbers, markdown rendering
 │   ├── routers/
-│   │   ├── pages.py         # home, service detail, blog (public)
-│   │   ├── auth.py          # signup / login / logout / forgot password
-│   │   ├── orders.py        # checkout, order creation, order status
-│   │   ├── dashboard.py     # client dashboard
-│   │   ├── admin.py         # services/orders/blog/customers (admin only)
+│   │   ├── pages.py         # home, services, products, blog (public)
+│   │   ├── auth.py          # admin login / logout
+│   │   ├── orders.py        # order tracking page (+ old checkout links → WhatsApp)
+│   │   ├── admin.py         # the whole admin panel
 │   │   └── webhooks.py      # Stripe + SSLCOMMERZ payment confirmations
 │   ├── templates/           # Jinja2 templates (Tailwind via CDN)
 │   └── static/              # css/js served at /static
@@ -78,17 +77,15 @@ vercel --prod
 `vercel.json` routes every request to `api/index.py`, which is auto-detected as an ASGI app —
 no extra config needed.
 
-## 6. Payments
+## 6. Ordering and payments
 
-- **Stripe** (international cards): create a restricted/secret key, put it in `STRIPE_SECRET_KEY`.
-  Add a webhook endpoint in the Stripe dashboard pointing to
-  `https://yourdomain.com/webhooks/stripe` for the `checkout.session.completed` event, and put
-  its signing secret in `STRIPE_WEBHOOK_SECRET`. Both are pay-per-transaction — no fixed fee.
-- **SSLCOMMERZ** (bKash/Nagad/Rocket/cards, Bangladesh): get sandbox credentials at
-  sslcommerz.com, put them in `SSLCOMMERZ_STORE_ID` / `SSLCOMMERZ_STORE_PASSWORD`, keep
-  `SSLCOMMERZ_SANDBOX=true` until you go live.
-- **WhatsApp**: set `WHATSAPP_NUMBER` (with country code, no `+` or spaces) — customers can
-  skip payment gateways entirely and just message you.
+- Every **Order on WhatsApp** button opens a chat with `WHATSAPP_NUMBER` (country code, no `+`
+  or spaces), with the service/product name and price already typed.
+- The admin logs each chat order in **Admin → Orders → + Add order**, marks it *Paid* when the
+  money arrives (so it counts in revenue), and sends the customer their status + tracking link
+  with the **WhatsApp customer** button.
+- The Stripe / SSLCOMMERZ code (`app/payments.py`, `app/routers/webhooks.py`) is kept but not
+  linked from the site any more; there is no public checkout form.
 
 ## 7. Instant order notifications
 
@@ -97,26 +94,20 @@ id (message the bot once, then hit `https://api.telegram.org/bot<token>/getUpdat
 `TELEGRAM_BOT_TOKEN` / `TELEGRAM_CHAT_ID`. Optionally also set `DISCORD_WEBHOOK_URL`. You'll get
 a push the second an order is placed or paid.
 
-## 8. No emails: passwords and customer updates go through WhatsApp
+## 8. The admin account
 
-The site sends no email (free-tier mail limits make it unreliable), so:
-
-- **Forgot password:** the login page links to `/forgot-password`. The customer types their
-  email, the admin gets a Telegram/Discord alert and the customer is taken to WhatsApp. The
-  admin opens **Admin → Customers**, sets a new password, and presses **Send on WhatsApp**.
-  Logged-in customers can change their own password from their dashboard.
-- **Order updates:** in **Admin → Orders**, the **WhatsApp customer** button opens a chat with
-  the customer, with the order's current status already written in Bangla and English. Checkout
-  asks for the phone (WhatsApp) number for this reason.
-- **WhatsApp / cash payments:** set the order's **Payment** to *Paid* in **Admin → Orders**
-  so it counts in the dashboard revenue.
+- There is **one admin** and no customer accounts. There is no login link on the site: open
+  `https://yourdomain.com/login` (or `/admin`) by typing the URL. `/signup` is closed.
+- Change the password in **Admin → Account**. Forgot it? Supabase dashboard →
+  Authentication → Users → the admin user → *Send password recovery* or set a new one there
+  (the site itself sends no email).
 
 ## 9. Bangla content
 
 Services, blog posts, FAQs and stat counters have optional Bangla fields in the admin panel.
 Visitors on the বাংলা site see the Bangla text when it is filled in, otherwise the English text.
-The blog's "top post" (Admin → Blog → *Set as top post*) and these columns come from
-`db/schema.sql`; **re-run it in the Supabase SQL editor after updating**
+The blog's "top post", the products / testimonials / client-logo tables and these columns
+come from `db/schema.sql`; **re-run it in the Supabase SQL editor after updating**
 (it is safe to re-run and only adds what is missing).
 
 ## 10. Tests
@@ -136,5 +127,5 @@ python -m pytest
   build served from `/static/css`.
 - Admin role is a manual DB flag (`profiles.is_admin`) rather than an invite flow, kept simple
   on purpose — promote trusted accounts via SQL as shown above.
-- Order pages are reachable via their unguessable `order_number` without login, so a guest
-  checkout still gets a working "track my order" link (like a receipt link).
+- Order pages are reachable via their unguessable `order_number` without login, so the
+  tracking link the admin sends on WhatsApp works for the customer (like a receipt link).

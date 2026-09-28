@@ -1,67 +1,49 @@
 {% extends "base.html" %}
+{% from "partials/cards.html" import offer_grid with context %}
 {% block content %}
 
+{# ================================ Hero ================================ #}
 {% if slides %}
-<section class="relative overflow-hidden">
-  <div id="hero-slider" class="relative h-[220px] sm:h-[420px] lg:h-[520px]">
+<section class="container-x pt-4 sm:pt-6">
+  <div id="hero-slider" class="relative overflow-hidden rounded-3xl aspect-[16/9] bg-slate-100 dark:bg-slate-900">
     {% for slide in slides %}
     <div class="hero-slide absolute inset-0 transition-opacity duration-700 {{ 'opacity-100 z-10' if loop.first else 'opacity-0 z-0 pointer-events-none' }}">
       <img src="{{ slide.image_url }}" alt="" class="absolute inset-0 w-full h-full object-cover" />
     </div>
     {% endfor %}
+    {% if slides|length > 1 %}
+    <div class="absolute bottom-3 sm:bottom-5 left-1/2 -translate-x-1/2 z-20 flex gap-2">
+      {% for slide in slides %}
+      <button type="button" class="hero-dot h-2 rounded-full transition-all {{ 'bg-white w-6' if loop.first else 'bg-white/50 w-2' }}"
+              data-goto="{{ loop.index0 }}" aria-label="Go to slide {{ loop.index }}"></button>
+      {% endfor %}
+    </div>
+    {% endif %}
   </div>
-  {% if slides|length > 1 %}
-  <div class="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex gap-2">
-    {% for slide in slides %}
-    <button type="button" class="hero-dot w-2.5 h-2.5 rounded-full transition {{ 'bg-white' if loop.first else 'bg-white/40' }}"
-            data-goto="{{ loop.index0 }}" aria-label="Go to slide {{ loop.index }}"></button>
-    {% endfor %}
-  </div>
-  {% endif %}
 </section>
 {% else %}
-<section class="max-w-6xl mx-auto px-5 pt-20 pb-4 text-center">
-  <span class="inline-block bg-brand-light dark:bg-brand/10 text-brand text-xs font-semibold px-3 py-1 rounded-full mb-5">
-    {{ t('home.badge') }}
-  </span>
-  <h1 class="text-4xl sm:text-5xl font-extrabold tracking-tight leading-tight max-w-3xl mx-auto">
-    {{ t('home.title') }}
-  </h1>
-  <p class="mt-5 text-lg text-slate-500 dark:text-slate-400 max-w-xl mx-auto">
-    {{ t('home.subtitle') }}
-  </p>
+<section class="container-x pt-16 sm:pt-24 text-center">
+  <span class="inline-block eyebrow text-brand-dark dark:text-brand">{{ t('home.badge') }}</span>
+  <h1 class="mt-5 text-4xl sm:text-6xl font-medium tracking-tight leading-[1.1] max-w-3xl mx-auto">{{ t('home.title') }}</h1>
+  <p class="mt-6 text-base sm:text-lg text-slate-500 dark:text-slate-400 max-w-xl mx-auto leading-relaxed">{{ t('home.subtitle') }}</p>
 </section>
 {% endif %}
 
-<section class="max-w-6xl mx-auto px-5 {{ 'pt-10' if slides else 'pt-6' }} pb-16 text-center">
-  <div class="inline-flex items-center gap-3 p-3 rounded-full bg-gradient-to-b from-white to-slate-50 dark:from-slate-900 dark:to-slate-950 backdrop-blur-xl border border-white dark:border-slate-800 shadow-[0_20px_40px_-12px_rgba(15,23,42,0.18)]">
+<section class="container-x pt-10 sm:pt-12 text-center">
+  <div class="flex flex-wrap items-center justify-center gap-2.5">
+    <a href="/services" class="btn-dark px-7 py-3 text-[15px]">{{ t('home.browse_services') }}</a>
     {% if whatsapp_number %}
-    <a href="https://wa.me/{{ whatsapp_number }}" target="_blank" rel="noopener"
-       class="px-5 sm:px-6 py-3.5 sm:py-4 rounded-full font-semibold text-sm sm:text-base text-slate-600 dark:text-slate-300
-              bg-white dark:bg-slate-800 shadow-[0_2px_6px_rgba(15,23,42,0.08)] hover:shadow-[0_4px_14px_rgba(15,23,42,0.14)]
-              hover:text-brand transition">
-      {{ t('home.chat_with_us') }}
-    </a>
-    <a href="https://wa.me/{{ whatsapp_number }}?text={{ ('Hi ' ~ site_name ~ '! I would like to schedule a call to discuss my IT needs.') | urlencode }}"
-       target="_blank" rel="noopener"
-       class="px-5 sm:px-6 py-3.5 sm:py-4 rounded-full font-semibold text-sm sm:text-base text-slate-600 dark:text-slate-300
-              bg-white dark:bg-slate-800 shadow-[0_2px_6px_rgba(15,23,42,0.08)] hover:shadow-[0_4px_14px_rgba(15,23,42,0.14)]
-              hover:text-brand transition">
-      {{ t('home.schedule_call') }}
-    </a>
+    <a href="https://wa.me/{{ whatsapp_number }}" target="_blank" rel="noopener" class="btn-outline px-6 py-3 text-[15px]">{{ t('home.chat_with_us') }}</a>
+    <a href="https://wa.me/{{ whatsapp_number }}?text={{ t('home.schedule_text', site=site_name) | urlencode }}"
+       target="_blank" rel="noopener" class="btn-outline px-6 py-3 text-[15px]">{{ t('home.schedule_call') }}</a>
     {% endif %}
-    <a href="#services"
-       class="bg-gradient-to-b from-brand to-brand-dark text-white px-8 sm:px-11 py-4 sm:py-5 rounded-full font-semibold text-base sm:text-lg
-              shadow-[0_8px_20px_-4px_rgba(20,184,166,0.5)] hover:shadow-[0_10px_26px_-4px_rgba(20,184,166,0.6)] hover:-translate-y-0.5 transition">
-      {{ t('home.browse_services') }}
-    </a>
   </div>
 
   {% if stats %}
-  <div class="mt-14 grid grid-cols-2 sm:grid-cols-{{ [stats|length, 4]|min }} gap-6 max-w-3xl mx-auto">
+  <div class="mt-14 grid grid-cols-2 sm:grid-cols-{{ [stats|length, 4]|min }} gap-y-8 gap-x-6 max-w-3xl mx-auto">
     {% for stat in stats %}
     <div>
-      <div class="text-3xl sm:text-4xl font-extrabold text-brand">{{ stat.value }}</div>
+      <div class="text-3xl sm:text-4xl font-medium tracking-tight text-slate-900 dark:text-white">{{ stat.value }}</div>
       <div class="text-sm text-slate-500 dark:text-slate-400 mt-1">{{ loc(stat, 'label') }}</div>
     </div>
     {% endfor %}
@@ -69,91 +51,104 @@
   {% endif %}
 </section>
 
-<section id="services" class="max-w-6xl mx-auto px-5 py-16">
-  <div class="text-center mb-10">
-    <h2 class="text-2xl sm:text-3xl font-bold">{{ t('home.services_heading') }}</h2>
-    <p class="text-slate-500 dark:text-slate-400 mt-2">{{ t('home.services_sub') }}</p>
+{# ============================ Trusted clients ============================ #}
+{% if clients %}
+{% set reps = ((8 + clients|length - 1) // clients|length) %}
+<section class="pt-20 sm:pt-24">
+  <p class="eyebrow text-center mb-8">{{ t('home.trusted_heading') }}</p>
+  <div class="marquee">
+    <div class="marquee-track" style="--duration: {{ reps * clients|length * 3 }}s">
+      {% for half in range(2) %}{% for rep in range(reps) %}{% for c in clients %}
+      <div class="marquee-item" {% if half %}aria-hidden="true"{% endif %}>
+        {% if c.website_url %}<a href="{{ c.website_url }}" target="_blank" rel="noopener" tabindex="{{ '-1' if half else '0' }}">{% endif %}
+        {% if c.logo_url %}
+        <img src="{{ c.logo_url }}" alt="{{ c.name }}" loading="lazy"
+             class="h-8 sm:h-10 w-auto max-w-[160px] object-contain grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition dark:invert dark:hover:invert-0" />
+        {% else %}
+        <span class="text-lg font-semibold tracking-tight text-slate-400">{{ c.name }}</span>
+        {% endif %}
+        {% if c.website_url %}</a>{% endif %}
+      </div>
+      {% endfor %}{% endfor %}{% endfor %}
+    </div>
   </div>
+</section>
+{% endif %}
 
+{# =============================== Services =============================== #}
+<section id="services" class="container-x pt-20 sm:pt-28">
+  <h2 class="section-title text-center mb-10 sm:mb-14">{{ t('home.services_heading') }}</h2>
   {% if services %}
-  <div class="grid gap-8 sm:grid-cols-2">
-    {% for s in services %}
-    <a href="/services/{{ s.slug }}"
-       class="group bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl overflow-hidden
-              shadow-[0_1px_3px_rgba(15,23,42,0.06)] hover:shadow-[0_20px_40px_-12px_rgba(15,23,42,0.18)]
-              hover:-translate-y-1 transition-all duration-300 flex flex-col">
-      {% if s.image_url %}
-      <div class="aspect-[16/9] overflow-hidden">
-        <img src="{{ s.image_url }}" alt="{{ loc(s, 'title') }}"
-             class="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
-      </div>
-      {% else %}
-      <div class="aspect-[16/9] bg-gradient-to-br from-brand-light to-white dark:from-brand/10 dark:to-slate-900 flex items-center justify-center text-5xl">
-        {{ s.icon or "🛠️" }}
-      </div>
-      {% endif %}
-
-      <div class="p-6 flex flex-col flex-1">
-        <div class="flex items-center gap-2 mb-2">
-          {% if s.image_url and s.icon %}<span class="text-xl">{{ s.icon }}</span>{% endif %}
-          <h3 class="font-bold text-xl group-hover:text-brand transition">{{ loc(s, 'title') }}</h3>
-        </div>
-        <p class="text-sm text-slate-500 dark:text-slate-400 flex-1 line-clamp-4 leading-relaxed">{{ loc(s, 'description') }}</p>
-        <div class="mt-6 flex items-center justify-between pt-4 border-t border-slate-100 dark:border-slate-800">
-          <span class="font-extrabold text-lg">{{ "%.0f"|format(s.price) }} {{ s.currency }}</span>
-          <span class="inline-flex items-center gap-1 text-brand text-sm font-semibold">
-            {{ t('home.order_now') }}
-          </span>
-        </div>
-      </div>
-    </a>
-    {% endfor %}
-  </div>
+  {{ offer_grid(services[:6], "service") }}
+  {% if services|length > 6 %}
+  <div class="text-center mt-6"><a href="/services" class="btn-outline">{{ t('home.view_all_services') }}</a></div>
+  {% endif %}
   {% else %}
   <p class="text-center text-slate-400 dark:text-slate-500">{{ t('home.no_services') }}</p>
   {% endif %}
 </section>
 
-<section id="how-it-works" class="bg-slate-50 dark:bg-slate-900/60 py-16">
-  <div class="max-w-6xl mx-auto px-5">
-    <div class="text-center mb-10">
-      <h2 class="text-2xl sm:text-3xl font-bold">{{ t('home.how_it_works_heading') }}</h2>
-      <p class="text-slate-500 dark:text-slate-400 mt-2">{{ t('home.how_it_works_sub') }}</p>
+{# ============================= How it works ============================= #}
+<section id="how-it-works" class="container-x pt-20 sm:pt-28">
+  <h2 class="section-title text-center mb-10 sm:mb-14">{{ t('home.how_it_works_heading') }}</h2>
+  <div class="grid gap-4 sm:gap-5 sm:grid-cols-3">
+    {% for step in [
+      ("01", t('home.step1_title'), t('home.step1_desc')),
+      ("02", t('home.step2_title'), t('home.step2_desc')),
+      ("03", t('home.step3_title'), t('home.step3_desc')),
+    ] %}
+    <div class="rounded-3xl border border-slate-200/80 dark:border-slate-800 p-7">
+      <div class="text-sm font-medium text-brand-dark dark:text-brand">{{ step[0] }}</div>
+      <h3 class="mt-6 text-lg font-medium tracking-tight">{{ step[1] }}</h3>
+      <p class="mt-2 text-sm text-slate-500 dark:text-slate-400 leading-relaxed">{{ step[2] }}</p>
     </div>
-    <div class="grid gap-6 sm:grid-cols-3">
-      {% for step in [
-        ("1", t('home.step1_title'), t('home.step1_desc')),
-        ("2", t('home.step2_title'), t('home.step2_desc')),
-        ("3", t('home.step3_title'), t('home.step3_desc')),
-      ] %}
-      <div class="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-100 dark:border-slate-800 text-center">
-        <div class="w-10 h-10 rounded-full bg-brand text-white font-bold flex items-center justify-center mx-auto mb-4">
-          {{ step[0] }}
-        </div>
-        <h3 class="font-semibold mb-1">{{ step[1] }}</h3>
-        <p class="text-sm text-slate-500 dark:text-slate-400">{{ step[2] }}</p>
-      </div>
-      {% endfor %}
-    </div>
+    {% endfor %}
   </div>
 </section>
 
+{# ============================ Client saying ============================ #}
+{% if testimonials %}
+<section id="testimonials" class="container-x pt-20 sm:pt-28">
+  <h2 class="section-title text-center mb-10 sm:mb-14">{{ t('home.testimonials_heading') }}</h2>
+  <div class="grid gap-4 sm:gap-5 md:grid-cols-2 lg:grid-cols-3">
+    {% for q in testimonials %}
+    <figure class="rounded-3xl bg-tint dark:bg-tint-dark p-7 sm:p-8 flex flex-col">
+      <svg viewBox="0 0 32 32" fill="currentColor" class="w-8 h-8 text-brand/70" aria-hidden="true"><path d="M13 7C7.5 8.4 4 12.7 4 18.2V25h9v-9H8.4c.4-3.2 2.4-5.4 5.6-6.4L13 7zm15 0c-5.5 1.4-9 5.7-9 11.2V25h9v-9h-4.6c.4-3.2 2.4-5.4 5.6-6.4L28 7z"/></svg>
+      <blockquote class="mt-5 flex-1 text-[15px] leading-relaxed text-slate-700 dark:text-slate-200">{{ loc(q, 'message') }}</blockquote>
+      <figcaption class="mt-7 flex items-center gap-3.5">
+        {% if q.image_url %}
+        <img src="{{ q.image_url }}" alt="{{ q.name }}" loading="lazy" class="w-12 h-12 rounded-full object-cover bg-white ring-1 ring-slate-200 dark:ring-slate-700 flex-shrink-0" />
+        {% else %}
+        <div class="w-12 h-12 rounded-full bg-white dark:bg-slate-900 ring-1 ring-slate-200 dark:ring-slate-700 flex items-center justify-center font-semibold text-slate-500 flex-shrink-0">{{ q.name[:1] }}</div>
+        {% endif %}
+        <div class="min-w-0">
+          <div class="font-medium text-slate-900 dark:text-white">{{ q.name }}</div>
+          {% if loc(q, 'role') %}<div class="text-sm text-slate-500 dark:text-slate-400">{{ loc(q, 'role') }}</div>{% endif %}
+        </div>
+      </figcaption>
+    </figure>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+{# ================================= Blog ================================= #}
 {% if posts %}
-<section class="max-w-6xl mx-auto px-5 py-16">
-  <div class="flex items-end justify-between mb-8">
-    <h2 class="text-2xl sm:text-3xl font-bold">{{ t('home.blog_heading') }}</h2>
-    <a href="/blog" class="text-brand font-semibold text-sm">{{ t('home.view_all') }}</a>
+<section class="container-x pt-20 sm:pt-28">
+  <div class="flex items-end justify-between gap-4 mb-8 sm:mb-10">
+    <h2 class="section-title">{{ t('home.blog_heading') }}</h2>
+    <a href="/blog" class="btn-ghost">{{ t('home.view_all') }}</a>
   </div>
   <div class="grid gap-6 sm:grid-cols-3">
     {% for p in posts %}
-    <a href="/blog/{{ p.slug }}" class="block border border-slate-100 dark:border-slate-800 rounded-2xl overflow-hidden hover:shadow-lg transition">
-      {% if p.cover_image_url %}
-      <img src="{{ p.cover_image_url }}" alt="" class="w-full h-36 object-cover" />
-      {% endif %}
-      <div class="p-5">
-        <h3 class="font-bold mb-1">{{ loc(p, 'title') }}</h3>
-        <p class="text-sm text-slate-500 dark:text-slate-400 line-clamp-2">{{ loc(p, 'excerpt') }}</p>
+    <a href="/blog/{{ p.slug }}" class="group block">
+      <div class="aspect-[16/10] rounded-2xl overflow-hidden bg-tint dark:bg-tint-dark">
+        {% if p.cover_image_url %}
+        <img src="{{ p.cover_image_url }}" alt="" loading="lazy" class="w-full h-full object-cover group-hover:scale-[1.03] transition duration-500" />
+        {% endif %}
       </div>
+      <div class="mt-4 text-xs text-slate-500 dark:text-slate-400">{{ fmt_date(p.created_at) }}</div>
+      <h3 class="mt-1.5 font-medium leading-snug group-hover:text-brand-dark dark:group-hover:text-brand transition">{{ loc(p, 'title') }}</h3>
     </a>
     {% endfor %}
   </div>

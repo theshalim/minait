@@ -1,84 +1,66 @@
 {% extends "admin/layout.html" %}
+{% from "admin/_ui.html" import page_header, section_title, empty %}
 {% block title %}Home page — Admin{% endblock %}
 {% block admin_content %}
-<h1 class="text-2xl font-extrabold mb-2">Home page</h1>
-<p class="text-sm text-slate-500 mb-8">Controls the hero slider and the stat counters on the public homepage. Nothing here needs a code change or a redeploy — changes go live immediately.</p>
+{{ page_header("Home page", "The hero slider and the number counters on the homepage. Changes go live immediately. Testimonials and client logos are under Clients.") }}
 
-<!-- ============================= Hero slides ============================= -->
-<div class="mb-4">
-  <h2 class="font-bold text-lg">Hero slider</h2>
-  <p class="text-xs text-slate-400 mt-1">
-    Just the picture — no text fields, because the text is already designed into the image itself.
-    Every image you add becomes one more slide in the homepage's auto-rotating carousel, in the order added.
-    "Hide" takes a slide off the homepage without deleting it; "Show" puts it back.
-    Recommended size: <strong>1600×900px</strong> (16:9 landscape), JPG or PNG, under 2MB.
-  </p>
-</div>
+{# ============================= Hero slides ============================= #}
+{{ section_title("Hero slider", "Just the picture — the text is designed into the image. Each image is one slide, rotating every 5 seconds. Size: 1600×900px (16:9), JPG or PNG, under 2MB. \"Hide\" takes a slide off the homepage without deleting it.") }}
 
 <form method="post" action="/admin/home/slides/new" enctype="multipart/form-data"
-      class="flex flex-wrap items-center gap-3 p-4 border border-dashed border-slate-200 dark:border-slate-700 rounded-2xl mb-4">
+      class="panel border-dashed p-4 flex flex-col sm:flex-row sm:items-center gap-3 mb-4">
   <input type="file" name="image_file" accept="image/*" required
-         class="flex-1 min-w-[200px] border border-slate-200 dark:border-slate-700 dark:bg-slate-900 rounded-lg px-4 py-2.5 file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:bg-brand-light file:text-brand file:font-medium" />
-  <button class="bg-brand text-white text-sm px-4 py-2.5 rounded-lg font-semibold hover:bg-brand-dark">+ Add slide</button>
+         class="flex-1 min-w-0 text-sm text-slate-500 file:mr-3 file:rounded-full file:border-0 file:bg-slate-100 file:px-4 file:py-2 file:text-sm file:font-medium file:text-slate-700 hover:file:bg-slate-200 dark:file:bg-slate-800 dark:file:text-slate-200" />
+  <button class="btn-dark">+ Add slide</button>
 </form>
 
-<div class="border border-slate-100 dark:border-slate-800 rounded-2xl divide-y divide-slate-100 dark:divide-slate-800 mb-12">
+<div class="grid gap-3 sm:grid-cols-2 mb-14">
   {% for s in slides %}
-  <div class="flex items-center gap-4 p-4">
-    <img src="{{ s.image_url }}" alt="" class="w-28 h-16 object-cover rounded-lg border border-slate-200 dark:border-slate-700 flex-shrink-0 {{ '' if s.is_active else 'opacity-40 grayscale' }}" />
-    <div class="flex-1 text-xs text-slate-400">
-      Slide {{ loop.index }}
-      <span class="ml-2 px-2 py-0.5 rounded-full font-medium {{ 'bg-green-100 text-green-700' if s.is_active else 'bg-slate-100 text-slate-500' }}">
-        {{ "Showing" if s.is_active else "Hidden" }}
-      </span>
+  <div class="panel overflow-hidden">
+    <div class="aspect-[16/9] bg-slate-100 dark:bg-slate-800">
+      <img src="{{ s.image_url }}" alt="" class="w-full h-full object-cover {{ '' if s.is_active else 'opacity-40 grayscale' }}" />
     </div>
-    <form method="post" action="/admin/home/slides/{{ s.id }}/toggle">
-      <button class="text-slate-500 hover:text-slate-800 text-sm font-medium">{{ "Hide" if s.is_active else "Show" }}</button>
-    </form>
-    <form method="post" action="/admin/home/slides/{{ s.id }}/delete" onsubmit="return confirm('Delete this slide?');">
-      <button class="text-red-500 hover:text-red-700 text-sm font-medium">Delete</button>
-    </form>
+    <div class="flex items-center justify-between gap-2 px-4 py-3">
+      <div class="flex items-center gap-2 text-sm">
+        <span class="text-slate-500">Slide {{ loop.index }}</span>
+        <span class="{{ 'badge-green' if s.is_active else 'badge-gray' }}">{{ "Showing" if s.is_active else "Hidden" }}</span>
+      </div>
+      <div class="flex items-center gap-1">
+        <form method="post" action="/admin/home/slides/{{ s.id }}/toggle"><button class="btn-ghost btn-sm">{{ "Hide" if s.is_active else "Show" }}</button></form>
+        <form method="post" action="/admin/home/slides/{{ s.id }}/delete" onsubmit="return confirm('Delete this slide?');"><button class="btn-danger btn-sm">Delete</button></form>
+      </div>
+    </div>
   </div>
   {% else %}
-  <div class="p-6 text-center text-slate-400 text-sm">No slides yet — the homepage falls back to a plain default hero until you add one.</div>
+  <div class="panel sm:col-span-2">{{ empty("No slides yet — the homepage shows a plain text headline until you add one.") }}</div>
   {% endfor %}
 </div>
 
-<!-- ============================== Stat counters ============================== -->
-<div class="mb-4">
-  <h2 class="font-bold text-lg">Stat counters</h2>
-  <p class="text-xs text-slate-400 mt-1">Small "2 IT experts · 1 office · 10+ clients served" style numbers shown under the hero. Add as many as you like; keep the value short (e.g. "10+", "24/7", "2").</p>
-</div>
+{# ============================ Stat counters ============================ #}
+{{ section_title("Number counters", "Small \"2 · IT experts\" style numbers under the hero. Keep the value short: \"10+\", \"24/7\", \"2\".") }}
 
-<div class="border border-slate-100 dark:border-slate-800 rounded-2xl divide-y divide-slate-100 dark:divide-slate-800 mb-6">
+<div class="panel divide-y divide-slate-100 dark:divide-slate-800 mb-4">
   {% for stat in stats %}
-  <form method="post" action="/admin/home/stats/{{ stat.id }}/edit" class="flex items-center gap-3 p-4">
-    <input name="value" value="{{ stat.value }}" placeholder="10+"
-           class="w-24 border border-slate-200 dark:border-slate-700 dark:bg-slate-900 rounded-lg px-3 py-2 text-sm font-bold text-center" />
-    <input name="label" value="{{ stat.label }}" placeholder="Clients served"
-           class="flex-1 min-w-0 border border-slate-200 dark:border-slate-700 dark:bg-slate-900 rounded-lg px-3 py-2 text-sm" />
-    <input name="label_bn" value="{{ stat.label_bn or '' }}" placeholder="বাংলা লেবেল (optional)"
-           class="flex-1 min-w-0 border border-slate-200 dark:border-slate-700 dark:bg-slate-900 rounded-lg px-3 py-2 text-sm" />
-    <input name="sort_order" type="number" value="{{ stat.sort_order }}" title="Sort order"
-           class="w-16 border border-slate-200 dark:border-slate-700 dark:bg-slate-900 rounded-lg px-2 py-2 text-sm text-center" />
-    <button class="bg-slate-900 text-white text-sm px-3 py-2 rounded-lg font-medium hover:bg-slate-700">Save</button>
-    <button type="submit" formaction="/admin/home/stats/{{ stat.id }}/delete"
-            class="text-red-500 hover:text-red-700 text-sm font-medium">Delete</button>
+  <form method="post" action="/admin/home/stats/{{ stat.id }}/edit" class="grid grid-cols-[80px_1fr] sm:grid-cols-[90px_1fr_1fr_70px_auto] gap-2 items-center p-3 sm:px-4">
+    <input name="value" value="{{ stat.value }}" placeholder="10+" aria-label="Value" class="input text-center font-semibold" />
+    <input name="label" value="{{ stat.label }}" placeholder="Clients served" aria-label="Label" class="input" />
+    <input name="label_bn" value="{{ stat.label_bn or '' }}" placeholder="বাংলা লেবেল (optional)" aria-label="Bangla label" class="input col-span-2 sm:col-span-1" />
+    <input name="sort_order" type="number" value="{{ stat.sort_order }}" aria-label="Order" title="Order" class="input text-center" />
+    <div class="flex gap-1 justify-end">
+      <button class="btn-dark btn-sm">Save</button>
+      <button type="submit" formaction="/admin/home/stats/{{ stat.id }}/delete" class="btn-danger btn-sm">Delete</button>
+    </div>
   </form>
   {% else %}
-  <div class="p-6 text-center text-slate-400 text-sm">No stat counters yet.</div>
+  {{ empty("No counters yet.") }}
   {% endfor %}
 </div>
 
-<form method="post" action="/admin/home/stats/new" class="flex items-center gap-3 p-4 border border-dashed border-slate-200 dark:border-slate-700 rounded-2xl">
-  <input name="value" placeholder="10+" required
-         class="w-24 border border-slate-200 dark:border-slate-700 dark:bg-slate-900 rounded-lg px-3 py-2 text-sm font-bold text-center" />
-  <input name="label" placeholder="Clients served" required
-         class="flex-1 min-w-0 border border-slate-200 dark:border-slate-700 dark:bg-slate-900 rounded-lg px-3 py-2 text-sm" />
-  <input name="label_bn" placeholder="বাংলা লেবেল (optional)"
-         class="flex-1 min-w-0 border border-slate-200 dark:border-slate-700 dark:bg-slate-900 rounded-lg px-3 py-2 text-sm" />
-  <input name="sort_order" type="number" value="0" title="Sort order"
-         class="w-16 border border-slate-200 dark:border-slate-700 dark:bg-slate-900 rounded-lg px-2 py-2 text-sm text-center" />
-  <button class="bg-brand text-white text-sm px-4 py-2 rounded-lg font-semibold hover:bg-brand-dark">+ Add</button>
+<form method="post" action="/admin/home/stats/new" class="panel border-dashed grid grid-cols-[80px_1fr] sm:grid-cols-[90px_1fr_1fr_70px_auto] gap-2 items-center p-3 sm:px-4">
+  <input name="value" placeholder="10+" required aria-label="Value" class="input text-center font-semibold" />
+  <input name="label" placeholder="Clients served" required aria-label="Label" class="input" />
+  <input name="label_bn" placeholder="বাংলা লেবেল (optional)" aria-label="Bangla label" class="input col-span-2 sm:col-span-1" />
+  <input name="sort_order" type="number" value="0" aria-label="Order" title="Order" class="input text-center" />
+  <div class="flex justify-end"><button class="btn-dark btn-sm">+ Add</button></div>
 </form>
 {% endblock %}

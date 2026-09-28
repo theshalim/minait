@@ -1,62 +1,52 @@
 {% extends "admin/layout.html" %}
+{% from "admin/_ui.html" import page_header, image_input %}
 {% block title %}{{ "Edit post" if post else "New post" }} — Admin{% endblock %}
 {% block admin_content %}
-<h1 class="text-2xl font-extrabold mb-6">{{ "Edit post" if post else "New post" }}</h1>
+{{ page_header("Edit post" if post else "New post") }}
 
 <form method="post" enctype="multipart/form-data"
-      action="{{ '/admin/blog/%d/edit'|format(post.id) if post else '/admin/blog/new' }}" class="space-y-5 max-w-2xl">
-  <div>
-    <label class="block text-sm font-medium mb-1">Title <span class="text-slate-400 font-normal">(English)</span></label>
-    <input required name="title" value="{{ post.title if post else '' }}"
-           class="w-full border border-slate-200 rounded-lg px-4 py-2.5" />
+      action="{{ '/admin/blog/%d/edit'|format(post.id) if post else '/admin/blog/new' }}" class="space-y-6 max-w-3xl">
+  <div class="panel p-5 sm:p-6 space-y-5">
+    <div class="grid gap-5 sm:grid-cols-2">
+      <div>
+        <label class="label">Title <span class="text-slate-400 font-normal">(English)</span></label>
+        <input required name="title" value="{{ post.title if post else '' }}" class="input" />
+      </div>
+      <div>
+        <label class="label">শিরোনাম <span class="text-slate-400 font-normal">(Bangla, optional)</span></label>
+        <input name="title_bn" value="{{ (post.title_bn or '') if post else '' }}" class="input" />
+      </div>
+      <div>
+        <label class="label">Excerpt <span class="text-slate-400 font-normal">(English)</span></label>
+        <input name="excerpt" value="{{ (post.excerpt or '') if post else '' }}" class="input" />
+      </div>
+      <div>
+        <label class="label">সারাংশ <span class="text-slate-400 font-normal">(Bangla, optional)</span></label>
+        <input name="excerpt_bn" value="{{ (post.excerpt_bn or '') if post else '' }}" class="input" />
+      </div>
+    </div>
+    {{ image_input("Cover image", "cover_image_file", "cover_image_url", post.cover_image_url if post else "", "Landscape, e.g. 1600×900px. An uploaded file wins over the link.") }}
   </div>
-  <div>
-    <label class="block text-sm font-medium mb-1">শিরোনাম <span class="text-slate-400 font-normal">(Bangla, optional)</span></label>
-    <input name="title_bn" value="{{ (post.title_bn or '') if post else '' }}"
-           class="w-full border border-slate-200 rounded-lg px-4 py-2.5" />
-  </div>
-  <div>
-    <label class="block text-sm font-medium mb-1">Excerpt <span class="text-slate-400 font-normal">(English)</span></label>
-    <input name="excerpt" value="{{ (post.excerpt or '') if post else '' }}"
-           class="w-full border border-slate-200 rounded-lg px-4 py-2.5" />
-  </div>
-  <div>
-    <label class="block text-sm font-medium mb-1">সারাংশ <span class="text-slate-400 font-normal">(Bangla, optional)</span></label>
-    <input name="excerpt_bn" value="{{ (post.excerpt_bn or '') if post else '' }}"
-           class="w-full border border-slate-200 rounded-lg px-4 py-2.5" />
-  </div>
-  <div>
-    <label class="block text-sm font-medium mb-1">Cover image</label>
-    {% if post and post.cover_image_url %}
-    <img src="{{ post.cover_image_url }}" alt="" class="w-32 h-20 object-cover rounded-lg mb-2 border border-slate-200" />
-    {% endif %}
-    <input type="file" name="cover_image_file" accept="image/*"
-           class="w-full border border-slate-200 rounded-lg px-4 py-2.5 file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:bg-brand-light file:text-brand file:font-medium" />
-    <p class="text-xs text-slate-400 mt-1">Upload a file, or paste an image URL below instead — uploading a file always wins.</p>
-    <input name="cover_image_url" value="{{ post.cover_image_url if post else '' }}" placeholder="https://... (optional, used only if no file is uploaded)"
-           class="w-full border border-slate-200 rounded-lg px-4 py-2.5 mt-2" />
-  </div>
-  <div>
-    <label class="block text-sm font-medium mb-1">Content <span class="text-slate-400 font-normal">(English, Markdown supported)</span></label>
-    <textarea required name="content_markdown" rows="14"
-              class="w-full border border-slate-200 rounded-lg px-4 py-2.5 font-mono text-sm">{{ post.content_markdown if post else '' }}</textarea>
-  </div>
-  <div>
-    <label class="block text-sm font-medium mb-1">লেখা <span class="text-slate-400 font-normal">(Bangla, optional, Markdown supported)</span></label>
-    <textarea name="content_markdown_bn" rows="14"
-              class="w-full border border-slate-200 rounded-lg px-4 py-2.5 font-mono text-sm">{{ (post.content_markdown_bn or '') if post else '' }}</textarea>
-    <p class="text-xs text-slate-400 mt-1">Shown when a visitor switches the site to বাংলা. Leave empty to show the English text there too.</p>
-  </div>
-  <label class="flex items-center gap-2 text-sm font-medium">
-    <input type="checkbox" name="is_published" value="true" class="accent-brand" {{ "checked" if post and post.is_published else "" }} />
-    Published (visible on the public blog)
-  </label>
 
-  <div class="flex gap-3">
-    <button type="submit" class="bg-brand text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-brand-dark">
-      {{ "Save changes" if post else "Create post" }}
-    </button>
-    <a href="/admin/blog" class="px-6 py-2.5 rounded-lg font-semibold text-slate-500 hover:bg-slate-50">Cancel</a>
+  <div class="panel p-5 sm:p-6 space-y-5">
+    <div>
+      <label class="label">Content <span class="text-slate-400 font-normal">(English · Markdown supported)</span></label>
+      <textarea required name="content_markdown" rows="14" class="input font-mono text-[13px]">{{ post.content_markdown if post else '' }}</textarea>
+    </div>
+    <div>
+      <label class="label">লেখা <span class="text-slate-400 font-normal">(Bangla, optional · Markdown supported)</span></label>
+      <textarea name="content_markdown_bn" rows="14" class="input font-mono text-[13px]">{{ (post.content_markdown_bn or '') if post else '' }}</textarea>
+      <p class="hint">Shown on the বাংলা site. Leave empty to show the English text there too.</p>
+    </div>
+    <label class="flex items-center gap-2.5 text-sm font-medium">
+      <input type="checkbox" name="is_published" value="true" class="w-4 h-4 accent-slate-900" {{ "checked" if post and post.is_published else "" }} />
+      Published (visible on the public blog)
+    </label>
+  </div>
+
+  <div class="flex gap-2">
+    <button type="submit" class="btn-dark">{{ "Save changes" if post else "Create post" }}</button>
+    <a href="/admin/blog" class="btn-ghost">Cancel</a>
   </div>
 </form>
 {% endblock %}

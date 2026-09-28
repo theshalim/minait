@@ -126,6 +126,54 @@ create table if not exists faqs (
 );
 
 -- ---------------------------------------------------------------------------
+-- products: items sold (ordered on WhatsApp, like services). Price is
+-- optional — empty shows "Price on request".
+-- ---------------------------------------------------------------------------
+create table if not exists products (
+  id             bigserial primary key,
+  title          text not null,
+  title_bn       text,
+  slug           text not null unique,
+  description    text not null default '',
+  description_bn text,
+  price          numeric(10, 2),
+  currency       text not null default 'BDT',
+  category       text not null default '',
+  image_url      text,
+  is_active      boolean not null default true,
+  sort_order     integer not null default 0,
+  created_at     timestamptz not null default now()
+);
+
+-- ---------------------------------------------------------------------------
+-- testimonials: the "What our clients say" cards on the homepage.
+-- ---------------------------------------------------------------------------
+create table if not exists testimonials (
+  id          bigserial primary key,
+  name        text not null,             -- e.g. "Rahim Uddin"
+  role        text,                      -- e.g. "CEO, ABC Traders"
+  role_bn     text,
+  message     text not null,
+  message_bn  text,
+  image_url   text,                      -- client photo or company logo
+  is_active   boolean not null default true,
+  sort_order  integer not null default 0,
+  created_at  timestamptz not null default now()
+);
+
+-- ---------------------------------------------------------------------------
+-- clients: logos in the always-moving "Trusted by" strip on the homepage.
+-- ---------------------------------------------------------------------------
+create table if not exists clients (
+  id           bigserial primary key,
+  name         text not null,
+  logo_url     text,
+  website_url  text,
+  sort_order   integer not null default 0,
+  created_at   timestamptz not null default now()
+);
+
+-- ---------------------------------------------------------------------------
 -- Optional Bangla copies of admin-written content. Shown on the বাংলা site
 -- when filled in; empty means "show the English text there too".
 -- Safe to re-run: existing databases just gain the new columns.
@@ -156,6 +204,21 @@ alter table blog_posts  enable row level security;
 alter table hero_slides enable row level security;
 alter table site_stats  enable row level security;
 alter table faqs        enable row level security;
+alter table products     enable row level security;
+alter table testimonials enable row level security;
+alter table clients      enable row level security;
+
+drop policy if exists "products: public read active" on products;
+create policy "products: public read active" on products
+  for select using (is_active = true);
+
+drop policy if exists "testimonials: public read active" on testimonials;
+create policy "testimonials: public read active" on testimonials
+  for select using (is_active = true);
+
+drop policy if exists "clients: public read" on clients;
+create policy "clients: public read" on clients
+  for select using (true);
 
 drop policy if exists "profiles: read own" on profiles;
 create policy "profiles: read own" on profiles

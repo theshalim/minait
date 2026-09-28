@@ -1,13 +1,16 @@
-"""Public, unauthenticated pages: homepage, service detail, blog."""
+"""Public, unauthenticated pages: homepage, services, products, blog."""
+import logging
+
 from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import RedirectResponse
 
-from app.i18n import LANG_COOKIE, SUPPORTED_LANGS, get_locale, localized
+from app.i18n import LANG_COOKIE, SUPPORTED_LANGS, get_locale, localized, make_translator
 from app.supabase_client import fetch_one, supabase_admin
 from app.templating import base_ctx, templates
 from app.utils import render_markdown
 
 router = APIRouter(tags=["pages"])
+logger = logging.getLogger("minait")
 
 
 @router.get("/set-lang/{code}")
@@ -24,17 +27,25 @@ def set_lang(code: str, next: str = "/"):
 
 # Public pages select "*" so the optional Bangla (`*_bn`) columns come along
 # whenever they exist, without breaking if the database hasn't got them yet.
+def _active(table: str) -> list[dict]:
+    return (
+        supabase_admin().table(table).select("*").eq("is_active", True).order("sort_order").execute().data
+    )
+
+
+def _optional(fetch) -> list[dict]:
+    """For sections backed by newer tables (products, testimonials, client
+    logos): if db/schema.sql hasn't been re-run yet and the table is
+    missing, show the page without that section instead of an error."""
+    try:
+        return fetch()
+    except Exception:
+        logger.exception("Optional section failed to load")
+        return []
+
+
 @router.get("/")
 def home(request: Request):
-    services = (
-        supabase_admin()
-        .table("services")
-        .select("*")
-        .eq("is_active", True)
-        .order("sort_order")
-        .execute()
-        .data
-    )
     posts = (
         supabase_admin()
         .table("blog_posts")
@@ -45,21 +56,46 @@ def home(request: Request):
         .execute()
         .data
     )
-    slides = (
-        supabase_admin()
-        .table("hero_slides")
-        .select("*")
-        .eq("is_active", True)
-        .order("sort_order")
-        .execute()
-        .data
-    )
     stats = (
         supabase_admin().table("site_stats").select("*").order("sort_order").execute().data
     )
     return templates.TemplateResponse(
         "index.html",
-        base_ctx(request, services=services, posts=posts, slides=slides, stats=stats),
+        base_ctx(
+            request,
+            services=_active("services"),
+            posts=posts,
+            slides=_active("hero_slides"),
+            stats=stats,
+            testimonials=_optional(lambda: _active("testimonials")),
+            clients=_optional(
+                lambda: supabase_admin().table("clients").select("*").order("sort_order").execute().data
+            ),
+        ),
+    )
+
+
+@router.get("/services")
+def services_page(request: Request):
+    t = make_translator(get_locale(request))
+    return templates.TemplateResponse(
+        "services.html",
+        base_ctx(
+            request, items=_active("services"), kind="service",
+            heading=t("services.heading"), intro=t("services.intro"), empty=t("home.no_services"),
+        ),
+    )
+
+
+@router.get("/products")
+def products_page(request: Request):
+    t = make_translator(get_locale(request))
+    return templates.TemplateResponse(
+        "services.html",
+        base_ctx(
+            request, items=_optional(lambda: _active("products")), kind="product",
+            heading=t("products.heading"), intro=t("products.intro"), empty=t("products.empty"),
+        ),
     )
 
 

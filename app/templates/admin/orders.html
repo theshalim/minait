@@ -1,63 +1,87 @@
 {% extends "admin/layout.html" %}
+{% from "admin/_ui.html" import page_header, empty %}
 {% block title %}Orders — Admin{% endblock %}
 {% block admin_content %}
-<h1 class="text-2xl font-extrabold mb-2">Orders</h1>
-<p class="text-sm text-slate-500 mb-6">
-  Change the work status and the payment status, then press Save. For WhatsApp or cash orders, set Payment to
-  <strong>Paid</strong> once the money arrives, so it counts in the dashboard's revenue.
-  Customers get no email — use <strong>WhatsApp customer</strong> to send them the new status.
-</p>
+{{ page_header("Orders", "Customers order on WhatsApp — add each one here. Set Payment to Paid when the money arrives so it counts in revenue, and use WhatsApp to send the customer their status and tracking link.") }}
 
-<div class="flex flex-wrap gap-2 mb-5 text-sm">
+{# ---------------- Add an order that came in over chat ---------------- #}
+<details id="new-order" class="panel mb-8 group" {{ 'open' if not orders else '' }}>
+  <summary class="flex items-center justify-between cursor-pointer list-none px-5 py-4">
+    <span class="font-medium">+ Add order</span>
+    <svg viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 text-slate-400 transition group-open:rotate-180"><path fill-rule="evenodd" d="M5.2 7.2a.75.75 0 0 1 1.06 0L10 10.94l3.74-3.74a.75.75 0 1 1 1.06 1.06l-4.27 4.27a.75.75 0 0 1-1.06 0L5.2 8.26a.75.75 0 0 1 0-1.06z" clip-rule="evenodd"/></svg>
+  </summary>
+  <form method="post" action="/admin/orders/new" class="px-5 pb-5 grid gap-4 sm:grid-cols-2 border-t border-slate-100 dark:border-slate-800 pt-5">
+    <div><label class="label">Customer name</label><input name="customer_name" required class="input" /></div>
+    <div><label class="label">Phone (WhatsApp)</label><input name="customer_phone" type="tel" placeholder="01XXXXXXXXX" class="input" /></div>
+    <div class="sm:col-span-2">
+      <label class="label">Service / product</label>
+      <input name="service_title" required list="catalog" class="input" placeholder="Start typing — or write anything" />
+      <datalist id="catalog">{% for title in catalog_titles %}<option value="{{ title }}">{% endfor %}</datalist>
+    </div>
+    <div class="grid grid-cols-[1fr_90px] gap-2">
+      <div><label class="label">Amount</label><input name="amount" type="number" step="0.01" min="0" value="0" class="input" /></div>
+      <div><label class="label">Currency</label><input name="currency" value="BDT" class="input" /></div>
+    </div>
+    <div><label class="label">Email <span class="text-slate-400 font-normal">(optional)</span></label><input name="customer_email" type="email" class="input" /></div>
+    <div>
+      <label class="label">Work status</label>
+      <select name="status" class="input">{% for s in order_statuses %}<option value="{{ s }}">{{ s|replace('_',' ')|capitalize }}</option>{% endfor %}</select>
+    </div>
+    <div>
+      <label class="label">Payment</label>
+      <select name="payment_status" class="input">{% for s in payment_statuses %}<option value="{{ s }}">{{ s|capitalize }}</option>{% endfor %}</select>
+    </div>
+    <div class="sm:col-span-2"><label class="label">Notes <span class="text-slate-400 font-normal">(optional)</span></label><textarea name="notes" rows="2" class="input"></textarea></div>
+    <div class="sm:col-span-2 flex justify-end"><button class="btn-dark">Save order</button></div>
+  </form>
+</details>
+
+<div class="flex gap-1.5 mb-4 overflow-x-auto [scrollbar-width:none]">
   {% for value, label in [(None, "All"), ("pending", "Pending"), ("in_progress", "In progress"), ("completed", "Completed"), ("cancelled", "Cancelled")] %}
   <a href="/admin/orders{{ '?status=' ~ value if value else '' }}"
-     class="px-3 py-1.5 rounded-full font-medium {{ 'bg-brand text-white' if active_status == value else 'bg-slate-100 text-slate-600 hover:bg-slate-200' }}">
-    {{ label }}
-  </a>
+     class="flex-shrink-0 px-3.5 py-1.5 rounded-full text-[13px] transition {{ 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 font-medium' if active_status == value else 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:border-slate-400' }}">{{ label }}</a>
   {% endfor %}
 </div>
 
-<div class="border border-slate-100 rounded-2xl divide-y divide-slate-100">
+<div class="panel divide-y divide-slate-100 dark:divide-slate-800">
   {% for o in orders %}
-  <div id="order-{{ o.id }}" class="p-4 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
-    <div>
-      <div class="font-semibold">{{ o.service_title }} <span class="text-xs text-slate-400 font-normal">· {{ o.order_number }}</span></div>
-      <div class="text-xs text-slate-500 mt-0.5">{{ o.customer_name }} — {{ o.customer_email }}{% if o.customer_phone %} — {{ o.customer_phone }}{% endif %}</div>
-      <div class="text-xs text-slate-400 mt-0.5">{{ "%.0f"|format(o.amount) }} {{ o.currency }} · {{ o.payment_method }} ·
-        <span class="{{ 'text-green-600' if o.payment_status == 'paid' else 'text-amber-600' }}">{{ o.payment_status }}</span>
-        {% if o.created_at %} · {{ o.created_at[:10] }}{% endif %}
+  <div id="order-{{ o.id }}" class="p-5 scroll-mt-28">
+    <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+      <div class="min-w-0">
+        <div class="flex flex-wrap items-center gap-2">
+          <span class="font-medium">{{ o.service_title }}</span>
+          <span class="{{ 'badge-green' if o.payment_status == 'paid' else 'badge-amber' if o.payment_status == 'unpaid' else 'badge-gray' }}">{{ o.payment_status|capitalize }}</span>
+        </div>
+        <div class="text-sm text-slate-600 dark:text-slate-300 mt-1">{{ o.customer_name }}{% if o.customer_phone %} · {{ o.customer_phone }}{% endif %}{% if o.customer_email %} · {{ o.customer_email }}{% endif %}</div>
+        <div class="text-xs text-slate-400 mt-1">
+          {{ "{:,.0f}".format(o.amount | float) }} {{ o.currency }} · {{ o.order_number }}{% if o.created_at %} · {{ o.created_at[:10] }}{% endif %}
+          · <a href="/orders/{{ o.order_number }}" target="_blank" class="underline underline-offset-2 hover:text-slate-700">tracking page</a>
+        </div>
+        {% if o.notes %}<div class="text-xs text-slate-500 mt-2 italic">“{{ o.notes }}”</div>{% endif %}
       </div>
-      {% if o.notes %}<div class="text-xs text-slate-500 mt-1 italic">“{{ o.notes }}”</div>{% endif %}
-    </div>
-    <div class="flex flex-wrap items-center gap-2">
-      <form method="post" action="/admin/orders/{{ o.id }}/status" class="flex flex-wrap items-center gap-2">
-        <input type="hidden" name="back" value="{{ active_status or '' }}" />
-        <label class="text-xs text-slate-400">Work
-          <select name="status" class="border border-slate-200 rounded-lg px-2 py-1.5 text-sm text-slate-800">
-            {% for s in order_statuses %}
-            <option value="{{ s }}" {{ "selected" if o.status == s else "" }}>{{ s|replace('_',' ')|capitalize }}</option>
-            {% endfor %}
+
+      <div class="flex flex-wrap items-center gap-2 lg:justify-end">
+        <form method="post" action="/admin/orders/{{ o.id }}/status" class="flex flex-wrap items-center gap-2">
+          <input type="hidden" name="back" value="{{ active_status or '' }}" />
+          <select name="status" aria-label="Work status" class="input w-auto py-2 text-[13px]">
+            {% for s in order_statuses %}<option value="{{ s }}" {{ "selected" if o.status == s else "" }}>{{ s|replace('_',' ')|capitalize }}</option>{% endfor %}
           </select>
-        </label>
-        <label class="text-xs text-slate-400">Payment
-          <select name="payment_status" class="border border-slate-200 rounded-lg px-2 py-1.5 text-sm text-slate-800">
-            {% for s in payment_statuses %}
-            <option value="{{ s }}" {{ "selected" if o.payment_status == s else "" }}>{{ s|capitalize }}</option>
-            {% endfor %}
+          <select name="payment_status" aria-label="Payment" class="input w-auto py-2 text-[13px]">
+            {% for s in payment_statuses %}<option value="{{ s }}" {{ "selected" if o.payment_status == s else "" }}>{{ s|capitalize }}</option>{% endfor %}
           </select>
-        </label>
-        <button class="bg-slate-900 text-white text-sm px-3 py-1.5 rounded-lg font-medium hover:bg-slate-700">Save</button>
-      </form>
-      {% if o.wa_link %}
-      <a href="{{ o.wa_link }}" target="_blank" rel="noopener"
-         class="bg-green-600 text-white text-sm px-3 py-1.5 rounded-lg font-medium hover:bg-green-700">WhatsApp customer</a>
-      {% else %}
-      <span class="text-xs text-slate-400" title="The customer didn't leave a usable phone number">No phone</span>
-      {% endif %}
+          <button class="btn-dark btn-sm">Save</button>
+        </form>
+        {% if o.wa_link %}
+        <a href="{{ o.wa_link }}" target="_blank" rel="noopener" class="btn-brand btn-sm">WhatsApp customer</a>
+        {% endif %}
+        <form method="post" action="/admin/orders/{{ o.id }}/delete" onsubmit="return confirm('Delete this order?');">
+          <button class="btn-danger btn-sm">Delete</button>
+        </form>
+      </div>
     </div>
   </div>
   {% else %}
-  <div class="p-6 text-center text-slate-400 text-sm">No orders here yet.</div>
+  {{ empty("No orders here yet.") }}
   {% endfor %}
 </div>
 {% endblock %}

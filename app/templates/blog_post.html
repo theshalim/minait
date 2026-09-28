@@ -2,7 +2,7 @@
 {% from "partials/share.html" import share_buttons with context %}
 {% block title %}{{ loc(post, 'title') }} — {{ site_name }}{% endblock %}
 {% block content %}
-<article class="max-w-3xl mx-auto px-5 py-16">
+<article class="max-w-3xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
   <a href="/blog" class="text-sm text-slate-400 hover:text-brand">{{ t('blog.back') }}</a>
   <div class="flex items-center justify-between gap-4 mt-6">
     <time class="text-sm text-slate-600 dark:text-slate-400">{{ fmt_date(post.created_at) }}</time>

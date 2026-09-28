@@ -1,5 +1,6 @@
-"""The "control everything" admin panel: services, orders, blog, customers —
-no code edits required to run the business day to day."""
+"""The "control everything" admin panel: services, products, orders, blog,
+homepage content, clients and the admin's own account — no code edits
+required to run the business day to day."""
 import logging
 import uuid
 
@@ -8,10 +9,10 @@ from fastapi.responses import RedirectResponse
 
 from app.config import settings
 from app.i18n import make_translator
-from app.security import CurrentUser, require_admin
+from app.security import CurrentUser, check_password, require_admin
 from app.supabase_client import fetch_one, supabase_admin
 from app.templating import base_ctx, templates
-from app.utils import unique_slug, whatsapp_link, whatsapp_number
+from app.utils import generate_order_number, unique_slug, whatsapp_link, whatsapp_number
 
 router = APIRouter(prefix="/admin", tags=["admin"], dependencies=[Depends(require_admin)])
 logger = logging.getLogger("minait")
@@ -347,6 +348,16 @@ def _orders_url(status_filter: str) -> str:
     return f"/admin/orders?status={status_filter}" if status_filter in ORDER_STATUSES else "/admin/orders"
 
 
+def _catalog_titles() -> list[str]:
+    """Service + product names, offered as suggestions in "Add order"."""
+    titles = [s["title"] for s in supabase_admin().table("services").select("title").order("sort_order").execute().data]
+    try:
+        titles += [p["title"] for p in supabase_admin().table("products").select("title").order("sort_order").execute().data]
+    except Exception:
+        pass  # products table not created yet
+    return titles
+
+
 @router.get("/orders")
 def admin_orders(request: Request, status: str | None = None):
     query = supabase_admin().table("orders").select("*").order("created_at", desc=True)
@@ -363,8 +374,43 @@ def admin_orders(request: Request, status: str | None = None):
             active_status=status,
             order_statuses=ORDER_STATUSES,
             payment_statuses=PAYMENT_STATUSES,
+            catalog_titles=_catalog_titles(),
         ),
     )
+
+
+@router.post("/orders/new")
+def admin_order_create(
+    customer_name: str = Form(...),
+    customer_phone: str = Form(""),
+    customer_email: str = Form(""),
+    service_title: str = Form(...),
+    amount: float = Form(0),
+    currency: str = Form("BDT"),
+    notes: str = Form(""),
+    status: str = Form("pending"),
+    payment_status: str = Form("unpaid"),
+):
+    """Logs an order that came in over WhatsApp chat, so it shows up in the
+    tracker, the revenue total and gets a tracking link for the customer."""
+    if status not in ORDER_STATUSES or payment_status not in PAYMENT_STATUSES:
+        raise HTTPException(status_code=400, detail="Unknown status")
+    created = supabase_admin().table("orders").insert(
+        {
+            "order_number": generate_order_number(),
+            "service_title": service_title.strip(),
+            "customer_name": customer_name.strip(),
+            "customer_email": customer_email.strip(),
+            "customer_phone": customer_phone.strip(),
+            "notes": notes,
+            "amount": amount,
+            "currency": currency or "BDT",
+            "payment_method": "whatsapp",
+            "payment_status": payment_status,
+            "status": status,
+        }
+    ).execute().data[0]
+    return RedirectResponse(f"/admin/orders#order-{created['id']}", status_code=303)
 
 
 @router.post("/orders/{order_id}/status")
@@ -388,56 +434,227 @@ def admin_order_update_status(
     return RedirectResponse(f"{_orders_url(back)}#order-{order_id}", status_code=303)
 
 
+@router.post("/orders/{order_id}/delete")
+def admin_order_delete(order_id: int):
+    supabase_admin().table("orders").delete().eq("id", order_id).execute()
+    return RedirectResponse("/admin/orders", status_code=303)
+
+
 # ---------------------------------------------------------------------------
-# Customers: see who signed up, and set a new password for someone who
-# forgot theirs (there's no reset email — see auth.py).
+# Account: the admin changes their own password. (A forgotten password is
+# reset from the Supabase dashboard — the site sends no email.)
 # ---------------------------------------------------------------------------
-def _users_page(request: Request, **extra):
-    profiles = {p["id"]: p for p in supabase_admin().table("profiles").select("*").execute().data}
-    users = []
-    for u in supabase_admin().auth.admin.list_users(page=1, per_page=1000):
-        p = profiles.get(u.id, {})
-        users.append(
-            {
-                "id": u.id,
-                "email": u.email or "",
-                "full_name": p.get("full_name") or "",
-                "phone": p.get("phone") or "",
-                "is_admin": bool(p.get("is_admin")),
-                "created_at": str(u.created_at or "")[:10],
-            }
-        )
-    users.sort(key=lambda u: u["created_at"], reverse=True)
-    return templates.TemplateResponse("admin/users.html", base_ctx(request, users=users, **extra))
+@router.get("/account")
+def admin_account(request: Request):
+    return templates.TemplateResponse("admin/account.html", base_ctx(request))
 
 
-@router.get("/users")
-def admin_users(request: Request):
-    return _users_page(request)
+@router.post("/account/password")
+def admin_change_password(
+    request: Request,
+    current_password: str = Form(...),
+    new_password: str = Form(...),
+    confirm_password: str = Form(...),
+    user: CurrentUser = Depends(require_admin),
+):
+    def page(**msg):
+        return templates.TemplateResponse("admin/account.html", base_ctx(request, **msg))
 
-
-@router.post("/users/{user_id}/password")
-def admin_user_set_password(request: Request, user_id: str, new_password: str = Form(...)):
-    if len(new_password) < 6:
-        return _users_page(request, error="Password must be at least 6 characters.")
+    if len(new_password) < 8:
+        return page(error="The new password must be at least 8 characters.")
+    if new_password != confirm_password:
+        return page(error="The two new passwords don't match.")
     try:
-        supabase_admin().auth.admin.update_user_by_id(user_id, {"password": new_password})
+        if not check_password(user.email, current_password):
+            return page(error="Your current password is wrong.")
+        supabase_admin().auth.admin.update_user_by_id(user.id, {"password": new_password})
     except Exception:
-        logger.exception("Admin password reset failed for user %s", user_id)
-        return _users_page(request, error="Couldn't set the password — please try again.")
+        logger.exception("Admin password change failed")
+        return page(error="Couldn't change the password right now — please try again.")
+    return page(message="Password changed. Use the new one next time you log in.")
 
-    profile = fetch_one(supabase_admin().table("profiles").select("*").eq("id", user_id)) or {}
-    number = whatsapp_number(profile.get("phone"))
-    wa = None
-    if number:
-        wa = whatsapp_link(
-            number,
-            f"আপনার {settings.SITE_NAME} অ্যাকাউন্টের নতুন পাসওয়ার্ড: {new_password}\n"
-            f"লগ ইন করে ড্যাশবোর্ড থেকে পাসওয়ার্ডটি বদলে নিন: {settings.SITE_URL}/login\n\n"
-            f"Your new {settings.SITE_NAME} password: {new_password}\n"
-            f"Please log in and change it from your dashboard.",
-        )
-    return _users_page(request, message="Password updated.", reset_user_id=user_id, reset_wa_link=wa)
+
+# ---------------------------------------------------------------------------
+# Products CRUD (same shape as services; price is optional)
+# ---------------------------------------------------------------------------
+def _product_fields(title, title_bn, description, description_bn, price, currency, category, image):
+    return {
+        "title": title,
+        "title_bn": title_bn,
+        "description": description,
+        "description_bn": description_bn,
+        "price": float(price) if str(price).strip() else None,
+        "currency": currency or "BDT",
+        "category": category,
+        "image_url": image,
+    }
+
+
+@router.get("/products")
+def admin_products(request: Request):
+    products = supabase_admin().table("products").select("*").order("sort_order").execute().data
+    return templates.TemplateResponse("admin/products.html", base_ctx(request, products=products))
+
+
+@router.get("/products/new")
+def admin_product_new(request: Request):
+    return templates.TemplateResponse("admin/product_form.html", base_ctx(request, product=None))
+
+
+@router.post("/products/new")
+async def admin_product_create(
+    title: str = Form(...),
+    title_bn: str = Form(""),
+    description: str = Form(""),
+    description_bn: str = Form(""),
+    price: str = Form(""),
+    currency: str = Form("BDT"),
+    category: str = Form(""),
+    image_url: str = Form(""),
+    image_file: UploadFile = File(None),
+    sort_order: int = Form(0),
+):
+    uploaded_url = await _upload_image(image_file)
+    row = _product_fields(title, title_bn, description, description_bn, price, currency, category,
+                          uploaded_url or image_url)
+    row.update(slug=_new_slug("products", title, "product"), sort_order=sort_order)
+    supabase_admin().table("products").insert(row).execute()
+    return RedirectResponse("/admin/products", status_code=303)
+
+
+@router.get("/products/{product_id}/edit")
+def admin_product_edit_page(request: Request, product_id: int):
+    product = fetch_one(supabase_admin().table("products").select("*").eq("id", product_id))
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found")
+    return templates.TemplateResponse("admin/product_form.html", base_ctx(request, product=product))
+
+
+@router.post("/products/{product_id}/edit")
+async def admin_product_update(
+    product_id: int,
+    title: str = Form(...),
+    title_bn: str = Form(""),
+    description: str = Form(""),
+    description_bn: str = Form(""),
+    price: str = Form(""),
+    currency: str = Form("BDT"),
+    category: str = Form(""),
+    image_url: str = Form(""),
+    image_file: UploadFile = File(None),
+    sort_order: int = Form(0),
+):
+    uploaded_url = await _upload_image(image_file)
+    row = _product_fields(title, title_bn, description, description_bn, price, currency, category,
+                          uploaded_url or image_url)
+    row["sort_order"] = sort_order
+    supabase_admin().table("products").update(row).eq("id", product_id).execute()
+    return RedirectResponse("/admin/products", status_code=303)
+
+
+@router.post("/products/{product_id}/toggle")
+def admin_product_toggle(product_id: int):
+    product = fetch_one(supabase_admin().table("products").select("is_active").eq("id", product_id))
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found")
+    supabase_admin().table("products").update({"is_active": not product["is_active"]}).eq(
+        "id", product_id
+    ).execute()
+    return RedirectResponse("/admin/products", status_code=303)
+
+
+@router.post("/products/{product_id}/delete")
+def admin_product_delete(product_id: int):
+    supabase_admin().table("products").delete().eq("id", product_id).execute()
+    return RedirectResponse("/admin/products", status_code=303)
+
+
+# ---------------------------------------------------------------------------
+# Clients: "What our clients say" testimonials + the moving "Trusted by"
+# logo strip, both on the homepage.
+# ---------------------------------------------------------------------------
+@router.get("/clients")
+def admin_clients(request: Request):
+    testimonials = supabase_admin().table("testimonials").select("*").order("sort_order").execute().data
+    clients = supabase_admin().table("clients").select("*").order("sort_order").execute().data
+    return templates.TemplateResponse(
+        "admin/clients.html", base_ctx(request, testimonials=testimonials, clients=clients)
+    )
+
+
+@router.post("/clients/testimonials/new")
+async def admin_testimonial_create(
+    name: str = Form(...),
+    role: str = Form(""),
+    role_bn: str = Form(""),
+    message: str = Form(...),
+    message_bn: str = Form(""),
+    image_url: str = Form(""),
+    image_file: UploadFile = File(None),
+    sort_order: int = Form(0),
+):
+    uploaded_url = await _upload_image(image_file)
+    supabase_admin().table("testimonials").insert(
+        {"name": name, "role": role, "role_bn": role_bn, "message": message, "message_bn": message_bn,
+         "image_url": uploaded_url or image_url, "sort_order": sort_order}
+    ).execute()
+    return RedirectResponse("/admin/clients", status_code=303)
+
+
+@router.post("/clients/testimonials/{tid}/edit")
+async def admin_testimonial_update(
+    tid: int,
+    name: str = Form(...),
+    role: str = Form(""),
+    role_bn: str = Form(""),
+    message: str = Form(...),
+    message_bn: str = Form(""),
+    image_url: str = Form(""),
+    image_file: UploadFile = File(None),
+    sort_order: int = Form(0),
+):
+    uploaded_url = await _upload_image(image_file)
+    supabase_admin().table("testimonials").update(
+        {"name": name, "role": role, "role_bn": role_bn, "message": message, "message_bn": message_bn,
+         "image_url": uploaded_url or image_url, "sort_order": sort_order}
+    ).eq("id", tid).execute()
+    return RedirectResponse(f"/admin/clients#testimonial-{tid}", status_code=303)
+
+
+@router.post("/clients/testimonials/{tid}/toggle")
+def admin_testimonial_toggle(tid: int):
+    row = fetch_one(supabase_admin().table("testimonials").select("is_active").eq("id", tid))
+    if not row:
+        raise HTTPException(status_code=404, detail="Testimonial not found")
+    supabase_admin().table("testimonials").update({"is_active": not row["is_active"]}).eq("id", tid).execute()
+    return RedirectResponse(f"/admin/clients#testimonial-{tid}", status_code=303)
+
+
+@router.post("/clients/testimonials/{tid}/delete")
+def admin_testimonial_delete(tid: int):
+    supabase_admin().table("testimonials").delete().eq("id", tid).execute()
+    return RedirectResponse("/admin/clients", status_code=303)
+
+
+@router.post("/clients/logos/new")
+async def admin_client_logo_create(
+    name: str = Form(...),
+    website_url: str = Form(""),
+    logo_url: str = Form(""),
+    logo_file: UploadFile = File(None),
+    sort_order: int = Form(0),
+):
+    uploaded_url = await _upload_image(logo_file)
+    supabase_admin().table("clients").insert(
+        {"name": name, "website_url": website_url, "logo_url": uploaded_url or logo_url, "sort_order": sort_order}
+    ).execute()
+    return RedirectResponse("/admin/clients#logos", status_code=303)
+
+
+@router.post("/clients/logos/{cid}/delete")
+def admin_client_logo_delete(cid: int):
+    supabase_admin().table("clients").delete().eq("id", cid).execute()
+    return RedirectResponse("/admin/clients#logos", status_code=303)
 
 
 # ---------------------------------------------------------------------------

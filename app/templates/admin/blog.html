@@ -1,39 +1,37 @@
 {% extends "admin/layout.html" %}
+{% from "admin/_ui.html" import page_header, empty %}
 {% block title %}Blog — Admin{% endblock %}
 {% block admin_content %}
-<div class="flex items-center justify-between mb-6">
-  <div>
-    <h1 class="text-2xl font-extrabold">Blog posts</h1>
-    <p class="text-sm text-slate-500 mt-1">The "Top post" shows big at the top of the blog page. If none is picked, the newest published post goes on top.</p>
-  </div>
-  <a href="/admin/blog/new" class="bg-brand text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-brand-dark">+ New post</a>
-</div>
+{{ page_header("Blog", "The \"Top post\" shows big at the top of the blog page. If none is picked, the newest published post goes on top.", "/admin/blog/new", "+ New post") }}
 
-<div class="border border-slate-100 rounded-2xl divide-y divide-slate-100">
+<div class="panel divide-y divide-slate-100 dark:divide-slate-800">
   {% for p in posts %}
-  <div class="flex items-center justify-between p-4">
-    <div>
-      <div class="font-semibold">{{ p.title }}</div>
-      <div class="text-xs text-slate-400">{{ p.created_at[:10] }}</div>
+  <div class="flex flex-col sm:flex-row sm:items-center gap-4 p-4 sm:px-5">
+    <div class="flex items-center gap-4 flex-1 min-w-0">
+      <div class="w-16 h-12 rounded-lg overflow-hidden bg-tint dark:bg-tint-dark flex-shrink-0">
+        {% if p.cover_image_url %}<img src="{{ p.cover_image_url }}" alt="" class="w-full h-full object-cover" />{% endif %}
+      </div>
+      <div class="min-w-0">
+        <div class="font-medium truncate">{{ p.title }}</div>
+        <div class="flex flex-wrap items-center gap-1.5 mt-1">
+          <span class="text-xs text-slate-500">{{ p.created_at[:10] }}</span>
+          <span class="{{ 'badge-green' if p.is_published else 'badge-gray' }}">{{ "Published" if p.is_published else "Draft" }}</span>
+          {% if p.is_featured %}<span class="badge-amber">★ Top post</span>{% endif %}
+        </div>
+      </div>
     </div>
-    <div class="flex items-center gap-3 text-sm">
-      <span class="px-2 py-0.5 rounded-full text-xs font-medium {{ 'bg-green-100 text-green-700' if p.is_published else 'bg-slate-100 text-slate-500' }}">
-        {{ "Published" if p.is_published else "Draft" }}
-      </span>
-      {% if p.is_featured %}
-      <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700">★ Top post</span>
-      {% endif %}
-      <form method="post" action="/admin/blog/{{ p.id }}/feature" class="inline">
-        <button class="text-slate-500 hover:text-slate-800 font-medium">{{ "Remove from top" if p.is_featured else "Set as top post" }}</button>
+    <div class="flex items-center gap-1 flex-wrap">
+      <form method="post" action="/admin/blog/{{ p.id }}/feature">
+        <button class="btn-ghost btn-sm">{{ "Remove from top" if p.is_featured else "Set as top post" }}</button>
       </form>
-      <a href="/admin/blog/{{ p.id }}/edit" class="text-brand font-medium">Edit</a>
-      <form method="post" action="/admin/blog/{{ p.id }}/delete" class="inline" onsubmit="return confirm('Delete this post?');">
-        <button class="text-red-500 hover:text-red-700 font-medium">Delete</button>
+      <a href="/admin/blog/{{ p.id }}/edit" class="btn-ghost btn-sm">Edit</a>
+      <form method="post" action="/admin/blog/{{ p.id }}/delete" onsubmit="return confirm('Delete this post?');">
+        <button class="btn-danger btn-sm">Delete</button>
       </form>
     </div>
   </div>
   {% else %}
-  <div class="p-6 text-center text-slate-400 text-sm">No posts yet — write your first one.</div>
+  {{ empty("No posts yet — write your first one.") }}
   {% endfor %}
 </div>
 {% endblock %}

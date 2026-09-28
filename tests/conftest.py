@@ -32,6 +32,9 @@ def _token_payload(token: str) -> dict:
 DEFAULTS = {
     "services": {"is_active": True, "sort_order": 0, "currency": "BDT", "category": "General", "description": ""},
     "hero_slides": {"is_active": True, "sort_order": 0},
+    "products": {"is_active": True, "sort_order": 0, "currency": "BDT", "category": "", "description": ""},
+    "testimonials": {"is_active": True, "sort_order": 0},
+    "clients": {"sort_order": 0},
     "blog_posts": {"is_published": False, "is_featured": False},
     "orders": {"payment_status": "unpaid", "status": "pending"},
     "profiles": {"is_admin": False},
@@ -89,6 +92,8 @@ class Query:
         return all(str(row.get(c)) == str(v) for c, v in self.filters)
 
     def execute(self):
+        if self.table in self.db.missing_tables:
+            raise Exception(f'relation "public.{self.table}" does not exist')
         rows = self.db.tables.setdefault(self.table, [])
         if self.op == "insert":
             items = self.payload if isinstance(self.payload, list) else [self.payload]
@@ -176,6 +181,7 @@ class FakeSupabase:
         self.tables = {}
         self.users = {}
         self.password_updates = []
+        self.missing_tables = set()  # simulate "schema.sql not re-run yet"
         self.ids = itertools.count(1)
         self.auth = FakeAuth(self)
 

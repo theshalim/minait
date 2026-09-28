@@ -1,37 +1,8 @@
 {% extends "admin/layout.html" %}
+{% from "admin/_ui.html" import page_header %}
+{% from "admin/_catalog.html" import catalog_list %}
 {% block title %}Services — Admin{% endblock %}
 {% block admin_content %}
-<div class="flex items-center justify-between mb-6">
-  <h1 class="text-2xl font-extrabold">Services</h1>
-  <a href="/admin/services/new" class="bg-brand text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-brand-dark">+ Add service</a>
-</div>
-
-<div class="border border-slate-100 rounded-2xl divide-y divide-slate-100">
-  {% for s in services %}
-  <div class="flex items-center justify-between p-4">
-    <div class="flex items-center gap-3">
-      <span class="text-xl">{{ s.icon or "🛠️" }}</span>
-      <div>
-        <div class="font-semibold">{{ s.title }}</div>
-        <div class="text-xs text-slate-400">{{ "%.0f"|format(s.price) }} {{ s.currency }} · {{ s.category }}</div>
-      </div>
-    </div>
-    <div class="flex items-center gap-2 text-sm">
-      <span class="px-2 py-0.5 rounded-full text-xs font-medium {{ 'bg-green-100 text-green-700' if s.is_active else 'bg-slate-100 text-slate-500' }}">
-        {{ "Active" if s.is_active else "Disabled" }}
-      </span>
-      <a href="/admin/services/{{ s.id }}/edit" class="text-brand font-medium">Edit</a>
-      <form method="post" action="/admin/services/{{ s.id }}/toggle" class="inline">
-        <button class="text-slate-500 hover:text-slate-800 font-medium">{{ "Disable" if s.is_active else "Enable" }}</button>
-      </form>
-      <form method="post" action="/admin/services/{{ s.id }}/delete" class="inline"
-            onsubmit="return confirm('Delete this service permanently?');">
-        <button class="text-red-500 hover:text-red-700 font-medium">Delete</button>
-      </form>
-    </div>
-  </div>
-  {% else %}
-  <div class="p-6 text-center text-slate-400 text-sm">No services yet — add your first one.</div>
-  {% endfor %}
-</div>
+{{ page_header("Services", "Shown on the Services page and the homepage. Each one has an \"Order on WhatsApp\" button.", "/admin/services/new", "+ Add service") }}
+{{ catalog_list(services, "/admin/services", "service") }}
 {% endblock %}

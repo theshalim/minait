@@ -1,0 +1,8 @@
+{% extends "admin/layout.html" %}
+{% from "admin/_ui.html" import page_header %}
+{% from "admin/_catalog.html" import catalog_form %}
+{% block title %}{{ "Edit product" if product else "New product" }} — Admin{% endblock %}
+{% block admin_content %}
+{{ page_header("Edit product" if product else "New product") }}
+{{ catalog_form(product, '/admin/products/%d/edit'|format(product.id) if product else '/admin/products/new', "/admin/products", False) }}
+{% endblock %}

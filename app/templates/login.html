@@ -1,29 +1,31 @@
 {% extends "base.html" %}
 {% block title %}{{ t('login.title') }} — {{ site_name }}{% endblock %}
+{% block header %}{% endblock %}
+{% block footer %}{% endblock %}
+{% block assistant %}{% endblock %}
 {% block content %}
-<div class="max-w-sm mx-auto px-5 py-20">
-  <h1 class="text-2xl font-extrabold mb-6 text-center">{{ t('login.title') }}</h1>
+<div class="min-h-screen flex items-center justify-center px-4 py-12 bg-slate-50 dark:bg-slate-950">
+  <div class="w-full max-w-sm">
+    <a href="/" class="flex justify-center mb-8"><img src="/static/img/logo.png" alt="{{ site_name }}" class="h-12 w-auto" /></a>
+    <div class="panel p-7 sm:p-8 shadow-[0_20px_50px_-20px_rgba(15,23,42,0.18)]">
+      <h1 class="text-xl font-semibold tracking-tight text-center">{{ t('login.title') }}</h1>
+      <p class="text-sm text-slate-500 dark:text-slate-400 text-center mt-1.5">{{ t('login.subtitle') }}</p>
 
-  {% if error %}
-  <div class="bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 text-sm px-4 py-3 rounded-lg mb-5">{{ error }}</div>
-  {% endif %}
+      {% if error %}<div class="alert-err mt-6">{{ error }}</div>{% endif %}
 
-  <form method="post" action="/login" class="space-y-4">
-    <div>
-      <label class="block text-sm font-medium mb-1">{{ t('login.email') }}</label>
-      <input required type="email" name="email" class="w-full border border-slate-200 dark:border-slate-700 dark:bg-slate-900 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand/40" />
+      <form method="post" action="/login" class="space-y-4 mt-6">
+        <div>
+          <label class="label" for="email">{{ t('login.email') }}</label>
+          <input id="email" required type="email" name="email" autocomplete="username" class="input" />
+        </div>
+        <div>
+          <label class="label" for="password">{{ t('login.password') }}</label>
+          <input id="password" required type="password" name="password" autocomplete="current-password" class="input" />
+        </div>
+        <button type="submit" class="btn-dark w-full py-3">{{ t('login.submit') }}</button>
+      </form>
     </div>
-    <div>
-      <label class="block text-sm font-medium mb-1">{{ t('login.password') }}</label>
-      <input required type="password" name="password" class="w-full border border-slate-200 dark:border-slate-700 dark:bg-slate-900 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand/40" />
-      <div class="text-right mt-1.5">
-        <a href="/forgot-password" class="text-xs text-slate-500 dark:text-slate-400 hover:text-brand">{{ t('login.forgot') }}</a>
-      </div>
-    </div>
-    <button type="submit" class="w-full bg-brand text-white py-2.5 rounded-lg font-semibold hover:bg-brand-dark transition">{{ t('login.submit') }}</button>
-  </form>
-  <p class="text-center text-sm text-slate-500 dark:text-slate-400 mt-6">
-    {{ t('login.no_account') }} <a href="/signup" class="text-brand font-semibold">{{ t('login.create_account') }}</a>
-  </p>
+    <p class="text-center mt-6"><a href="/" class="text-sm text-slate-500 hover:text-slate-900 dark:hover:text-white">{{ t('order.back_home') }}</a></p>
+  </div>
 </div>
 {% endblock %}

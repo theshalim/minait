@@ -10,7 +10,7 @@
 </div>
 {% endmacro %}
 
-<div class="max-w-5xl mx-auto px-5 pt-6 pb-16">
+<div class="max-w-5xl mx-auto px-4 sm:px-6 pt-6 pb-16">
   <form method="get" action="/blog" class="flex justify-end">
     <label class="flex items-center gap-2 border-b border-slate-300 dark:border-slate-600 focus-within:border-brand py-1.5 w-full sm:w-64">
       <input type="search" name="q" value="{{ q }}" placeholder="{{ t('blog.search') }}"
@@ -88,7 +88,7 @@
       {% if n == 1 or n == pages or (n - page)|abs <= 1 %}
       <a href="/blog?page={{ n }}{{ qs }}"
          class="w-9 h-9 rounded-full flex items-center justify-center font-medium transition
-                {{ 'bg-brand text-white' if n == page else 'border border-slate-300 dark:border-slate-600 hover:border-brand hover:text-brand' }}">{{ n }}</a>
+                {{ 'bg-slate-900 text-white dark:bg-white dark:text-slate-900' if n == page else 'border border-slate-300 dark:border-slate-600 hover:border-slate-900 dark:hover:border-white' }}">{{ n }}</a>
       {% elif (n - page)|abs == 2 %}
       <span class="w-9 h-9 rounded-full border border-slate-300 dark:border-slate-600 flex items-center justify-center text-slate-400">…</span>
       {% endif %}

@@ -1,0 +1,8 @@
+{% extends "admin/layout.html" %}
+{% from "admin/_ui.html" import page_header %}
+{% from "admin/_catalog.html" import catalog_list %}
+{% block title %}Products — Admin{% endblock %}
+{% block admin_content %}
+{{ page_header("Products", "Shown on the Products page. Customers order them on WhatsApp.", "/admin/products/new", "+ Add product") }}
+{{ catalog_list(products, "/admin/products", "product") }}
+{% endblock %}

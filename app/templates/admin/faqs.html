@@ -1,54 +1,37 @@
 {% extends "admin/layout.html" %}
+{% from "admin/_ui.html" import page_header, empty %}
 {% block title %}FAQs — Admin{% endblock %}
 {% block admin_content %}
-<h1 class="text-2xl font-extrabold mb-2">FAQs</h1>
-<p class="text-sm text-slate-500 mb-8">
-  Powers the floating "Assistant" chat bubble on every page — visitors pick a question and see your answer instantly.
-  Add as many as you like; if this list is empty, the widget stays hidden.
-  The Bangla boxes are optional — visitors on the বাংলা site see them when filled in, otherwise the English text.
-</p>
+{{ page_header("FAQs", "Powers the floating \"?\" assistant on every page: visitors pick a question and see your answer. Bangla boxes are optional. If the list is empty, the button stays hidden.") }}
 
-<div class="border border-slate-100 dark:border-slate-800 rounded-2xl divide-y divide-slate-100 dark:divide-slate-800 mb-6">
+<div class="space-y-3 mb-4">
   {% for faq in faqs %}
-  <form method="post" action="/admin/faqs/{{ faq.id }}/edit" class="p-4 space-y-2">
-    <div class="flex items-center gap-3">
-      <input name="sort_order" type="number" value="{{ faq.sort_order }}" title="Order"
-             class="w-14 border border-slate-200 dark:border-slate-700 dark:bg-slate-900 rounded-lg px-2 py-2 text-sm text-center flex-shrink-0" />
-      <input name="question" value="{{ faq.question }}" placeholder="Question (English)"
-             class="flex-1 border border-slate-200 dark:border-slate-700 dark:bg-slate-900 rounded-lg px-3 py-2 text-sm font-medium" />
+  <form method="post" action="/admin/faqs/{{ faq.id }}/edit" class="panel p-4 sm:p-5 space-y-2.5">
+    <div class="flex items-center gap-2">
+      <input name="sort_order" type="number" value="{{ faq.sort_order }}" title="Order" aria-label="Order" class="input w-16 text-center flex-shrink-0" />
+      <input name="question" value="{{ faq.question }}" placeholder="Question (English)" class="input font-medium" />
     </div>
-    <textarea name="answer" rows="2" placeholder="Answer (English)"
-              class="w-full border border-slate-200 dark:border-slate-700 dark:bg-slate-900 rounded-lg px-3 py-2 text-sm">{{ faq.answer }}</textarea>
-    <input name="question_bn" value="{{ faq.question_bn or '' }}" placeholder="প্রশ্ন (বাংলা, optional)"
-           class="w-full border border-slate-200 dark:border-slate-700 dark:bg-slate-900 rounded-lg px-3 py-2 text-sm font-medium" />
-    <textarea name="answer_bn" rows="2" placeholder="উত্তর (বাংলা, optional)"
-              class="w-full border border-slate-200 dark:border-slate-700 dark:bg-slate-900 rounded-lg px-3 py-2 text-sm">{{ faq.answer_bn or '' }}</textarea>
-    <div class="flex justify-end gap-2">
-      <button type="submit" formaction="/admin/faqs/{{ faq.id }}/delete"
-              class="text-red-500 hover:text-red-700 text-sm font-medium px-3 py-1.5">Delete</button>
-      <button class="bg-slate-900 text-white text-sm px-4 py-1.5 rounded-lg font-medium hover:bg-slate-700">Save</button>
+    <textarea name="answer" rows="2" placeholder="Answer (English)" class="input">{{ faq.answer }}</textarea>
+    <input name="question_bn" value="{{ faq.question_bn or '' }}" placeholder="প্রশ্ন (বাংলা, optional)" class="input font-medium" />
+    <textarea name="answer_bn" rows="2" placeholder="উত্তর (বাংলা, optional)" class="input">{{ faq.answer_bn or '' }}</textarea>
+    <div class="flex justify-end gap-1">
+      <button type="submit" formaction="/admin/faqs/{{ faq.id }}/delete" class="btn-danger btn-sm">Delete</button>
+      <button class="btn-dark btn-sm">Save</button>
     </div>
   </form>
   {% else %}
-  <div class="p-6 text-center text-slate-400 text-sm">No FAQs yet — add your first one below.</div>
+  <div class="panel">{{ empty("No FAQs yet — add your first one below.") }}</div>
   {% endfor %}
 </div>
 
-<form method="post" action="/admin/faqs/new" class="p-4 space-y-2 border border-dashed border-slate-200 dark:border-slate-700 rounded-2xl">
-  <div class="flex items-center gap-3">
-    <input name="sort_order" type="number" value="0" title="Order"
-           class="w-14 border border-slate-200 dark:border-slate-700 dark:bg-slate-900 rounded-lg px-2 py-2 text-sm text-center flex-shrink-0" />
-    <input name="question" required placeholder="e.g. Do you offer 24/7 support?"
-           class="flex-1 border border-slate-200 dark:border-slate-700 dark:bg-slate-900 rounded-lg px-3 py-2 text-sm font-medium" />
+<form method="post" action="/admin/faqs/new" class="panel border-dashed p-4 sm:p-5 space-y-2.5">
+  <div class="flex items-center gap-2">
+    <input name="sort_order" type="number" value="0" title="Order" aria-label="Order" class="input w-16 text-center flex-shrink-0" />
+    <input name="question" required placeholder="e.g. Do you offer 24/7 support?" class="input font-medium" />
   </div>
-  <textarea name="answer" rows="2" required placeholder="Your answer..."
-            class="w-full border border-slate-200 dark:border-slate-700 dark:bg-slate-900 rounded-lg px-3 py-2 text-sm"></textarea>
-  <input name="question_bn" placeholder="প্রশ্ন (বাংলা, optional)"
-         class="w-full border border-slate-200 dark:border-slate-700 dark:bg-slate-900 rounded-lg px-3 py-2 text-sm font-medium" />
-  <textarea name="answer_bn" rows="2" placeholder="উত্তর (বাংলা, optional)"
-            class="w-full border border-slate-200 dark:border-slate-700 dark:bg-slate-900 rounded-lg px-3 py-2 text-sm"></textarea>
-  <div class="flex justify-end">
-    <button class="bg-brand text-white text-sm px-4 py-2 rounded-lg font-semibold hover:bg-brand-dark">+ Add FAQ</button>
-  </div>
+  <textarea name="answer" rows="2" required placeholder="Your answer…" class="input"></textarea>
+  <input name="question_bn" placeholder="প্রশ্ন (বাংলা, optional)" class="input font-medium" />
+  <textarea name="answer_bn" rows="2" placeholder="উত্তর (বাংলা, optional)" class="input"></textarea>
+  <div class="flex justify-end"><button class="btn-dark btn-sm">+ Add FAQ</button></div>
 </form>
 {% endblock %}

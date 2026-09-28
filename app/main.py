@@ -6,7 +6,7 @@ from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 
 from app.config import settings
-from app.routers import admin, auth, dashboard, orders, pages, webhooks
+from app.routers import admin, auth, orders, pages, webhooks
 from app.security import refresh_session_middleware
 from app.templating import base_ctx, templates
 
@@ -22,7 +22,6 @@ app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
 app.include_router(pages.router)
 app.include_router(auth.router)
-app.include_router(dashboard.router)
 app.include_router(orders.router)
 app.include_router(admin.router)
 app.include_router(webhooks.router)

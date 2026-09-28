@@ -1,0 +1,30 @@
+{% extends "admin/layout.html" %}
+{% from "admin/_ui.html" import page_header %}
+{% block title %}Account — Admin{% endblock %}
+{% block admin_content %}
+{{ page_header("Account", "Signed in as " ~ user.email ~ ". Log in any time at " ~ site_url ~ "/login") }}
+
+<div class="panel p-5 sm:p-6 max-w-md">
+  <h2 class="font-semibold tracking-tight">Change password</h2>
+  <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 mb-5">At least 8 characters. Forgot it? Reset it in the Supabase dashboard → Authentication → Users.</p>
+
+  {% if error %}<div class="alert-err mb-4">{{ error }}</div>{% endif %}
+  {% if message %}<div class="alert-ok mb-4">{{ message }}</div>{% endif %}
+
+  <form method="post" action="/admin/account/password" class="space-y-4">
+    <div>
+      <label class="label" for="current_password">Current password</label>
+      <input id="current_password" required type="password" name="current_password" autocomplete="current-password" class="input" />
+    </div>
+    <div>
+      <label class="label" for="new_password">New password</label>
+      <input id="new_password" required type="password" name="new_password" minlength="8" autocomplete="new-password" class="input" />
+    </div>
+    <div>
+      <label class="label" for="confirm_password">Repeat new password</label>
+      <input id="confirm_password" required type="password" name="confirm_password" minlength="8" autocomplete="new-password" class="input" />
+    </div>
+    <button type="submit" class="btn-dark">Change password</button>
+  </form>
+</div>
+{% endblock %}

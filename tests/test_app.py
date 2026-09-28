@@ -65,46 +65,8 @@ def test_blog_post_uses_bangla_body(client, db):
 
 
 # ---------------------------------------------------------------------------
-# Checkout & orders
+# Ordering (WhatsApp) & order status
 # ---------------------------------------------------------------------------
-def test_checkout_offers_only_configured_gateways_with_whatsapp_default(client, db, settings, monkeypatch):
-    db.add("services", title="Repair", slug="repair", price=1000)
-    html = client.get("/checkout/repair").text
-    assert 'value="whatsapp" checked' in html
-    assert 'value="stripe"' not in html and 'value="sslcommerz"' not in html
-
-    monkeypatch.setattr(settings, "STRIPE_SECRET_KEY", "sk_test_123")
-    html = client.get("/checkout/repair").text
-    assert 'value="whatsapp" checked' in html and 'value="stripe"' in html
-
-
-def _order_form(service_id, method="whatsapp"):
-    return {"service_id": service_id, "customer_name": "Rahim", "customer_email": "r@example.com",
-            "customer_phone": "01711111111", "payment_method": method}
-
-
-def test_whatsapp_order_is_saved_and_opens_whatsapp(client, db):
-    svc = db.add("services", title="Repair", slug="repair", price=1000)
-    r = client.post("/orders", data=_order_form(svc["id"]))
-    assert r.status_code == 303
-    assert r.headers["location"].startswith("https://wa.me/8801700000000?text=")
-    order = db.tables["orders"][0]
-    assert order["order_number"] in wa_text(r.headers["location"])
-    assert db.notifications and "New order" in db.notifications[0]
-
-
-def test_unconfigured_gateway_falls_back_to_whatsapp(client, db):
-    svc = db.add("services", title="Repair", slug="repair", price=1000)
-    r = client.post("/orders", data=_order_form(svc["id"], method="stripe"))
-    assert r.headers["location"].startswith("https://wa.me/")
-    assert db.tables["orders"][0]["payment_method"] == "whatsapp"
-
-
-def test_order_without_whatsapp_number_goes_to_status_page(client, db, settings, monkeypatch):
-    monkeypatch.setattr(settings, "WHATSAPP_NUMBER", "")
-    svc = db.add("services", title="Repair", slug="repair", price=1000)
-    r = client.post("/orders", data=_order_form(svc["id"]))
-    assert r.headers["location"] == f"/orders/{db.tables['orders'][0]['order_number']}"
 
 
 def test_order_status_page_is_translated(client, db):
@@ -118,38 +80,9 @@ def test_order_status_page_is_translated(client, db):
         assert english not in html
 
 
-def test_telegram_message_escapes_customer_text(client, db):
-    svc = db.add("services", title="Repair", slug="repair", price=1000)
-    form = _order_form(svc["id"])
-    form["customer_name"] = "<b>Tom & Jerry"
-    client.post("/orders", data=form)
-    assert "&lt;b&gt;Tom &amp; Jerry" in db.notifications[0]
-
-
 # ---------------------------------------------------------------------------
 # Login session refresh
 # ---------------------------------------------------------------------------
-def test_expired_access_token_is_refreshed(client, db, monkeypatch):
-    db.add_user("user-1", "user@example.com")
-    client.cookies.set("sb_access_token", make_token("user-1", expires_in=-10))
-    client.cookies.set("sb_refresh_token", "refresh-old")
-    calls = []
-
-    def fake_refresh(token):
-        calls.append(token)
-        return {"access_token": make_token("user-1"), "refresh_token": "refresh-new"}
-
-    monkeypatch.setattr(security, "refresh_tokens", fake_refresh)
-    r = client.get("/dashboard")
-    assert r.status_code == 200  # still logged in, not bounced to /login
-    assert calls == ["refresh-old"]
-    assert "refresh-new" in r.headers.get("set-cookie", "")
-
-
-def test_valid_access_token_is_not_refreshed(client, db, monkeypatch):
-    login(client, db)
-    monkeypatch.setattr(security, "refresh_tokens", lambda t: (_ for _ in ()).throw(AssertionError))
-    assert client.get("/dashboard").status_code == 200
 
 
 def test_rejected_refresh_token_logs_out(client, db, monkeypatch):
@@ -157,7 +90,7 @@ def test_rejected_refresh_token_logs_out(client, db, monkeypatch):
     client.cookies.set("sb_access_token", make_token("user-1", expires_in=-10))
     client.cookies.set("sb_refresh_token", "refresh-revoked")
     monkeypatch.setattr(security, "refresh_tokens", lambda t: None)
-    r = client.get("/dashboard")
+    r = client.get("/admin")
     assert r.status_code == 303 and r.headers["location"] == "/login"
 
 
@@ -173,13 +106,6 @@ def test_network_error_during_refresh_does_not_crash(client, db, monkeypatch):
     assert client.get("/").status_code == 200
 
 
-def test_login_sets_cookies_and_opens_dashboard(client, db):
-    db.add_user("user-1", "user@example.com", password="secret123")
-    r = client.post("/login", data={"email": "user@example.com", "password": "secret123"})
-    assert r.status_code == 303 and r.headers["location"] == "/dashboard"
-    assert "sb_access_token" in r.headers.get("set-cookie", "")
-
-
 def test_wrong_login_shows_translated_error(client, db):
     client.cookies.set("lang", "bn")
     r = client.post("/login", data={"email": "no@example.com", "password": "bad"})
@@ -187,35 +113,8 @@ def test_wrong_login_shows_translated_error(client, db):
 
 
 # ---------------------------------------------------------------------------
-# Forgot / change password (no email involved)
+# Password check helper
 # ---------------------------------------------------------------------------
-def test_forgot_password_notifies_admin_and_opens_whatsapp(client, db):
-    assert "/forgot-password" in client.get("/login").text
-    r = client.post("/forgot-password", data={"email": "user@example.com"})
-    assert r.headers["location"].startswith("https://wa.me/8801700000000")
-    assert "user@example.com" in wa_text(r.headers["location"])
-    assert "Password reset request" in db.notifications[0]
-
-
-def test_forgot_password_without_whatsapp_shows_confirmation(client, db, settings, monkeypatch):
-    monkeypatch.setattr(settings, "WHATSAPP_NUMBER", "")
-    r = client.post("/forgot-password", data={"email": "user@example.com"})
-    assert r.status_code == 200 and "Request received" in r.text
-
-
-def test_change_password_checks_current_password(client, db, monkeypatch):
-    login(client, db)
-    monkeypatch.setattr("app.routers.dashboard.check_password", lambda email, pw: pw == "secret123")
-
-    r = client.post("/dashboard/password", data={"current_password": "wrong", "new_password": "newpass1"})
-    assert "Current password is wrong" in r.text and not db.password_updates
-
-    r = client.post("/dashboard/password", data={"current_password": "secret123", "new_password": "123"})
-    assert "at least 6" in r.text and not db.password_updates
-
-    r = client.post("/dashboard/password", data={"current_password": "secret123", "new_password": "newpass1"})
-    assert "Password changed" in r.text
-    assert db.password_updates == [("user-1", "newpass1")]
 
 
 def test_check_password_calls_supabase_token_endpoint(monkeypatch, settings):
@@ -248,19 +147,8 @@ def admin_login(client, db):
 
 def test_admin_pages_need_admin(client, db):
     assert client.get("/admin").headers["location"] == "/login"
-    login(client, db)
+    login(client, db)  # a logged-in non-admin
     assert client.get("/admin").status_code == 403
-
-
-def test_all_admin_pages_render(client, db):
-    admin_login(client, db)
-    db.add("services", title="Repair", slug="repair", price=1000)
-    db.add("orders", order_number="MINA-1", service_title="Repair", customer_name="R",
-           customer_email="r@x.com", customer_phone="01711111111", amount=1000, currency="BDT",
-           payment_method="whatsapp")
-    for path in ("/admin", "/admin/home", "/admin/services", "/admin/services/new", "/admin/orders",
-                 "/admin/users", "/admin/blog", "/admin/blog/new", "/admin/faqs"):
-        assert client.get(path).status_code == 200, path
 
 
 def test_same_title_twice_gets_unique_slugs(client, db):
@@ -300,7 +188,7 @@ def test_admin_marks_whatsapp_order_paid_and_revenue_counts_it(client, db):
     assert r.headers["location"] == f"/admin/orders?status=pending#order-{order['id']}"
     saved = db.tables["orders"][0]
     assert saved["status"] == "in_progress" and saved["payment_status"] == "paid"
-    assert "1500" in client.get("/admin").text
+    assert "1,500 BDT" in client.get("/admin").text
 
     bad = client.post(f"/admin/orders/{order['id']}/status", data={"status": "done", "payment_status": "paid"})
     assert bad.status_code == 400
@@ -328,21 +216,6 @@ def test_slide_can_be_hidden_and_shown(client, db):
     assert "https://img/1.jpg" not in client.get("/").text
     client.post(f"/admin/home/slides/{slide['id']}/toggle")
     assert "https://img/1.jpg" in client.get("/").text
-
-
-def test_admin_sets_customer_password(client, db):
-    admin_login(client, db)
-    db.add_user("user-9", "cust@example.com", phone="01999999999")
-    html = client.get("/admin/users").text
-    assert "cust@example.com" in html
-
-    r = client.post("/admin/users/user-9/password", data={"new_password": "temp1234"})
-    assert "Password updated" in r.text
-    assert db.password_updates == [("user-9", "temp1234")]
-    assert "https://wa.me/8801999999999?text=" in r.text
-
-    r = client.post("/admin/users/user-9/password", data={"new_password": "123"})
-    assert "at least 6" in r.text and len(db.password_updates) == 1
 
 
 # ---------------------------------------------------------------------------

@@ -28,7 +28,7 @@
   })
     .then(function (res) {
       if (res.ok) {
-        window.location.replace("/dashboard");
+        window.location.replace("/admin");
       } else {
         cleanUrl();
       }
@@ -47,6 +47,18 @@
     try {
       localStorage.setItem("theme", isDark ? "dark" : "light");
     } catch (e) {}
+  });
+})();
+
+// Mobile menu (hamburger) in the navbar.
+(function () {
+  var btn = document.getElementById("menu-toggle");
+  var menu = document.getElementById("mobile-menu");
+  if (!btn || !menu) return;
+  btn.addEventListener("click", function () {
+    var open = menu.hasAttribute("hidden");
+    menu.toggleAttribute("hidden", !open);
+    btn.setAttribute("aria-expanded", open ? "true" : "false");
   });
 })();
 
@@ -75,7 +87,9 @@
     });
     dots.forEach(function (dot, i) {
       dot.classList.toggle("bg-white", i === current);
-      dot.classList.toggle("bg-white/40", i !== current);
+      dot.classList.toggle("w-6", i === current);
+      dot.classList.toggle("bg-white/50", i !== current);
+      dot.classList.toggle("w-2", i !== current);
     });
   }
 
