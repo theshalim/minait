@@ -174,6 +174,37 @@ create table if not exists clients (
 );
 
 -- ---------------------------------------------------------------------------
+-- features: the "Why choose us" points on the homepage. Four starter points
+-- are added the first time this runs (edit or delete them in the admin).
+-- ---------------------------------------------------------------------------
+create table if not exists features (
+  id             bigserial primary key,
+  title          text not null,
+  title_bn       text,
+  description    text not null default '',
+  description_bn text,
+  sort_order     integer not null default 0,
+  created_at     timestamptz not null default now()
+);
+
+insert into features (title, title_bn, description, description_bn, sort_order)
+select * from (values
+  ('Same-day support', 'একই দিনে সাপোর্ট',
+   'Tell us the problem in the morning, it''s usually fixed the same day.',
+   'সকালে সমস্যা জানালে সাধারণত সেদিনই সমাধান করে দিই।', 1),
+  ('Experienced team', 'অভিজ্ঞ টিম',
+   'Certified engineers who have set up offices, shops and homes.',
+   'অফিস, দোকান ও বাসায় কাজ করা দক্ষ ইঞ্জিনিয়ার।', 2),
+  ('Clear pricing', 'স্বচ্ছ দাম',
+   'You know the price before we start. No hidden charges.',
+   'কাজ শুরুর আগেই দাম জানবেন। কোনো লুকানো খরচ নেই।', 3),
+  ('After-service care', 'কাজের পরেও পাশে',
+   'Warranty on our work and quick help if anything goes wrong later.',
+   'কাজের ওয়ারেন্টি, আর পরে কোনো সমস্যা হলে দ্রুত সহায়তা।', 4)
+) as v(title, title_bn, description, description_bn, sort_order)
+where not exists (select 1 from features);
+
+-- ---------------------------------------------------------------------------
 -- site_settings: small admin-editable values, e.g. the footer's contact
 -- email and phone (Admin -> Home page -> Contact info).
 -- ---------------------------------------------------------------------------
@@ -217,6 +248,11 @@ alter table products     enable row level security;
 alter table testimonials enable row level security;
 alter table clients      enable row level security;
 alter table site_settings enable row level security;
+alter table features      enable row level security;
+
+drop policy if exists "features: public read" on features;
+create policy "features: public read" on features
+  for select using (true);
 
 drop policy if exists "site_settings: public read" on site_settings;
 create policy "site_settings: public read" on site_settings

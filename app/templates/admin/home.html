@@ -2,7 +2,7 @@
 {% from "admin/_ui.html" import page_header, section_title, empty %}
 {% block title %}Home page — Admin{% endblock %}
 {% block admin_content %}
-{{ page_header("Home page", "Contact info, the hero slider and the number counters. Changes go live immediately. Testimonials and client logos are under Clients.") }}
+{{ page_header("Home page", "Contact info, \"Why choose us\", the hero slider and the number counters. Changes go live immediately. Testimonials and client logos are under Clients.") }}
 
 {# ============================= Contact info ============================= #}
 <div id="contact" class="scroll-mt-28">
@@ -13,6 +13,44 @@
   <div><label class="label">Phone number</label><input name="contact_phone" type="tel" value="{{ contact.contact_phone or '' }}" placeholder="01XXXXXXXXX" class="input" /></div>
   <button class="btn-dark">Save</button>
 </form>
+
+{# =========================== Why choose us =========================== #}
+<div id="why" class="scroll-mt-28">
+{{ section_title("Why choose us", "Short reasons to pick you, shown as cards on the homepage. 3–4 points look best; keep each title to a few words and the text to one sentence.") }}
+</div>
+{% if features is none %}
+<div class="alert-err mb-14">This section needs the new database table — run <strong>db/schema.sql</strong> again in the Supabase SQL editor.</div>
+{% else %}
+<div class="space-y-3 mb-4">
+  {% for f in features %}
+  <form method="post" action="/admin/home/features/{{ f.id }}/edit" class="panel p-4 sm:p-5 grid gap-2.5 sm:grid-cols-2">
+    <input name="title" required value="{{ f.title }}" placeholder="Title (English)" aria-label="Title" class="input font-medium" />
+    <input name="title_bn" value="{{ f.title_bn or '' }}" placeholder="শিরোনাম (বাংলা, optional)" aria-label="Bangla title" class="input font-medium" />
+    <textarea name="description" rows="2" placeholder="One sentence (English)" aria-label="Text" class="input">{{ f.description }}</textarea>
+    <textarea name="description_bn" rows="2" placeholder="এক লাইন (বাংলা, optional)" aria-label="Bangla text" class="input">{{ f.description_bn or '' }}</textarea>
+    <div class="sm:col-span-2 flex items-center justify-between gap-2">
+      <input name="sort_order" type="number" value="{{ f.sort_order }}" title="Order" aria-label="Order" class="input w-20 text-center" />
+      <div class="flex gap-1">
+        <button type="submit" formaction="/admin/home/features/{{ f.id }}/delete" formnovalidate class="btn-danger btn-sm">Delete</button>
+        <button class="btn-dark btn-sm">Save</button>
+      </div>
+    </div>
+  </form>
+  {% else %}
+  <div class="panel">{{ empty("No points yet — the section stays hidden until you add one.") }}</div>
+  {% endfor %}
+</div>
+<form method="post" action="/admin/home/features/new" class="panel border-dashed p-4 sm:p-5 grid gap-2.5 sm:grid-cols-2 mb-14">
+  <input name="title" required placeholder="e.g. Same-day support" aria-label="Title" class="input font-medium" />
+  <input name="title_bn" placeholder="শিরোনাম (বাংলা, optional)" aria-label="Bangla title" class="input font-medium" />
+  <textarea name="description" rows="2" placeholder="One sentence (English)" aria-label="Text" class="input"></textarea>
+  <textarea name="description_bn" rows="2" placeholder="এক লাইন (বাংলা, optional)" aria-label="Bangla text" class="input"></textarea>
+  <div class="sm:col-span-2 flex items-center justify-between gap-2">
+    <input name="sort_order" type="number" value="0" title="Order" aria-label="Order" class="input w-20 text-center" />
+    <button class="btn-dark btn-sm">+ Add point</button>
+  </div>
+</form>
+{% endif %}
 
 {# ============================= Hero slides ============================= #}
 {{ section_title("Hero slider", "Just the picture — the text is designed into the image. Each image is one slide, rotating every 5 seconds. Size: 1600×900px (16:9), JPG or PNG, under 2MB. \"Hide\" takes a slide off the homepage without deleting it.") }}

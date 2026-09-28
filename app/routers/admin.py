@@ -194,9 +194,53 @@ def admin_service_delete(service_id: int):
 def admin_home(request: Request):
     slides = supabase_admin().table("hero_slides").select("*").order("sort_order").order("id").execute().data
     stats = supabase_admin().table("site_stats").select("*").order("sort_order").execute().data
+    try:
+        features = supabase_admin().table("features").select("*").order("sort_order").execute().data
+    except Exception:
+        features = None  # table not created yet — the page says to re-run schema.sql
     return templates.TemplateResponse(
-        "admin/home.html", base_ctx(request, slides=slides, stats=stats)
+        "admin/home.html", base_ctx(request, slides=slides, stats=stats, features=features)
     )
+
+
+def _feature_row(title, title_bn, description, description_bn, sort_order):
+    return {"title": title, "title_bn": title_bn, "description": description,
+            "description_bn": description_bn, "sort_order": sort_order}
+
+
+@router.post("/home/features/new")
+def admin_feature_create(
+    title: str = Form(...),
+    title_bn: str = Form(""),
+    description: str = Form(""),
+    description_bn: str = Form(""),
+    sort_order: int = Form(0),
+):
+    supabase_admin().table("features").insert(
+        _feature_row(title, title_bn, description, description_bn, sort_order)
+    ).execute()
+    return RedirectResponse("/admin/home#why", status_code=303)
+
+
+@router.post("/home/features/{fid}/edit")
+def admin_feature_update(
+    fid: int,
+    title: str = Form(...),
+    title_bn: str = Form(""),
+    description: str = Form(""),
+    description_bn: str = Form(""),
+    sort_order: int = Form(0),
+):
+    supabase_admin().table("features").update(
+        _feature_row(title, title_bn, description, description_bn, sort_order)
+    ).eq("id", fid).execute()
+    return RedirectResponse("/admin/home#why", status_code=303)
+
+
+@router.post("/home/features/{fid}/delete")
+def admin_feature_delete(fid: int):
+    supabase_admin().table("features").delete().eq("id", fid).execute()
+    return RedirectResponse("/admin/home#why", status_code=303)
 
 
 @router.post("/home/contact")

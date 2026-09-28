@@ -102,6 +102,9 @@ TRANSLATIONS = {
         "login.subtitle": "For the site owner only.",
         "footer.chat": "Chat with us",
         "offer.order": "Order now",
+        "home.products_heading": "Our Products",
+        "home.view_all_products": "View all products",
+        "home.why_heading": "Why choose us",
     },
     "bn": {
         "nav.services": "সার্ভিস",
@@ -190,6 +193,9 @@ TRANSLATIONS = {
         "login.subtitle": "শুধু সাইটের মালিকের জন্য।",
         "footer.chat": "চ্যাট করুন",
         "offer.order": "অর্ডার করুন",
+        "home.products_heading": "আমাদের প্রোডাক্ট",
+        "home.view_all_products": "সব প্রোডাক্ট দেখুন",
+        "home.why_heading": "কেন আমাদের বেছে নেবেন",
     },
 }
 

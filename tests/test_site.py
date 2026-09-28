@@ -244,3 +244,46 @@ def test_bangla_text_has_no_letter_spacing(client):
     assert 'html[lang="bn"] .eyebrow' in css and "letter-spacing: normal !important" in css
     client.cookies.set("lang", "bn")
     assert '<html lang="bn"' in client.get("/").text
+
+
+# ---------------------------------------------------------------------------
+# Homepage: products preview, "Why choose us", Schedule a Call
+# ---------------------------------------------------------------------------
+def test_home_previews_four_products(client, db):
+    for i in range(6):
+        db.add("products", title=f"Product {i}", slug=f"p{i}", price=100, sort_order=i)
+    html = client.get("/").text
+    assert "Product 3" in html and "Product 4" not in html
+    assert 'href="/products" class="btn-outline"' in html
+
+
+def test_home_why_choose_us_from_admin(client, db):
+    assert 'id="why-us"' not in client.get("/").text  # hidden while empty
+    admin_login(client, db)
+    client.post("/admin/home/features/new", data={"title": "Same-day support", "title_bn": "একই দিনে সাপোর্ট",
+                                                  "description": "Fast.", "sort_order": "1"})
+    fid = db.tables["features"][0]["id"]
+    assert 'id="why-us"' in client.get("/").text and "Same-day support" in client.get("/").text
+    client.cookies.set("lang", "bn")
+    assert "একই দিনে সাপোর্ট" in client.get("/").text
+    client.post(f"/admin/home/features/{fid}/edit", data={"title": "Quick help"})
+    assert db.tables["features"][0]["title"] == "Quick help"
+    client.post(f"/admin/home/features/{fid}/delete")
+    assert db.tables["features"] == []
+
+
+def test_admin_home_warns_when_features_table_missing(client, db):
+    admin_login(client, db)
+    db.missing_tables.add("features")
+    assert "run <strong>db/schema.sql</strong> again" in client.get("/admin/home").text
+    assert client.get("/").status_code == 200
+
+
+def test_schedule_a_call_dials_the_phone_when_set(client, db):
+    html = client.get("/").text
+    assert "https://wa.me/8801700000000?text=" in html  # no phone yet: falls back to chat
+    db.add("site_settings", key="contact_phone", value="01711 223344")
+    import app.site_settings as site_settings
+
+    site_settings._cache["at"] = 0.0
+    assert 'href="tel:01711223344"' in client.get("/").text

@@ -48,6 +48,9 @@ minait/
    update profiles set is_admin = true where id = '<your-user-uuid-from-auth.users>';
    ```
    That account now has access to `/admin`.
+5. Optional: run [`db/sample_content.sql`](db/sample_content.sql) too, for 4 sample services,
+   4 products and 4 blog posts (free Unsplash photos) so the site doesn't start empty. Edit or
+   delete them in the admin panel later.
 
 (Using plain Neon Postgres instead of Supabase Auth is possible but requires swapping
 `app/security.py` for your own JWT/password-hash login — Supabase is the path of least

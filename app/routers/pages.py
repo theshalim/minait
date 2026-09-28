@@ -67,6 +67,10 @@ def home(request: Request):
             posts=posts,
             slides=_active("hero_slides"),
             stats=stats,
+            products=_optional(lambda: _active("products")),
+            features=_optional(
+                lambda: supabase_admin().table("features").select("*").order("sort_order").execute().data
+            ),
             testimonials=_optional(lambda: _active("testimonials")),
             clients=_optional(
                 lambda: supabase_admin().table("clients").select("*").order("sort_order").execute().data
