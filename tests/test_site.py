@@ -27,21 +27,17 @@ def test_signup_and_dashboard_are_gone(client, db):
     assert client.get("/dashboard").headers["location"] == "/admin"
 
 
-def test_order_buttons_open_whatsapp_with_the_item(client, db):
+def test_order_buttons_open_the_order_form_and_show_no_price(client, db):
     db.add("services", title="Repair", slug="repair", price=1500)
     html = client.get("/services").text
-    text = wa_link_text(html)
-    assert "Repair" in text and "1,500 BDT" in text
-    assert "/checkout/" not in html
+    assert 'href="/order/service/repair"' in html
+    assert "wa.me/8801700000000?text=" not in html and "1,500" not in html and "BDT" not in html
 
 
-def test_old_checkout_link_redirects_to_whatsapp(client, db):
-    db.add("services", title="Repair", title_bn="মেরামত", slug="repair", price=1500)
-    r = client.get("/checkout/repair")
-    assert r.headers["location"].startswith("https://wa.me/8801700000000?text=")
-    client.cookies.set("lang", "bn")
-    assert "মেরামত" in wa_text(client.get("/checkout/repair").headers["location"])
-    assert client.post("/orders", data={}).status_code in (404, 405)  # no public order form any more
+def test_old_checkout_link_opens_the_order_form(client, db):
+    db.add("services", title="Repair", slug="repair", price=1500)
+    assert client.get("/checkout/repair").headers["location"] == "/order/service/repair"
+    assert client.post("/orders", data={}).status_code in (404, 405)  # the old public order endpoint is gone
 
 
 def test_services_page_and_detail(client, db):
@@ -53,14 +49,18 @@ def test_services_page_and_detail(client, db):
 
 
 def test_products_page(client, db):
-    db.add("products", title="Router", title_bn="রাউটার", slug="router", price=2500)
+    db.add("products", title="Router", title_bn="রাউটার", slug="router", price=2500, color="green")
     db.add("products", title="Custom PC", slug="custom-pc", price=None)
     db.add("products", title="Old stock", slug="old", price=1, is_active=False)
     html = client.get("/products").text
-    assert "Router" in html and "2,500 BDT" in html
-    assert "Price on request" in html and "Old stock" not in html
+    assert "Router" in html and "Custom PC" in html and "Old stock" not in html
+    assert "2,500" not in html and "Price on request" not in html
+    assert 'class="tone-green' in html and 'class="tone-green h-full' in html
+    for link in ('href="/order/product/router"', 'href="/order/product/router?type=demo"', 'href="/products/router"'):
+        assert link in html
     client.cookies.set("lang", "bn")
-    assert "রাউটার" in client.get("/products").text
+    bn = client.get("/products").text
+    assert "রাউটার" in bn and "ডেমো বুক করুন" in bn and "বিস্তারিত দেখুন" in bn
 
 
 def test_pages_survive_missing_new_tables(client, db):
@@ -146,14 +146,15 @@ def test_all_admin_pages_render(client, db):
 
 def test_admin_product_crud(client, db):
     admin_login(client, db)
-    client.post("/admin/products/new", data={"title": "Router", "title_bn": "রাউটার", "price": "2500"})
-    client.post("/admin/products/new", data={"title": "Router", "price": ""})
+    assert 'name="price"' not in client.get("/admin/products/new").text
+    client.post("/admin/products/new", data={"title": "Router", "title_bn": "রাউটার", "color": "rose"})
+    client.post("/admin/products/new", data={"title": "Router", "color": "not-a-colour"})
     rows = db.tables["products"]
     assert [p["slug"] for p in rows] == ["router", "router-2"]
-    assert rows[0]["price"] == 2500.0 and rows[1]["price"] is None
+    assert rows[0]["color"] == "rose" and rows[1]["color"] == ""
     pid = rows[0]["id"]
-    client.post(f"/admin/products/{pid}/edit", data={"title": "Wi-Fi Router", "price": "2700"})
-    assert db.tables["products"][0]["title"] == "Wi-Fi Router"
+    client.post(f"/admin/products/{pid}/edit", data={"title": "Wi-Fi Router", "color": "teal"})
+    assert db.tables["products"][0]["title"] == "Wi-Fi Router" and db.tables["products"][0]["color"] == "teal"
     client.post(f"/admin/products/{pid}/toggle")
     assert db.tables["products"][0]["is_active"] is False
     client.post(f"/admin/products/{pid}/delete")
@@ -249,11 +250,11 @@ def test_bangla_text_has_no_letter_spacing(client):
 # ---------------------------------------------------------------------------
 # Homepage: products preview, "Why choose us", Schedule a Call
 # ---------------------------------------------------------------------------
-def test_home_previews_four_products(client, db):
+def test_home_shows_all_products_in_a_slider(client, db):
     for i in range(6):
-        db.add("products", title=f"Product {i}", slug=f"p{i}", price=100, sort_order=i)
+        db.add("products", title=f"Product {i}", slug=f"p{i}", sort_order=i)
     html = client.get("/").text
-    assert "Product 3" in html and "Product 4" not in html
+    assert html.count('class="product-slide ') == 6 and 'data-interval="5"' in html
     assert 'href="/products" class="btn-outline"' in html
 
 
@@ -287,3 +288,105 @@ def test_schedule_a_call_dials_the_phone_when_set(client, db):
 
     site_settings._cache["at"] = 0.0
     assert 'href="tel:01711223344"' in client.get("/").text
+
+
+
+# ---------------------------------------------------------------------------
+# Order / Book-a-demo form
+# ---------------------------------------------------------------------------
+def test_order_form_saves_request_and_alerts_admin(client, db):
+    db.add("services", title="Repair", slug="repair", price=0)
+    page = client.get("/order/service/repair")
+    assert page.status_code == 200 and "Order: Repair" in page.text and 'name="preferred_time"' not in page.text
+    r = client.post("/order/service/repair", data={"name": "Karim", "email": "k@example.com",
+                                                   "company": "ABC", "message": "Two laptops are slow"})
+    order = db.tables["orders"][0]
+    assert r.headers["location"] == f"/thank-you/{order['order_number']}"
+    assert order["service_title"] == "Repair" and order["kind"] == "order" and order["payment_method"] == "form"
+    assert "Two laptops are slow" in order["notes"] and "Company: ABC" in order["notes"]
+    assert "New order request" in db.notifications[0] and "Two laptops are slow" in db.notifications[0]
+    thanks = client.get(r.headers["location"]).text
+    assert order["order_number"] in thanks and f'href="/orders/{order["order_number"]}"' in thanks
+    status = client.get(f"/orders/{order['order_number']}").text
+    assert "0 BDT" not in status  # no amount shown until the admin sets one
+
+
+def test_demo_form_for_a_product(client, db):
+    db.add("products", title="Router", slug="router")
+    page = client.get("/order/product/router?type=demo").text
+    assert "Book a demo: Router" in page and 'name="preferred_time"' in page
+    client.post("/order/product/router", data={"request_type": "demo", "name": "Rina", "phone": "01711111111",
+                                               "preferred_time": "2026-10-02T11:00", "message": ""})
+    order = db.tables["orders"][0]
+    assert order["kind"] == "demo" and order["service_title"] == "Demo — Router"
+    assert "Preferred time: 2026-10-02T11:00" in order["notes"]
+    assert "Demo request" in db.notifications[0]
+    admin_login(client, db)
+    assert "Demo request" in client.get("/admin/orders").text
+
+
+def test_order_form_needs_a_way_to_reach_the_customer(client, db):
+    db.add("services", title="Repair", slug="repair", price=0)
+    r = client.post("/order/service/repair", data={"name": "Karim", "message": "hello"})
+    assert r.status_code == 200 and "email or a phone number" in r.text
+    assert 'value="Karim"' in r.text  # what they typed is kept
+    assert not db.tables.get("orders")
+
+
+def test_order_form_ignores_bots(client, db):
+    db.add("services", title="Repair", slug="repair", price=0)
+    r = client.post("/order/service/repair", data={"name": "x", "email": "x@x.com", "website": "spam.com"})
+    assert r.status_code == 303 and not db.tables.get("orders") and not db.notifications
+
+
+def test_order_form_works_before_schema_update(client, db, monkeypatch):
+    # Until db/schema.sql is re-run, orders has no "kind" column.
+    db.add("services", title="Repair", slug="repair", price=0)
+    original = db.table
+
+    def table(name):
+        q = original(name)
+        if name == "orders":
+            real_insert = q.insert
+
+            def insert(data):
+                if "kind" in data:
+                    raise Exception('column "kind" of relation "orders" does not exist')
+                return real_insert(data)
+
+            q.insert = insert
+        return q
+
+    monkeypatch.setattr(db, "table", table)
+    r = client.post("/order/service/repair", data={"name": "Karim", "phone": "01711111111"})
+    assert r.status_code == 303 and len(db.tables["orders"]) == 1
+
+
+def test_order_form_offers_call_email_and_chat(client, db):
+    db.add("services", title="Repair", slug="repair", price=0)
+    db.add("site_settings", key="contact_phone", value="01711 223344")
+    db.add("site_settings", key="contact_email", value="hello@mina.it")
+    html = client.get("/order/service/repair").text
+    assert 'href="tel:01711223344"' in html and 'href="mailto:hello@mina.it"' in html and "wa.me/8801700000000" in html
+
+
+def test_product_detail_page(client, db):
+    db.add("products", title="Router", slug="router", description="Fast.", color="amber")
+    html = client.get("/products/router").text
+    assert "Router" in html and "tone-amber" in html
+    assert 'href="/order/product/router"' in html and 'href="/order/product/router?type=demo"' in html
+
+
+def test_service_detail_has_no_price(client, db):
+    db.add("services", title="Repair", slug="repair", price=1500)
+    html = client.get("/services/repair").text
+    assert "1,500" not in html and 'href="/order/service/repair"' in html
+
+
+def test_admin_sets_slider_speed(client, db):
+    admin_login(client, db)
+    db.add("products", title="Router", slug="router")
+    client.post("/admin/products/slider", data={"seconds": "8"})
+    assert 'data-interval="8"' in client.get("/products").text
+    client.post("/admin/products/slider", data={"seconds": "999"})
+    assert 'data-interval="30"' in client.get("/products").text

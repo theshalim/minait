@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "partials/cards.html" import offer_grid with context %}
+{% from "partials/cards.html" import offer_grid, product_carousel with context %}
 {% block content %}
 
 {# ================================ Hero ================================ #}
@@ -102,7 +102,7 @@
 {% if products %}
 <section id="products" class="container-x pt-20 sm:pt-28">
   <h2 class="section-title text-center mb-10 sm:mb-14">{{ t('home.products_heading') }}</h2>
-  {{ offer_grid(products[:4], "product") }}
+  {{ product_carousel(products) }}
   <div class="text-center mt-6"><a href="/products" class="btn-outline">{{ t('home.view_all_products') }}</a></div>
 </section>
 {% endif %}

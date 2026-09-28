@@ -82,14 +82,18 @@ no extra config needed.
 
 ## 6. Ordering and payments
 
-- Every **Order on WhatsApp** button opens a chat with `WHATSAPP_NUMBER` (country code, no `+`
-  or spaces), with the service/product name and price already typed.
-- The admin logs each chat order in **Admin → Orders → + Add order**, marks it *Paid* when the
-  money arrives (so it counts in revenue), and sends the customer their status + tracking link
-  with the **WhatsApp customer** button.
+- No prices are shown on the site. Every **Order now** / **Book a demo** button opens a short
+  form (`/order/service/<slug>` or `/order/product/<slug>?type=demo`): name, email or phone,
+  company and details. The request lands in **Admin → Orders** (demo requests are marked) and
+  the admin gets a Telegram/Discord alert. The form page also offers call / email / chat.
+- Products show as a slider on the homepage and `/products`: two at a time (one on phones), a
+  picture box over a details box, in soft colours. The slide speed is set in
+  **Admin → Products**, the colour per product in its edit form.
+- Orders that come by phone or chat are added in **Admin → Orders → + Add order**. Mark them
+  *Paid* when the money arrives (so they count in revenue) and send the customer their status +
+  tracking link with the **WhatsApp customer** button.
 - The Stripe / SSLCOMMERZ code (`app/payments.py`, `app/routers/webhooks.py`) is kept but not
-  linked from the site any more; there is no public checkout form.
-
+  linked from the site.
 - The footer's **Talk to us** shows Chat (WhatsApp), the email and the phone number set in
   **Admin → Home page → Contact info**.
 

@@ -232,3 +232,92 @@
     });
   });
 })();
+
+// Product slider: two products at a time (one on phones); moves one step
+// every data-interval seconds (set in Admin -> Products), loops back to the
+// start, pauses while the pointer or keyboard focus is on it, and can be
+// moved with the arrows, the dots or a swipe.
+(function () {
+  document.querySelectorAll(".product-carousel").forEach(function (root) {
+    var track = root.querySelector(".product-track");
+    var slides = root.querySelectorAll(".product-slide");
+    var dotsBox = root.querySelector(".product-dots");
+    var controls = root.querySelector(".product-controls");
+    var seconds = parseFloat(root.getAttribute("data-interval")) || 5;
+    var index = 0;
+    var timer = null;
+    var paused = false;
+
+    function perView() {
+      return window.matchMedia("(min-width: 768px)").matches ? 2 : 1;
+    }
+    function maxIndex() {
+      return Math.max(0, slides.length - perView());
+    }
+
+    function renderDots() {
+      if (!dotsBox) return;
+      dotsBox.innerHTML = "";
+      for (var i = 0; i <= maxIndex(); i++) {
+        var dot = document.createElement("button");
+        dot.type = "button";
+        dot.setAttribute("aria-label", String(i + 1));
+        dot.className = "h-2 rounded-full transition-all " + (i === index ? "w-6 bg-slate-900 dark:bg-white" : "w-2 bg-slate-300 dark:bg-slate-600");
+        (function (i) {
+          dot.addEventListener("click", function () {
+            go(i);
+            restart();
+          });
+        })(i);
+        dotsBox.appendChild(dot);
+      }
+    }
+
+    function go(i) {
+      var max = maxIndex();
+      index = i > max ? 0 : i < 0 ? max : i;
+      track.style.transform = "translateX(-" + index * (100 / perView()) + "%)";
+      slides.forEach(function (s, n) {
+        var visible = n >= index && n < index + perView();
+        s.toggleAttribute("aria-hidden", !visible);
+      });
+      renderDots();
+    }
+
+    function restart() {
+      clearInterval(timer);
+      if (maxIndex() === 0) return; // everything already fits — nothing to move
+      timer = setInterval(function () {
+        if (!paused && !document.hidden) go(index + 1);
+      }, seconds * 1000);
+    }
+
+    function layout() {
+      if (controls) controls.hidden = maxIndex() === 0;
+      go(Math.min(index, maxIndex()));
+      restart();
+    }
+
+    var prev = root.querySelector(".product-prev");
+    var next = root.querySelector(".product-next");
+    if (prev) prev.addEventListener("click", function () { go(index - 1); restart(); });
+    if (next) next.addEventListener("click", function () { go(index + 1); restart(); });
+
+    root.addEventListener("mouseenter", function () { paused = true; });
+    root.addEventListener("mouseleave", function () { paused = false; });
+    root.addEventListener("focusin", function () { paused = true; });
+    root.addEventListener("focusout", function () { paused = false; });
+
+    var startX = null;
+    root.addEventListener("touchstart", function (e) { startX = e.touches[0].clientX; }, { passive: true });
+    root.addEventListener("touchend", function (e) {
+      if (startX === null) return;
+      var dx = e.changedTouches[0].clientX - startX;
+      if (Math.abs(dx) > 40) { go(index + (dx < 0 ? 1 : -1)); restart(); }
+      startX = null;
+    });
+
+    window.addEventListener("resize", layout);
+    layout();
+  });
+})();

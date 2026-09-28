@@ -1,7 +1,8 @@
 """Ordering and order status pages.
 
-Customers order by chatting on WhatsApp — there is no checkout form. The
-admin logs each order in Admin -> Orders; its unique, hard-to-guess
+Customers order through the website form (routers/enquiry.py), or by
+calling / chatting, and the admin logs those in Admin -> Orders. Each order's
+unique, hard-to-guess
 order_number is the lookup key for the public order status page (the
 tracking link sent to the customer), like a receipt link.
 
@@ -13,32 +14,19 @@ import logging
 from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import RedirectResponse
 
-from app.config import settings
-from app.i18n import get_locale, localized, make_translator
 from app.notify import notify_payment_received
 from app.payments import retrieve_stripe_session
 from app.supabase_client import fetch_one, supabase_admin
 from app.templating import base_ctx, templates
-from app.utils import whatsapp_link
 
 router = APIRouter(tags=["orders"])
 logger = logging.getLogger("minait")
 
 
 @router.get("/checkout/{slug}")
-def checkout(request: Request, slug: str):
-    """Old checkout links now open a WhatsApp chat about that service."""
-    service = fetch_one(
-        supabase_admin().table("services").select("*").eq("slug", slug).eq("is_active", True)
-    )
-    if not service:
-        raise HTTPException(status_code=404, detail="Service not found")
-    if not settings.WHATSAPP_NUMBER:
-        return RedirectResponse(f"/services/{slug}", status_code=303)
-    lang = get_locale(request)
-    price = f"{float(service['price']):,.0f} {service['currency']}"
-    text = make_translator(lang)("offer.wa_text", title=localized(service, "title", lang), price=price)
-    return RedirectResponse(whatsapp_link(settings.WHATSAPP_NUMBER, text), status_code=303)
+def checkout(slug: str):
+    """Old checkout links now open the order form for that service."""
+    return RedirectResponse(f"/order/service/{slug}", status_code=303)
 
 
 @router.get("/orders/{order_number}")

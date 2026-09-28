@@ -1,6 +1,6 @@
 """Instant admin notifications via Telegram Bot API and/or Discord webhook.
 
-Fires on: new order placed, payment received. Failures here must never break
+Fires on: a visitor's order / demo request, payment received. Failures here must never break
 the request that triggered them, so every call is best-effort and swallows
 its own errors.
 """
@@ -50,15 +50,17 @@ def _clean(order: dict) -> dict:
     return {k: escape(str(v)) if v is not None else None for k, v in order.items()}
 
 
-def notify_new_order(order: dict) -> None:
+def notify_new_request(order: dict) -> None:
+    """A visitor sent the website's Order / Book-a-demo form."""
     order = _clean(order)
+    label = "Demo request" if order.get("kind") == "demo" else "New order request"
     text = (
-        f"🆕 <b>New order — {order['order_number']}</b>\n"
-        f"Service: {order['service_title']}\n"
-        f"Customer: {order['customer_name']} ({order['customer_email']})\n"
+        f"🆕 <b>{label} — {order['order_number']}</b>\n"
+        f"For: {order['service_title']}\n"
+        f"Name: {order['customer_name']}\n"
+        f"Email: {order.get('customer_email') or '-'}\n"
         f"Phone: {order.get('customer_phone') or '-'}\n"
-        f"Amount: {order['amount']} {order['currency']}\n"
-        f"Payment method: {order['payment_method']}"
+        f"Message: {order.get('notes') or '-'}"
     )
     notify_admin(text)
 

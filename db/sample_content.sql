@@ -14,8 +14,8 @@
 insert into services (title, title_bn, slug, category, description, description_bn, price, currency, image_url, sort_order)
 select v.* from (values
   ('IT Support & Maintenance', 'আইটি সাপোর্ট ও মেইনটেন্যান্স', 'it-support-maintenance', 'Support',
-   $$Monthly care for your office computers, printers and Wi-Fi. We fix problems remotely or on-site, keep Windows and antivirus up to date, and check everything once a month so small issues never become big ones. Price is per month for up to 10 computers.$$,
-   $$আপনার অফিসের কম্পিউটার, প্রিন্টার ও ওয়াই-ফাইয়ের মাসিক দেখাশোনা। সমস্যা হলে রিমোট বা সরাসরি এসে সমাধান করি, উইন্ডোজ ও অ্যান্টিভাইরাস আপডেট রাখি, আর মাসে একবার সবকিছু চেক করি যাতে ছোট সমস্যা বড় না হয়। দাম মাসিক, ১০টি কম্পিউটার পর্যন্ত।$$,
+   $$Monthly care for your office computers, printers and Wi-Fi. We fix problems remotely or on-site, keep Windows and antivirus up to date, and check everything once a month so small issues never become big ones.$$,
+   $$আপনার অফিসের কম্পিউটার, প্রিন্টার ও ওয়াই-ফাইয়ের মাসিক দেখাশোনা। সমস্যা হলে রিমোট বা সরাসরি এসে সমাধান করি, উইন্ডোজ ও অ্যান্টিভাইরাস আপডেট রাখি, আর মাসে একবার সবকিছু চেক করি যাতে ছোট সমস্যা বড় না হয়।$$,
    3000, 'BDT', 'https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?w=1600&q=80&auto=format&fit=crop', 1),
   ('Office Network Setup', 'অফিস নেটওয়ার্ক সেটআপ', 'office-network-setup', 'Networking',
    $$Fast, stable internet in every corner of your office. We plan the layout, run the cables, set up routers, switches and Wi-Fi access points, and label everything so it stays easy to manage.$$,
@@ -36,16 +36,16 @@ where not exists (select 1 from services s where s.slug = v.slug);
 insert into products (title, title_bn, slug, category, description, description_bn, price, currency, image_url, sort_order)
 select v.* from (values
   ('Web Development', 'ওয়েব ডেভেলপমেন্ট', 'web-development', 'Websites',
-   $$A fast, mobile-friendly website for your business — design, development, hosting setup and a simple admin panel so you can update it yourself. Starting price for a 5-page business site.$$,
-   $$আপনার ব্যবসার জন্য দ্রুত, মোবাইল-ফ্রেন্ডলি ওয়েবসাইট — ডিজাইন, ডেভেলপমেন্ট, হোস্টিং সেটআপ আর সহজ অ্যাডমিন প্যানেল, যাতে নিজেই আপডেট করতে পারেন। ৫ পেজের বিজনেস সাইটের শুরুর দাম।$$,
+   $$A fast, mobile-friendly website for your business — design, development, hosting setup and a simple admin panel so you can update it yourself.$$,
+   $$আপনার ব্যবসার জন্য দ্রুত, মোবাইল-ফ্রেন্ডলি ওয়েবসাইট — ডিজাইন, ডেভেলপমেন্ট, হোস্টিং সেটআপ আর সহজ অ্যাডমিন প্যানেল, যাতে নিজেই আপডেট করতে পারেন।$$,
    25000, 'BDT', 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=1600&q=80&auto=format&fit=crop', 1),
   ('Air-Gap Software Development', 'এয়ার-গ্যাপ সফটওয়্যার ডেভেলপমেন্ট', 'air-gap-software-development', 'Software',
-   $$Custom software that runs fully offline, on machines never connected to the internet — for factories, labs, banks and anywhere security matters most. Built, installed and updated by hand, with no cloud dependency. Priced per project.$$,
-   $$সম্পূর্ণ অফলাইনে চলা কাস্টম সফটওয়্যার, এমন কম্পিউটারে যা কখনো ইন্টারনেটে যুক্ত হয় না — কারখানা, ল্যাব, ব্যাংক ও যেখানে নিরাপত্তা সবচেয়ে জরুরি। ক্লাউড ছাড়াই তৈরি, ইনস্টল ও আপডেট করা হয়। দাম প্রজেক্ট অনুযায়ী।$$,
+   $$Custom software that runs fully offline, on machines never connected to the internet — for factories, labs, banks and anywhere security matters most. Built, installed and updated by hand, with no cloud dependency.$$,
+   $$সম্পূর্ণ অফলাইনে চলা কাস্টম সফটওয়্যার, এমন কম্পিউটারে যা কখনো ইন্টারনেটে যুক্ত হয় না — কারখানা, ল্যাব, ব্যাংক ও যেখানে নিরাপত্তা সবচেয়ে জরুরি। ক্লাউড ছাড়াই তৈরি, ইনস্টল ও আপডেট করা হয়।$$,
    null, 'BDT', 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=1600&q=80&auto=format&fit=crop', 2),
   ('Social Media Management', 'সোশ্যাল মিডিয়া ম্যানেজমেন্ট', 'social-media-management', 'Marketing',
-   $$We run your Facebook and Instagram pages: 12 designed posts a month, replies to comments and messages, and a simple monthly report of what worked. Price is per month.$$,
-   $$আপনার ফেসবুক ও ইনস্টাগ্রাম পেজ আমরা চালাই: মাসে ১২টি ডিজাইন করা পোস্ট, কমেন্ট ও মেসেজের উত্তর, আর মাস শেষে কী কাজ করল তার সহজ রিপোর্ট। দাম মাসিক।$$,
+   $$We run your Facebook and Instagram pages: 12 designed posts a month, replies to comments and messages, and a simple monthly report of what worked.$$,
+   $$আপনার ফেসবুক ও ইনস্টাগ্রাম পেজ আমরা চালাই: মাসে ১২টি ডিজাইন করা পোস্ট, কমেন্ট ও মেসেজের উত্তর, আর মাস শেষে কী কাজ করল তার সহজ রিপোর্ট।$$,
    8000, 'BDT', 'https://images.unsplash.com/photo-1562577309-4932fdd64cd1?w=1600&q=80&auto=format&fit=crop', 3),
   ('Google Business Profile Setup & Management', 'গুগল বিজনেস প্রোফাইল তৈরি ও ম্যানেজমেন্ট', 'google-business-profile', 'Marketing',
    $$Get found on Google Maps and Search. We create and verify your Google Business Profile, add photos, hours and services, and keep it updated and answer reviews every month.$$,
@@ -218,3 +218,14 @@ where not exists (select 1 from blog_posts b where b.slug = v.slug);
 update blog_posts set is_featured = true
 where slug = 'why-google-business-profile'
   and not exists (select 1 from blog_posts where is_featured);
+
+-- Prices are not shown on the site any more. If an earlier version of this
+-- file was already run, take the price sentences out of those descriptions.
+update services set description = replace(description, ' Price is per month for up to 10 computers.', ''), description_bn = replace(description_bn, ' দাম মাসিক, ১০টি কম্পিউটার পর্যন্ত।', '') where description like '%Price is per month for up to 10 computers.%' or description_bn like '%দাম মাসিক, ১০টি কম্পিউটার পর্যন্ত।%';
+update services set description = replace(description, ' Starting price for a 5-page business site.', ''), description_bn = replace(description_bn, ' ৫ পেজের বিজনেস সাইটের শুরুর দাম।', '') where description like '%Starting price for a 5-page business site.%' or description_bn like '%৫ পেজের বিজনেস সাইটের শুরুর দাম।%';
+update services set description = replace(description, ' Priced per project.', ''), description_bn = replace(description_bn, ' দাম প্রজেক্ট অনুযায়ী।', '') where description like '%Priced per project.%' or description_bn like '%দাম প্রজেক্ট অনুযায়ী।%';
+update services set description = replace(description, ' Price is per month.', ''), description_bn = replace(description_bn, ' দাম মাসিক।', '') where description like '%Price is per month.%' or description_bn like '%দাম মাসিক।%';
+update products set description = replace(description, ' Price is per month for up to 10 computers.', ''), description_bn = replace(description_bn, ' দাম মাসিক, ১০টি কম্পিউটার পর্যন্ত।', '') where description like '%Price is per month for up to 10 computers.%' or description_bn like '%দাম মাসিক, ১০টি কম্পিউটার পর্যন্ত।%';
+update products set description = replace(description, ' Starting price for a 5-page business site.', ''), description_bn = replace(description_bn, ' ৫ পেজের বিজনেস সাইটের শুরুর দাম।', '') where description like '%Starting price for a 5-page business site.%' or description_bn like '%৫ পেজের বিজনেস সাইটের শুরুর দাম।%';
+update products set description = replace(description, ' Priced per project.', ''), description_bn = replace(description_bn, ' দাম প্রজেক্ট অনুযায়ী।', '') where description like '%Priced per project.%' or description_bn like '%দাম প্রজেক্ট অনুযায়ী।%';
+update products set description = replace(description, ' Price is per month.', ''), description_bn = replace(description_bn, ' দাম মাসিক।', '') where description like '%Price is per month.%' or description_bn like '%দাম মাসিক।%';

@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}{{ heading }} — {{ site_name }}{% endblock %}
+{% block content %}
+<div class="container-x pt-10 sm:pt-14">
+  <a href="{{ ('/products/' if kind == 'product' else '/services/') ~ item.slug }}" class="btn-ghost -ml-3">← {{ loc(item, 'title') }}</a>
+
+  <div class="mt-6 grid gap-5 lg:grid-cols-[3fr_2fr] items-start">
+    <div class="rounded-3xl border border-slate-200/80 dark:border-slate-800 p-6 sm:p-9">
+      <h1 class="text-2xl sm:text-3xl font-medium tracking-tight">{{ heading }}</h1>
+      <p class="mt-2 text-sm text-slate-500 dark:text-slate-400 leading-relaxed">{{ t('enquiry.intro') }}</p>
+
+      {% if error %}<div class="alert-err mt-6">{{ error }}</div>{% endif %}
+
+      <form method="post" action="/order/{{ kind }}/{{ item.slug }}" class="mt-7 grid gap-5 sm:grid-cols-2">
+        <input type="hidden" name="request_type" value="{{ request_type }}" />
+        {# Honeypot for spam bots — hidden from people. #}
+        <div class="hidden" aria-hidden="true"><label>Website <input name="website" tabindex="-1" autocomplete="off" /></label></div>
+
+        <div class="sm:col-span-2">
+          <label class="label" for="name">{{ t('enquiry.name') }}</label>
+          <input id="name" name="name" required value="{{ form.name or '' }}" autocomplete="name" class="input" />
+        </div>
+        <div>
+          <label class="label" for="email">{{ t('enquiry.email') }}</label>
+          <input id="email" name="email" type="email" value="{{ form.email or '' }}" autocomplete="email" class="input" />
+        </div>
+        <div>
+          <label class="label" for="phone">{{ t('enquiry.phone') }}</label>
+          <input id="phone" name="phone" type="tel" value="{{ form.phone or '' }}" autocomplete="tel" placeholder="01XXXXXXXXX" class="input" />
+        </div>
+        <p class="hint sm:col-span-2 -mt-3">{{ t('enquiry.contact_hint') }}</p>
+        <div class="{{ '' if request_type == 'demo' else 'sm:col-span-2' }}">
+          <label class="label" for="company">{{ t('enquiry.company') }} <span class="text-slate-400 font-normal">{{ t('enquiry.optional') }}</span></label>
+          <input id="company" name="company" value="{{ form.company or '' }}" autocomplete="organization" class="input" />
+        </div>
+        {% if request_type == 'demo' %}
+        <div>
+          <label class="label" for="preferred_time">{{ t('enquiry.preferred_time') }} <span class="text-slate-400 font-normal">{{ t('enquiry.optional') }}</span></label>
+          <input id="preferred_time" name="preferred_time" type="datetime-local" value="{{ form.preferred_time or '' }}" class="input" />
+        </div>
+        {% endif %}
+        <div class="sm:col-span-2">
+          <label class="label" for="message">{{ t('enquiry.message') }}</label>
+          <textarea id="message" name="message" rows="5" placeholder="{{ t('enquiry.message_placeholder') }}" class="input">{{ form.message or '' }}</textarea>
+        </div>
+        <div class="sm:col-span-2">
+          <button type="submit" class="btn-dark px-7 py-3">{{ t('enquiry.submit_demo') if request_type == 'demo' else t('enquiry.submit_order') }}</button>
+        </div>
+      </form>
+    </div>
+
+    <aside class="rounded-3xl bg-tint dark:bg-tint-dark p-6 sm:p-8 space-y-6">
+      {% if item.image_url %}
+      <div class="aspect-[16/10] rounded-2xl overflow-hidden bg-white/60 dark:bg-slate-900">
+        <img src="{{ item.image_url }}" alt="{{ loc(item, 'title') }}" class="w-full h-full object-cover" />
+      </div>
+      {% endif %}
+      <div>
+        {% if item.category %}<div class="eyebrow">{{ item.category }}</div>{% endif %}
+        <div class="mt-1.5 text-lg font-medium tracking-tight">{{ loc(item, 'title') }}</div>
+        {% if loc(item, 'description') %}<p class="mt-2 text-sm text-slate-600 dark:text-slate-300 leading-relaxed line-clamp-4">{{ loc(item, 'description') }}</p>{% endif %}
+      </div>
+      {% include "partials/contact_options.html" %}
+    </aside>
+  </div>
+</div>
+{% endblock %}

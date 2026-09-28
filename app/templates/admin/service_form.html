@@ -4,5 +4,5 @@
 {% block title %}{{ "Edit service" if service else "New service" }} — Admin{% endblock %}
 {% block admin_content %}
 {{ page_header("Edit service" if service else "New service") }}
-{{ catalog_form(service, '/admin/services/%d/edit'|format(service.id) if service else '/admin/services/new', "/admin/services", True) }}
+{{ catalog_form(service, '/admin/services/%d/edit'|format(service.id) if service else '/admin/services/new', "/admin/services") }}
 {% endblock %}

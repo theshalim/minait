@@ -1,5 +1,5 @@
-{# Shared list + form for services and products (same fields; a product's
-   price may be left empty = "Price on request"). #}
+{# Shared list + form for services and products. There is no price field:
+   prices are not shown on the site. Products also get a card colour. #}
 {% from "admin/_ui.html" import empty, image_input %}
 
 {% macro catalog_list(items, base, noun) %}
@@ -12,9 +12,7 @@
       </div>
       <div class="min-w-0">
         <div class="font-medium truncate {{ '' if s.is_active else 'text-slate-400' }}">{{ s.title }}</div>
-        <div class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-          {% if s.price is not none %}{{ "{:,.0f}".format(s.price | float) }} {{ s.currency }}{% else %}Price on request{% endif %}{% if s.category %} · {{ s.category }}{% endif %}
-        </div>
+        {% if s.category %}<div class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{{ s.category }}</div>{% endif %}
       </div>
     </div>
     <div class="flex items-center gap-1 flex-wrap">
@@ -30,7 +28,7 @@
 </div>
 {% endmacro %}
 
-{% macro catalog_form(item, action, back, price_required) %}
+{% macro catalog_form(item, action, back, colors=None) %}
 <form method="post" enctype="multipart/form-data" action="{{ action }}" class="space-y-6 max-w-2xl">
   <div class="panel p-5 sm:p-6 space-y-5">
     <div class="grid gap-5 sm:grid-cols-2">
@@ -55,21 +53,20 @@
   </div>
 
   <div class="panel p-5 sm:p-6 space-y-5">
-    <div class="grid gap-5 grid-cols-2 sm:grid-cols-3">
+    <div class="grid gap-5 sm:grid-cols-2">
       <div>
-        <label class="label">Price</label>
-        <input {{ 'required' if price_required else '' }} type="number" step="0.01" min="0" name="price"
-               value="{{ item.price if item and item.price is not none else '' }}" class="input" />
-        {% if not price_required %}<p class="hint">Empty = "Price on request".</p>{% endif %}
-      </div>
-      <div>
-        <label class="label">Currency</label>
-        <input name="currency" value="{{ item.currency if item else 'BDT' }}" class="input" />
-      </div>
-      <div class="col-span-2 sm:col-span-1">
         <label class="label">Category <span class="text-slate-400 font-normal">(small label)</span></label>
         <input name="category" value="{{ item.category if item else '' }}" placeholder="e.g. Networking" class="input" />
       </div>
+      {% if colors %}
+      <div>
+        <label class="label">Card colour</label>
+        <select name="color" class="input">
+          {% for c in colors %}<option value="{{ c }}" {{ 'selected' if item and item.color == c else '' }}>{{ c|capitalize if c else "Automatic" }}</option>{% endfor %}
+        </select>
+        <p class="hint">Automatic gives each product the next colour in turn.</p>
+      </div>
+      {% endif %}
     </div>
     {{ image_input("Image", "image_file", "image_url", item.image_url if item else "", "Landscape works best, e.g. 1200×750px. An uploaded file wins over the link.") }}
     <div class="w-32">

@@ -2,7 +2,7 @@
 {% from "admin/_ui.html" import page_header, empty %}
 {% block title %}Orders — Admin{% endblock %}
 {% block admin_content %}
-{{ page_header("Orders", "Customers order on WhatsApp — add each one here. Set Payment to Paid when the money arrives so it counts in revenue, and use WhatsApp to send the customer their status and tracking link.") }}
+{{ page_header("Orders", "Requests from the website's Order / Book a demo forms arrive here automatically. Add orders that came by phone or chat yourself. Set Payment to Paid when the money arrives so it counts in revenue, and use WhatsApp to send the customer their status and tracking link.") }}
 
 {# ---------------- Add an order that came in over chat ---------------- #}
 <details id="new-order" class="panel mb-8 group" {{ 'open' if not orders else '' }}>
@@ -50,14 +50,16 @@
       <div class="min-w-0">
         <div class="flex flex-wrap items-center gap-2">
           <span class="font-medium">{{ o.service_title }}</span>
+          {% if o.kind == 'demo' %}<span class="badge bg-violet-50 text-violet-700 dark:bg-violet-950/50 dark:text-violet-300">Demo request</span>
+          {% elif o.payment_method == 'form' %}<span class="badge bg-sky-50 text-sky-700 dark:bg-sky-950/50 dark:text-sky-300">Website form</span>{% endif %}
           <span class="{{ 'badge-green' if o.payment_status == 'paid' else 'badge-amber' if o.payment_status == 'unpaid' else 'badge-gray' }}">{{ o.payment_status|capitalize }}</span>
         </div>
-        <div class="text-sm text-slate-600 dark:text-slate-300 mt-1">{{ o.customer_name }}{% if o.customer_phone %} · {{ o.customer_phone }}{% endif %}{% if o.customer_email %} · {{ o.customer_email }}{% endif %}</div>
+        <div class="text-sm text-slate-600 dark:text-slate-300 mt-1">{{ o.customer_name }}{% if o.customer_phone %} · <a href="tel:{{ o.customer_phone | replace(' ', '') }}" class="underline underline-offset-2">{{ o.customer_phone }}</a>{% endif %}{% if o.customer_email %} · <a href="mailto:{{ o.customer_email }}" class="underline underline-offset-2">{{ o.customer_email }}</a>{% endif %}</div>
         <div class="text-xs text-slate-400 mt-1">
           {{ "{:,.0f}".format(o.amount | float) }} {{ o.currency }} · {{ o.order_number }}{% if o.created_at %} · {{ o.created_at[:10] }}{% endif %}
           · <a href="/orders/{{ o.order_number }}" target="_blank" class="underline underline-offset-2 hover:text-slate-700">tracking page</a>
         </div>
-        {% if o.notes %}<div class="text-xs text-slate-500 mt-2 italic">“{{ o.notes }}”</div>{% endif %}
+        {% if o.notes %}<div class="text-sm text-slate-600 dark:text-slate-300 mt-2 whitespace-pre-line rounded-xl bg-slate-50 dark:bg-slate-800/60 px-3 py-2">{{ o.notes }}</div>{% endif %}
       </div>
 
       <div class="flex flex-wrap items-center gap-2 lg:justify-end">

@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}{{ loc(product, 'title') }} — {{ site_name }}{% endblock %}
+{% block content %}
+{% set tones = ["blue", "green", "rose", "amber", "violet", "teal"] %}
+{% set tone = product.color if product.color in tones else "blue" %}
+<article class="container-x pt-10 sm:pt-14 tone-{{ tone }}">
+  <a href="/products" class="btn-ghost -ml-3">← {{ t('nav.products') }}</a>
+
+  <div class="mt-6 grid gap-4 sm:gap-5 lg:grid-cols-[3fr_2fr] items-stretch">
+    {# Big box: picture + headline #}
+    <div class="rounded-3xl p-5 sm:p-8 text-center" style="background: var(--tone-big)">
+      <div class="aspect-[16/10] rounded-2xl overflow-hidden bg-white/70 dark:bg-slate-950/40">
+        {% if product.image_url %}
+        <img src="{{ product.image_url }}" alt="{{ loc(product, 'title') }}" class="w-full h-full object-cover" />
+        {% else %}
+        <div class="w-full h-full flex items-center justify-center"><img src="/static/img/logo.png" alt="" class="h-12 w-auto opacity-50" /></div>
+        {% endif %}
+      </div>
+      <h1 class="mt-7 text-3xl sm:text-4xl font-medium tracking-tight leading-tight">{{ loc(product, 'title') }}</h1>
+    </div>
+
+    {# Small box: full details + actions #}
+    <div class="rounded-3xl p-6 sm:p-8 flex flex-col" style="background: var(--tone-small)">
+      {% if product.category %}<div class="eyebrow" style="color: var(--tone-ink)">{{ product.category }}</div>{% endif %}
+      {% if loc(product, 'description') %}
+      <p class="mt-3 text-[16px] text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-line">{{ loc(product, 'description') }}</p>
+      {% endif %}
+      <div class="mt-7 flex flex-wrap gap-2">
+        <a href="/order/product/{{ product.slug }}" class="btn-dark px-6 py-3">{{ t('offer.order') }}</a>
+        <a href="/order/product/{{ product.slug }}?type=demo" class="btn-outline px-6 py-3">{{ t('offer.book_demo') }}</a>
+      </div>
+      <div class="mt-auto pt-8">{% include "partials/contact_options.html" %}</div>
+    </div>
+  </div>
+</article>
+{% endblock %}

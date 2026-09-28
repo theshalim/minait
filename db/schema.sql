@@ -227,6 +227,13 @@ alter table faqs       add column if not exists question_bn         text;
 alter table faqs       add column if not exists answer_bn           text;
 alter table site_stats add column if not exists label_bn            text;
 
+-- Product card colour on the site: '' = automatic, or blue / green / rose /
+-- amber / violet / teal.
+alter table products add column if not exists color text not null default '';
+
+-- What a visitor asked for through the website form: 'order' or 'demo'.
+alter table orders add column if not exists kind text not null default 'order';
+
 -- The one blog post the admin picked to show big at the top of /blog.
 alter table blog_posts add column if not exists is_featured boolean not null default false;
 

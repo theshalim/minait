@@ -97,8 +97,6 @@ async def admin_service_create(
     title_bn: str = Form(""),
     description: str = Form(""),
     description_bn: str = Form(""),
-    price: float = Form(...),
-    currency: str = Form("BDT"),
     category: str = Form("General"),
     icon: str = Form(""),
     image_url: str = Form(""),
@@ -113,8 +111,7 @@ async def admin_service_create(
             "slug": _new_slug("services", title, "service"),
             "description": description,
             "description_bn": description_bn,
-            "price": price,
-            "currency": currency,
+            "price": 0,
             "category": category,
             "icon": icon,
             "image_url": uploaded_url or image_url,
@@ -140,8 +137,6 @@ async def admin_service_update(
     title_bn: str = Form(""),
     description: str = Form(""),
     description_bn: str = Form(""),
-    price: float = Form(...),
-    currency: str = Form("BDT"),
     category: str = Form("General"),
     icon: str = Form(""),
     image_url: str = Form(""),
@@ -156,8 +151,6 @@ async def admin_service_update(
             "title_bn": title_bn,
             "description": description,
             "description_bn": description_bn,
-            "price": price,
-            "currency": currency,
             "category": category,
             "icon": icon,
             "image_url": uploaded_url or image_url,
@@ -526,17 +519,19 @@ def admin_change_password(
 
 
 # ---------------------------------------------------------------------------
-# Products CRUD (same shape as services; price is optional)
+# Products CRUD (same shape as services, plus a card colour; no price)
 # ---------------------------------------------------------------------------
-def _product_fields(title, title_bn, description, description_bn, price, currency, category, image):
+PRODUCT_COLORS = ["", "blue", "green", "rose", "amber", "violet", "teal"]
+
+
+def _product_fields(title, title_bn, description, description_bn, category, color, image):
     return {
         "title": title,
         "title_bn": title_bn,
         "description": description,
         "description_bn": description_bn,
-        "price": float(price) if str(price).strip() else None,
-        "currency": currency or "BDT",
         "category": category,
+        "color": color if color in PRODUCT_COLORS else "",
         "image_url": image,
     }
 
@@ -547,9 +542,18 @@ def admin_products(request: Request):
     return templates.TemplateResponse("admin/products.html", base_ctx(request, products=products))
 
 
+@router.post("/products/slider")
+def admin_products_slider(seconds: int = Form(5)):
+    """How many seconds each step of the homepage / Products page slider waits."""
+    save_site_settings({"products_slide_seconds": str(min(max(seconds, 2), 30))})
+    return RedirectResponse("/admin/products", status_code=303)
+
+
 @router.get("/products/new")
 def admin_product_new(request: Request):
-    return templates.TemplateResponse("admin/product_form.html", base_ctx(request, product=None))
+    return templates.TemplateResponse(
+        "admin/product_form.html", base_ctx(request, product=None, colors=PRODUCT_COLORS)
+    )
 
 
 @router.post("/products/new")
@@ -558,15 +562,14 @@ async def admin_product_create(
     title_bn: str = Form(""),
     description: str = Form(""),
     description_bn: str = Form(""),
-    price: str = Form(""),
-    currency: str = Form("BDT"),
     category: str = Form(""),
+    color: str = Form(""),
     image_url: str = Form(""),
     image_file: UploadFile = File(None),
     sort_order: int = Form(0),
 ):
     uploaded_url = await _upload_image(image_file)
-    row = _product_fields(title, title_bn, description, description_bn, price, currency, category,
+    row = _product_fields(title, title_bn, description, description_bn, category, color,
                           uploaded_url or image_url)
     row.update(slug=_new_slug("products", title, "product"), sort_order=sort_order)
     supabase_admin().table("products").insert(row).execute()
@@ -578,7 +581,9 @@ def admin_product_edit_page(request: Request, product_id: int):
     product = fetch_one(supabase_admin().table("products").select("*").eq("id", product_id))
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
-    return templates.TemplateResponse("admin/product_form.html", base_ctx(request, product=product))
+    return templates.TemplateResponse(
+        "admin/product_form.html", base_ctx(request, product=product, colors=PRODUCT_COLORS)
+    )
 
 
 @router.post("/products/{product_id}/edit")
@@ -588,15 +593,14 @@ async def admin_product_update(
     title_bn: str = Form(""),
     description: str = Form(""),
     description_bn: str = Form(""),
-    price: str = Form(""),
-    currency: str = Form("BDT"),
     category: str = Form(""),
+    color: str = Form(""),
     image_url: str = Form(""),
     image_file: UploadFile = File(None),
     sort_order: int = Form(0),
 ):
     uploaded_url = await _upload_image(image_file)
-    row = _product_fields(title, title_bn, description, description_bn, price, currency, category,
+    row = _product_fields(title, title_bn, description, description_bn, category, color,
                           uploaded_url or image_url)
     row["sort_order"] = sort_order
     supabase_admin().table("products").update(row).eq("id", product_id).execute()

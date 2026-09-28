@@ -1,5 +1,4 @@
 {% extends "base.html" %}
-{% from "partials/cards.html" import order_link, price_text with context %}
 {% block title %}{{ loc(service, 'title') }} — {{ site_name }}{% endblock %}
 {% block content %}
 <article class="max-w-3xl mx-auto px-4 sm:px-6 pt-10 sm:pt-14">
@@ -20,12 +19,9 @@
   <p class="mt-10 text-[17px] text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-line">{{ loc(service, 'description') }}</p>
   {% endif %}
 
-  <div class="mt-10 rounded-3xl bg-tint dark:bg-tint-dark p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5">
-    <div>
-      <div class="eyebrow">{{ t('service.price') }}</div>
-      <div class="mt-1.5 text-2xl sm:text-3xl font-medium tracking-tight">{{ price_text(service) }}</div>
-    </div>
-    {{ order_link(service, "btn-dark px-6 py-3") }}
+  <div class="mt-10 rounded-3xl bg-tint dark:bg-tint-dark p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+    {% include "partials/contact_options.html" %}
+    <a href="/order/service/{{ service.slug }}" class="btn-dark px-7 py-3 self-start sm:self-center">{{ t('offer.order') }}</a>
   </div>
 </article>
 {% endblock %}

@@ -103,6 +103,16 @@ def products_page(request: Request):
     )
 
 
+@router.get("/products/{slug}")
+def product_detail(request: Request, slug: str):
+    product = _optional(
+        lambda: [fetch_one(supabase_admin().table("products").select("*").eq("slug", slug).eq("is_active", True))]
+    )
+    if not product or not product[0]:
+        raise HTTPException(status_code=404, detail="Product not found")
+    return templates.TemplateResponse("product_detail.html", base_ctx(request, product=product[0]))
+
+
 @router.get("/api/faqs")
 def api_faqs(request: Request):
     """Public, read-only. Powers the floating Assistant widget's FAQ list —

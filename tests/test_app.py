@@ -34,7 +34,8 @@ def test_home_shows_bangla_content_when_filled_in(client, db):
 
 def test_missing_service_order_and_post_are_404_not_500(client):
     assert client.get("/services/nope").status_code == 404
-    assert client.get("/checkout/nope").status_code == 404
+    assert client.get("/order/service/nope").status_code == 404
+    assert client.get("/products/nope").status_code == 404
     assert client.get("/orders/MINA-NOPE").status_code == 404
     assert client.get("/blog/nope").status_code == 404
 

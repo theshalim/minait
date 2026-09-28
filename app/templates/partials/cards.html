@@ -1,53 +1,33 @@
-{# Soft "bento" cards for services and products, laid out as a two-column
-   masonry (see offer_grid). Import with context:
-   {% from "partials/cards.html" import offer_grid with context %} #}
+{# Service cards (soft "bento", two-column masonry) and the product slider
+   (a big picture box over a small details box, two products at a time).
+   Import with context:
+   {% from "partials/cards.html" import offer_grid, product_carousel with context %}
+   No prices are shown anywhere on the site — people ask through the form. #}
 
-{% macro price_text(item) -%}
-  {%- if item.price is not none and item.price != "" -%}
-    {{ "{:,.0f}".format(item.price | float) }} {{ item.currency or "BDT" }}
-  {%- else -%}
-    {{ t('offer.price_on_request') }}
-  {%- endif -%}
-{%- endmacro %}
+{% set chevron %}<svg viewBox="0 0 20 20" fill="currentColor" class="w-3.5 h-3.5"><path fill-rule="evenodd" d="M7.2 14.8a.75.75 0 0 1 0-1.06L10.94 10 7.2 6.26a.75.75 0 1 1 1.06-1.06l4.27 4.27a.75.75 0 0 1 0 1.06L8.26 14.8a.75.75 0 0 1-1.06 0z" clip-rule="evenodd"/></svg>{% endset %}
 
-{% macro order_link(item, classes) -%}
-{% if whatsapp_number %}
-<a href="https://wa.me/{{ whatsapp_number }}?text={{ t('offer.wa_text', title=loc(item, 'title'), price=price_text(item)) | urlencode }}"
-   target="_blank" rel="noopener" class="{{ classes }}">
-  {{ t('offer.order') }}
-</a>
-{% endif %}
-{%- endmacro %}
-
+{# ------------------------------- Services ------------------------------- #}
 {% macro offer_card(item, kind) %}
-{% set detail = "/services/" ~ item.slug if kind == "service" else None %}
+{% set detail = "/services/" ~ item.slug %}
 <article class="break-inside-avoid mb-4 sm:mb-5 rounded-3xl bg-tint dark:bg-tint-dark p-5 sm:p-7 text-center">
   {% if item.image_url %}
-    {% if detail %}<a href="{{ detail }}" class="block group">{% endif %}
+  <a href="{{ detail }}" class="block group">
     <div class="aspect-[16/10] rounded-2xl overflow-hidden mb-6 bg-white/60 dark:bg-slate-900">
       <img src="{{ item.image_url }}" alt="{{ loc(item, 'title') }}" loading="lazy"
-           class="w-full h-full object-cover {{ 'group-hover:scale-[1.03] transition duration-500' if detail else '' }}" />
+           class="w-full h-full object-cover group-hover:scale-[1.03] transition duration-500" />
     </div>
-    {% if detail %}</a>{% endif %}
+  </a>
   {% endif %}
-
   {% if item.category %}<div class="eyebrow">{{ item.category }}</div>{% endif %}
   <h3 class="mt-2 text-lg sm:text-xl font-medium tracking-tight text-slate-900 dark:text-white">
-    {% if detail %}<a href="{{ detail }}" class="hover:text-brand-dark dark:hover:text-brand transition">{{ loc(item, 'title') }}</a>{% else %}{{ loc(item, 'title') }}{% endif %}
+    <a href="{{ detail }}" class="hover:text-brand-dark dark:hover:text-brand transition">{{ loc(item, 'title') }}</a>
   </h3>
   {% if loc(item, 'description') %}
-  <p class="mt-2.5 text-sm text-slate-600 dark:text-slate-300 leading-relaxed max-w-md mx-auto {{ 'line-clamp-3' if detail else 'whitespace-pre-line' }}">{{ loc(item, 'description') }}</p>
+  <p class="mt-2.5 text-sm text-slate-600 dark:text-slate-300 leading-relaxed max-w-md mx-auto line-clamp-3">{{ loc(item, 'description') }}</p>
   {% endif %}
-  <div class="mt-4 text-sm font-semibold text-slate-900 dark:text-white">{{ price_text(item) }}</div>
-
   <div class="mt-5 flex flex-wrap items-center justify-center gap-2">
-    {{ order_link(item, "btn-dark btn-sm") }}
-    {% if detail %}
-    <a href="{{ detail }}" class="btn-ghost btn-sm" aria-label="{{ t('offer.details') }}">
-      {{ t('offer.details') }}
-      <svg viewBox="0 0 20 20" fill="currentColor" class="w-3.5 h-3.5"><path fill-rule="evenodd" d="M7.2 14.8a.75.75 0 0 1 0-1.06L10.94 10 7.2 6.26a.75.75 0 1 1 1.06-1.06l4.27 4.27a.75.75 0 0 1 0 1.06L8.26 14.8a.75.75 0 0 1-1.06 0z" clip-rule="evenodd"/></svg>
-    </a>
-    {% endif %}
+    <a href="/order/service/{{ item.slug }}" class="btn-dark btn-sm">{{ t('offer.order') }}</a>
+    <a href="{{ detail }}" class="btn-ghost btn-sm">{{ t('offer.details') }} {{ chevron }}</a>
   </div>
 </article>
 {% endmacro %}
@@ -55,5 +35,66 @@
 {% macro offer_grid(items, kind) %}
 <div class="columns-1 md:columns-2 gap-4 sm:gap-5">
   {% for item in items %}{{ offer_card(item, kind) }}{% endfor %}
+</div>
+{% endmacro %}
+
+{# ------------------------------- Products ------------------------------- #}
+{% set tones = ["blue", "green", "rose", "amber", "violet", "teal"] %}
+
+{% macro product_card(p, index) %}
+{% set tone = p.color if p.color in tones else tones[index % tones|length] %}
+<div class="tone-{{ tone }} h-full flex flex-col gap-3 sm:gap-4">
+  {# Big box: picture + headline #}
+  <a href="/products/{{ p.slug }}" class="group block rounded-3xl p-5 sm:p-7 text-center" style="background: var(--tone-big)">
+    <div class="aspect-[16/10] rounded-2xl overflow-hidden bg-white/70 dark:bg-slate-950/40 shadow-[0_1px_2px_rgba(15,23,42,0.06)]">
+      {% if p.image_url %}
+      <img src="{{ p.image_url }}" alt="{{ loc(p, 'title') }}" loading="lazy" class="w-full h-full object-cover group-hover:scale-[1.03] transition duration-700" />
+      {% else %}
+      <div class="w-full h-full flex items-center justify-center"><img src="/static/img/logo.png" alt="" class="h-10 w-auto opacity-50" /></div>
+      {% endif %}
+    </div>
+    <h3 class="mt-6 text-xl sm:text-2xl font-medium tracking-tight text-slate-900 dark:text-white">{{ loc(p, 'title') }}</h3>
+  </a>
+  {# Small box: details + actions #}
+  <div class="flex-1 rounded-3xl px-5 py-6 sm:px-7 text-center flex flex-col" style="background: var(--tone-small)">
+    {% if p.category %}<div class="eyebrow" style="color: var(--tone-ink)">{{ p.category }}</div>{% endif %}
+    {% if loc(p, 'description') %}
+    <p class="mt-2.5 text-sm text-slate-600 dark:text-slate-300 leading-relaxed line-clamp-3">{{ loc(p, 'description') }}</p>
+    {% endif %}
+    <div class="flex-1"></div>
+    <div class="mt-5 flex flex-wrap items-center justify-center gap-2">
+      <a href="/order/product/{{ p.slug }}" class="btn-dark btn-sm">{{ t('offer.order') }}</a>
+      <a href="/order/product/{{ p.slug }}?type=demo" class="btn-outline btn-sm">{{ t('offer.book_demo') }}</a>
+      <a href="/products/{{ p.slug }}" class="btn-ghost btn-sm">{{ t('offer.view_details') }} {{ chevron }}</a>
+    </div>
+  </div>
+</div>
+{% endmacro %}
+
+{# Two at a time (one on phones); the rest slide in every N seconds, where N
+   is set in Admin -> Products. See main.js for the movement. #}
+{% macro product_carousel(products) %}
+{% set seconds = (contact.products_slide_seconds or 5) | int %}
+<div class="product-carousel relative" data-interval="{{ [seconds, 2]|max }}">
+  <div class="overflow-hidden -mx-2 sm:-mx-2.5">
+    <div class="product-track flex items-stretch transition-transform duration-700 ease-[cubic-bezier(.22,.61,.36,1)]">
+      {% for p in products %}
+      <div class="product-slide w-full md:w-1/2 flex-shrink-0 px-2 sm:px-2.5" {% if loop.index > 2 %}aria-hidden="true"{% endif %}>
+        {{ product_card(p, loop.index0) }}
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% if products|length > 1 %}
+  <div class="product-controls mt-6 flex items-center justify-center gap-3">
+    <button type="button" class="product-prev w-10 h-10 rounded-full border border-slate-300 dark:border-slate-600 flex items-center justify-center hover:border-slate-900 dark:hover:border-white transition" aria-label="{{ t('products.previous') }}">
+      <svg viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 rotate-180"><path fill-rule="evenodd" d="M7.2 14.8a.75.75 0 0 1 0-1.06L10.94 10 7.2 6.26a.75.75 0 1 1 1.06-1.06l4.27 4.27a.75.75 0 0 1 0 1.06L8.26 14.8a.75.75 0 0 1-1.06 0z" clip-rule="evenodd"/></svg>
+    </button>
+    <div class="product-dots flex items-center gap-1.5"></div>
+    <button type="button" class="product-next w-10 h-10 rounded-full border border-slate-300 dark:border-slate-600 flex items-center justify-center hover:border-slate-900 dark:hover:border-white transition" aria-label="{{ t('products.next') }}">
+      <svg viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4"><path fill-rule="evenodd" d="M7.2 14.8a.75.75 0 0 1 0-1.06L10.94 10 7.2 6.26a.75.75 0 1 1 1.06-1.06l4.27 4.27a.75.75 0 0 1 0 1.06L8.26 14.8a.75.75 0 0 1-1.06 0z" clip-rule="evenodd"/></svg>
+    </button>
+  </div>
+  {% endif %}
 </div>
 {% endmacro %}

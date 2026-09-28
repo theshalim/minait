@@ -47,3 +47,19 @@ html[lang="bn"] [class*="tracking-"] {
   letter-spacing: normal !important;
   text-transform: none !important;
 }
+
+/* Product card colours: a soft "big box" tint, a lighter "small box" tint
+   and an accent for the small label — natural pastels in light mode, deep
+   muted versions in dark mode. */
+.tone-blue   { --tone-big: #e8f0fe; --tone-small: #f3f7fe; --tone-ink: #1a56b8; }
+.tone-green  { --tone-big: #e6f4ea; --tone-small: #f2f9f4; --tone-ink: #1e7a3c; }
+.tone-rose   { --tone-big: #fce8e6; --tone-small: #fdf4f3; --tone-ink: #b3261e; }
+.tone-amber  { --tone-big: #fef3d6; --tone-small: #fffaec; --tone-ink: #9a6700; }
+.tone-violet { --tone-big: #f1e8fd; --tone-small: #f8f3fe; --tone-ink: #6b3fb3; }
+.tone-teal   { --tone-big: #e0f4f1; --tone-small: #f0faf8; --tone-ink: #0f766e; }
+.dark .tone-blue   { --tone-big: #17223a; --tone-small: #111a2c; --tone-ink: #8ab4f8; }
+.dark .tone-green  { --tone-big: #15291d; --tone-small: #102017; --tone-ink: #81c995; }
+.dark .tone-rose   { --tone-big: #33191a; --tone-small: #261314; --tone-ink: #f28b82; }
+.dark .tone-amber  { --tone-big: #30260f; --tone-small: #241d0c; --tone-ink: #fdd663; }
+.dark .tone-violet { --tone-big: #261c38; --tone-small: #1c152a; --tone-ink: #c58af9; }
+.dark .tone-teal   { --tone-big: #112a27; --tone-small: #0c201e; --tone-ink: #5eead4; }

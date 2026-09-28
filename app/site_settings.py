@@ -12,7 +12,7 @@ from app.supabase_client import supabase_admin
 
 logger = logging.getLogger("minait")
 
-KEYS = ("contact_email", "contact_phone")
+KEYS = ("contact_email", "contact_phone", "products_slide_seconds")
 _CACHE_SECONDS = 60
 _cache: dict = {"at": 0.0, "values": {}}
 

@@ -22,10 +22,12 @@
 
   <dl class="mt-10 rounded-3xl bg-tint dark:bg-tint-dark p-6 sm:p-7 space-y-4 text-[15px]">
     <div class="flex justify-between gap-4"><dt class="text-slate-500 dark:text-slate-400">{{ t('order.service') }}</dt><dd class="font-medium text-right">{{ order.service_title }}</dd></div>
+    {% if (order.amount or 0) | float > 0 %}
     <div class="flex justify-between gap-4"><dt class="text-slate-500 dark:text-slate-400">{{ t('order.amount') }}</dt><dd class="font-medium">{{ "{:,.0f}".format(order.amount | float) }} {{ order.currency }}</dd></div>
     <div class="flex justify-between gap-4"><dt class="text-slate-500 dark:text-slate-400">{{ t('order.payment') }}</dt>
       <dd><span class="{{ 'badge-green' if order.payment_status == 'paid' else 'badge-amber' }} text-xs">{{ t('payment.' ~ order.payment_status) }}</span></dd>
     </div>
+    {% endif %}
     <div class="flex justify-between gap-4"><dt class="text-slate-500 dark:text-slate-400">{{ t('order.status') }}</dt><dd class="font-medium">{{ t('status.' ~ order.status) }}</dd></div>
   </dl>
 

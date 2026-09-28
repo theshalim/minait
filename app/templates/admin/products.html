@@ -3,6 +3,18 @@
 {% from "admin/_catalog.html" import catalog_list %}
 {% block title %}Products — Admin{% endblock %}
 {% block admin_content %}
-{{ page_header("Products", "Shown on the Products page. Customers order them on WhatsApp.", "/admin/products/new", "+ Add product") }}
+{{ page_header("Products", "Shown as a slider on the homepage and the Products page: two at a time (one on phones), each with Order now, Book a demo and View details.", "/admin/products/new", "+ Add product") }}
+
+<form method="post" action="/admin/products/slider" class="panel p-4 sm:px-5 mb-6 flex flex-wrap items-end gap-3">
+  <div>
+    <label class="label" for="seconds">Slide every</label>
+    <div class="flex items-center gap-2">
+      <input id="seconds" name="seconds" type="number" min="2" max="30" value="{{ contact.products_slide_seconds or 5 }}" class="input w-24 text-center" />
+      <span class="text-sm text-slate-500">seconds</span>
+    </div>
+  </div>
+  <button class="btn-dark">Save</button>
+  <p class="hint w-full mt-0">2–30 seconds. The slider stops while a visitor's mouse is on it.</p>
+</form>
 {{ catalog_list(products, "/admin/products", "product") }}
 {% endblock %}
