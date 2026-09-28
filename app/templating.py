@@ -5,6 +5,7 @@ from fastapi.templating import Jinja2Templates
 
 from app.config import settings
 from app.i18n import format_date, get_locale, localized, make_translator
+from app.icons import service_icon
 from app.security import get_optional_user
 from app.site_settings import get_site_settings
 
@@ -28,6 +29,7 @@ def base_ctx(request: Request, **extra) -> dict:
         "t": make_translator(lang),
         "loc": lambda row, field: localized(row, field, lang),
         "fmt_date": lambda value: format_date(value, lang),
+        "service_icon": service_icon,
     }
     ctx.update(extra)
     return ctx

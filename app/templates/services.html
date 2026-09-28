@@ -1,16 +1,67 @@
 {% extends "base.html" %}
-{% from "partials/cards.html" import offer_grid, product_carousel with context %}
-{% block title %}{{ heading }} — {{ site_name }}{% endblock %}
+{% block title %}{{ t('services.hero_title') }} — {{ site_name }}{% endblock %}
 {% block content %}
-<section class="container-x pt-14 sm:pt-20">
-  <div class="text-center max-w-2xl mx-auto mb-10 sm:mb-14">
-    <h1 class="text-4xl sm:text-5xl font-medium tracking-tight">{{ heading }}</h1>
-    {% if intro %}<p class="mt-4 text-slate-500 dark:text-slate-400 leading-relaxed">{{ intro }}</p>{% endif %}
+
+{# ================================ Banner ================================ #}
+<section class="bg-[#0b1533] text-white">
+  <div class="container-x py-12 sm:py-16 grid gap-10 md:grid-cols-2 items-center">
+    <div>
+      <span class="inline-block rounded-full bg-white/10 px-3 py-1 text-xs font-medium text-white/80">{{ t('services.badge') }}</span>
+      <h1 class="mt-5 text-3xl sm:text-5xl font-medium tracking-tight leading-tight">{{ t('services.hero_title') }}</h1>
+      <p class="mt-5 text-[15px] sm:text-base text-white/70 leading-relaxed max-w-lg">{{ t('services.intro') }}</p>
+    </div>
+    <div class="aspect-[4/3] rounded-3xl overflow-hidden bg-white/5">
+      <img src="{{ hero_image }}" alt="" class="w-full h-full object-cover" />
+    </div>
   </div>
-  {% if items %}
-  {% if kind == "product" %}{{ product_carousel(items) }}{% else %}{{ offer_grid(items, kind) }}{% endif %}
-  {% else %}
-  <p class="text-center text-slate-400 dark:text-slate-500">{{ empty }}</p>
-  {% endif %}
 </section>
+
+{# ============================ Grouped services ============================ #}
+<div class="container-x">
+  {% if has_services %}
+  {% for g in groups %}
+  <section class="pt-16 sm:pt-20">
+    <h2 class="text-2xl sm:text-3xl font-medium tracking-tight">{{ loc(g.first, 'category') if g.key else t('services.more') }}</h2>
+    <div class="svc-grid mt-8 sm:mt-10">
+      {% for s in g['items'] %}
+      <a href="/services/{{ s.slug }}" class="svc-item group block">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.4" stroke="currentColor" class="w-8 h-8 text-brand-dark dark:text-brand" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="{{ service_icon(s) }}"/></svg>
+        <h3 class="mt-5 text-lg sm:text-xl font-medium tracking-tight group-hover:text-brand-dark dark:group-hover:text-brand transition">{{ loc(s, 'title') }}</h3>
+        {% if loc(s, 'description') %}<p class="mt-2.5 text-sm text-slate-500 dark:text-slate-400 leading-relaxed line-clamp-3">{{ loc(s, 'description') }}</p>{% endif %}
+        <span class="mt-4 inline-flex items-center gap-1.5 text-[13px] font-medium text-brand-dark dark:text-brand">
+          {{ t('services.learn_more') }}
+          <svg viewBox="0 0 20 20" fill="currentColor" class="w-3.5 h-3.5 group-hover:translate-x-0.5 transition"><path fill-rule="evenodd" d="M3 10a.75.75 0 0 1 .75-.75h10.64l-3.22-3.22a.75.75 0 1 1 1.06-1.06l4.5 4.5a.75.75 0 0 1 0 1.06l-4.5 4.5a.75.75 0 1 1-1.06-1.06l3.22-3.22H3.75A.75.75 0 0 1 3 10z" clip-rule="evenodd"/></svg>
+        </span>
+      </a>
+      {% endfor %}
+    </div>
+  </section>
+  {% endfor %}
+  {% else %}
+  <p class="pt-16 text-center text-slate-400 dark:text-slate-500">{{ t('home.no_services') }}</p>
+  {% endif %}
+</div>
+
+{# =============================== Tech stack =============================== #}
+{% if tech %}
+{% set half = (tech|length + 1) // 2 %}
+<section class="mt-20 sm:mt-28 bg-slate-50 dark:bg-slate-900/60 py-16 sm:py-20 overflow-hidden">
+  <div class="container-x text-center">
+    <h2 class="section-title">{{ t('tech.heading') }}</h2>
+    <p class="mt-3 text-sm text-slate-500 dark:text-slate-400">{{ t('tech.sub') }}</p>
+  </div>
+  <div class="mt-10 space-y-4 sm:space-y-6">
+    {% for row in [tech[:half], tech[half:] or tech[:half]] %}
+    {% set reps = ((10 + row|length - 1) // row|length) %}
+    <div class="marquee">
+      <div class="marquee-track {{ 'marquee-reverse' if loop.index == 2 else '' }}" style="--duration: {{ reps * row|length * 2.5 }}s">
+        {% for part in range(2) %}{% for r in range(reps) %}{% for name in row %}
+        <span class="marquee-item text-2xl sm:text-4xl font-semibold text-slate-500/80 dark:text-slate-400 whitespace-nowrap" {% if part %}aria-hidden="true"{% endif %}>{{ name }}</span>
+        {% endfor %}{% endfor %}{% endfor %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
 {% endblock %}

@@ -1,4 +1,5 @@
 """One admin, no customer accounts, WhatsApp ordering, products, clients."""
+import re
 from urllib.parse import unquote
 
 import app.security as security
@@ -29,9 +30,11 @@ def test_signup_and_dashboard_are_gone(client, db):
 
 def test_order_buttons_open_the_order_form_and_show_no_price(client, db):
     db.add("services", title="Repair", slug="repair", price=1500)
-    html = client.get("/services").text
-    assert 'href="/order/service/repair"' in html
-    assert "wa.me/8801700000000?text=" not in html and "1,500" not in html and "BDT" not in html
+    for path in ("/", "/services", "/services/repair"):
+        html = client.get(path).text
+        assert "like%20to%20order" not in html and "1,500" not in html, path  # no order-by-WhatsApp links
+    assert 'href="/order/service/repair"' in client.get("/").text
+    assert 'href="/order/service/repair"' in client.get("/services/repair").text
 
 
 def test_old_checkout_link_opens_the_order_form(client, db):
@@ -237,7 +240,7 @@ def test_whatsapp_not_named_on_the_bangla_site(client, db):
         html = client.get(path).text
         assert "হোয়াটসঅ্যাপ" not in html, path
         assert "যেভাবে কাজ করে" not in html and "how-it-works" not in html, path
-    assert "অর্ডার করুন" in client.get("/services").text
+    assert "অর্ডার করুন" in client.get("/").text and "আরও জানুন" in client.get("/services").text
 
 
 def test_bangla_text_has_no_letter_spacing(client):
@@ -390,3 +393,63 @@ def test_admin_sets_slider_speed(client, db):
     assert 'data-interval="8"' in client.get("/products").text
     client.post("/admin/products/slider", data={"seconds": "999"})
     assert 'data-interval="30"' in client.get("/products").text
+
+
+
+# ---------------------------------------------------------------------------
+# Services page (banner, groups, tech stack) and the homepage service slider
+# ---------------------------------------------------------------------------
+def test_services_page_groups_by_category(client, db):
+    db.add("services", title="IT Support", slug="a", price=0, category="Support", category_bn="সাপোর্ট", sort_order=1)
+    db.add("services", title="Cloud Backup", slug="b", price=0, category="Cloud", sort_order=2)
+    db.add("services", title="Network Setup", slug="c", price=0, category="Support", sort_order=3)
+    db.add("services", title="Misc", slug="d", price=0, category="General", sort_order=4)
+    html = client.get("/services").text
+    headings = re.findall(r'<h2 class="text-2xl sm:text-3xl[^"]*">([^<]+)</h2>', html)
+    assert headings == ["Support", "Cloud", "More services"]
+    support = html.split(">Support</h2>")[1].split("</section>")[0]
+    assert "IT Support" in support and "Network Setup" in support and "Cloud Backup" not in support
+    assert 'class="svc-item group block"' in html and html.count('href="/services/') >= 4
+    client.cookies.set("lang", "bn")
+    bn = client.get("/services").text
+    assert ">সাপোর্ট</h2>" in bn and "মিনা আইটির সার্ভিসসমূহ" in bn
+
+
+def test_services_page_icons(client, db):
+    from app.icons import ICONS
+    db.add("services", title="Office Network Setup", slug="n", price=0, category="Support")
+    db.add("services", title="Anything", slug="x", price=0, category="Support", icon="cart")
+    html = client.get("/services").text
+    assert ICONS["wifi"] in html and ICONS["cart"] in html
+
+
+def test_services_page_tech_stack_moves_in_two_rows(client, db):
+    html = client.get("/services").text
+    assert "Yes. We cover your tech stack." in html and "Laravel" in html
+    assert html.count('class="marquee-track') == 2 and "marquee-reverse" in html
+    admin_login(client, db)
+    client.post("/admin/services/settings", data={"tech_stack": "Rust, Go, Elixir", "seconds": "9",
+                                                  "hero_url": "https://img/hero.jpg"})
+    html = client.get("/services").text
+    assert "Elixir" in html and "Laravel" not in html and 'src="https://img/hero.jpg"' in html
+
+
+def test_home_services_slider_one_at_a_time(client, db):
+    for i in range(3):
+        db.add("services", title=f"Service {i}", slug=f"s{i}", price=0, sort_order=i)
+    html = client.get("/").text
+    assert 'data-per-view="1"' in html and html.count('class="product-slide w-full flex-shrink-0') == 3
+    assert 'data-interval="6"' in html
+    admin_login(client, db)
+    client.post("/admin/services/settings", data={"seconds": "4"})
+    assert 'data-interval="4"' in client.get("/").text
+
+
+def test_admin_service_form_saves_icon_and_bangla_category(client, db):
+    admin_login(client, db)
+    assert 'name="icon" value="wifi"' in client.get("/admin/services/new").text
+    client.post("/admin/services/new", data={"title": "Net", "category": "Support",
+                                             "category_bn": "সাপোর্ট", "icon": "wifi"})
+    client.post("/admin/services/new", data={"title": "Other", "icon": "<script>"})
+    rows = db.tables["services"]
+    assert rows[0]["icon"] == "wifi" and rows[0]["category_bn"] == "সাপোর্ট" and rows[1]["icon"] == ""

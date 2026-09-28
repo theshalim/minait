@@ -227,6 +227,10 @@ alter table faqs       add column if not exists question_bn         text;
 alter table faqs       add column if not exists answer_bn           text;
 alter table site_stats add column if not exists label_bn            text;
 
+-- Services are grouped by category on the Services page; this is the
+-- group name on the Bangla site.
+alter table services add column if not exists category_bn text;
+
 -- Product card colour on the site: '' = automatic, or blue / green / rose /
 -- amber / violet / teal.
 alter table products add column if not exists color text not null default '';

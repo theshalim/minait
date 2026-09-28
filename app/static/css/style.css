@@ -63,3 +63,22 @@ html[lang="bn"] [class*="tracking-"] {
 .dark .tone-amber  { --tone-big: #30260f; --tone-small: #241d0c; --tone-ink: #fdd663; }
 .dark .tone-violet { --tone-big: #261c38; --tone-small: #1c152a; --tone-ink: #c58af9; }
 .dark .tone-teal   { --tone-big: #112a27; --tone-small: #0c201e; --tone-ink: #5eead4; }
+
+/* Tech-stack strip: the second row slides the other way. */
+.marquee-reverse { animation-direction: reverse; }
+
+/* Services page grid: 1 / 2 / 3 columns with thin dividers between
+   columns (none before the first column of each row). */
+.svc-grid { display: grid; grid-template-columns: 1fr; row-gap: 2.75rem; }
+.svc-item { padding: 0; }
+@media (min-width: 640px) {
+  .svc-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 3rem; }
+  .svc-item { padding: 0 1.75rem; border-left: 1px solid rgb(226 232 240); }
+  .svc-item:nth-child(2n + 1) { padding-left: 0; border-left: 0; }
+}
+@media (min-width: 1024px) {
+  .svc-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .svc-item:nth-child(2n + 1) { padding-left: 1.75rem; border-left: 1px solid rgb(226 232 240); }
+  .svc-item:nth-child(3n + 1) { padding-left: 0; border-left: 0; }
+}
+.dark .svc-item { border-color: rgb(30 41 59); }

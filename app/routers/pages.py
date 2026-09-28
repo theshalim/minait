@@ -7,6 +7,7 @@ from fastapi.responses import RedirectResponse
 from app.i18n import LANG_COOKIE, SUPPORTED_LANGS, get_locale, localized, make_translator
 from app.supabase_client import fetch_one, supabase_admin
 from app.templating import base_ctx, templates
+from app.site_settings import get_site_settings
 from app.utils import render_markdown
 
 router = APIRouter(tags=["pages"])
@@ -79,14 +80,44 @@ def home(request: Request):
     )
 
 
+DEFAULT_TECH_STACK = (
+    "Laravel, Flutter, PHP, Python, Django, Node.js, React, Vue.js, "
+    "WordPress, iOS, Android, JavaScript, Java, C++, MySQL, PostgreSQL, AWS, Docker"
+)
+DEFAULT_SERVICES_HERO = (
+    "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=1400&q=80&auto=format&fit=crop"
+)
+
+
+def group_services(services: list[dict]) -> list[dict]:
+    """Services grouped by category, in the order the categories first appear
+    (services are already sorted by sort_order). Uncategorised ones go last."""
+    groups: dict[str, dict] = {}
+    for s in services:
+        key = (s.get("category") or "").strip()
+        if key.lower() == "general":
+            key = ""
+        groups.setdefault(key, {"key": key, "first": s, "items": []})["items"].append(s)
+    return [g for k, g in groups.items() if k] + ([groups[""]] if "" in groups else [])
+
+
+def tech_stack(contact: dict) -> list[str]:
+    raw = contact.get("tech_stack") or DEFAULT_TECH_STACK
+    return [x.strip() for x in raw.replace("\n", ",").split(",") if x.strip()]
+
+
 @router.get("/services")
 def services_page(request: Request):
-    t = make_translator(get_locale(request))
+    contact = get_site_settings()
+    services = _active("services")
     return templates.TemplateResponse(
         "services.html",
         base_ctx(
-            request, items=_active("services"), kind="service",
-            heading=t("services.heading"), intro=t("services.intro"), empty=t("home.no_services"),
+            request,
+            groups=group_services(services),
+            has_services=bool(services),
+            hero_image=contact.get("services_hero_image") or DEFAULT_SERVICES_HERO,
+            tech=tech_stack(contact),
         ),
     )
 
@@ -95,7 +126,7 @@ def services_page(request: Request):
 def products_page(request: Request):
     t = make_translator(get_locale(request))
     return templates.TemplateResponse(
-        "services.html",
+        "products.html",
         base_ctx(
             request, items=_optional(lambda: _active("products")), kind="product",
             heading=t("products.heading"), intro=t("products.intro"), empty=t("products.empty"),

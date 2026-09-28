@@ -233,7 +233,8 @@
   });
 })();
 
-// Product slider: two products at a time (one on phones); moves one step
+// Sliders (products: two at a time, one on phones; homepage services: one at
+// a time via data-per-view="1"): moves one step
 // every data-interval seconds (set in Admin -> Products), loops back to the
 // start, pauses while the pointer or keyboard focus is on it, and can be
 // moved with the arrows, the dots or a swipe.
@@ -248,7 +249,9 @@
     var timer = null;
     var paused = false;
 
+    var fixedPerView = parseInt(root.getAttribute("data-per-view"), 10);
     function perView() {
+      if (fixedPerView) return fixedPerView;
       return window.matchMedia("(min-width: 768px)").matches ? 2 : 1;
     }
     function maxIndex() {

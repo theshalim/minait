@@ -28,7 +28,7 @@
 </div>
 {% endmacro %}
 
-{% macro catalog_form(item, action, back, colors=None) %}
+{% macro catalog_form(item, action, back, colors=None, icons=None) %}
 <form method="post" enctype="multipart/form-data" action="{{ action }}" class="space-y-6 max-w-2xl">
   <div class="panel p-5 sm:p-6 space-y-5">
     <div class="grid gap-5 sm:grid-cols-2">
@@ -58,6 +58,31 @@
         <label class="label">Category <span class="text-slate-400 font-normal">(small label)</span></label>
         <input name="category" value="{{ item.category if item else '' }}" placeholder="e.g. Networking" class="input" />
       </div>
+      {% if icons %}
+      <div>
+        <label class="label">ক্যাটাগরি <span class="text-slate-400 font-normal">(Bangla, optional)</span></label>
+        <input name="category_bn" value="{{ (item.category_bn or '') if item else '' }}" placeholder="যেমন: আইটি সাপোর্ট" class="input" />
+      </div>
+      <p class="hint sm:col-span-2 -mt-3">On the Services page, services with the same category are shown together under that heading.</p>
+      <div class="sm:col-span-2">
+        <label class="label">Icon</label>
+        <div class="grid grid-cols-5 sm:grid-cols-7 gap-2">
+          <label class="cursor-pointer">
+            <input type="radio" name="icon" value="" class="peer sr-only" {{ 'checked' if not item or item.icon not in icons else '' }} />
+            <span class="h-12 rounded-xl border border-slate-200 dark:border-slate-700 flex items-center justify-center text-[11px] text-slate-500 peer-checked:border-slate-900 peer-checked:ring-2 peer-checked:ring-slate-900/10 dark:peer-checked:border-white">Auto</span>
+          </label>
+          {% for name, path in icons.items() %}
+          <label class="cursor-pointer" title="{{ name }}">
+            <input type="radio" name="icon" value="{{ name }}" class="peer sr-only" {{ 'checked' if item and item.icon == name else '' }} />
+            <span class="h-12 rounded-xl border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-600 dark:text-slate-300 peer-checked:border-slate-900 peer-checked:text-slate-900 peer-checked:ring-2 peer-checked:ring-slate-900/10 dark:peer-checked:border-white dark:peer-checked:text-white">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="{{ path }}"/></svg>
+            </span>
+          </label>
+          {% endfor %}
+        </div>
+        <p class="hint">"Auto" picks an icon from the service name.</p>
+      </div>
+      {% endif %}
       {% if colors %}
       <div>
         <label class="label">Card colour</label>

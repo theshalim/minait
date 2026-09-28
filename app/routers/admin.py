@@ -9,6 +9,7 @@ from fastapi.responses import RedirectResponse
 
 from app.config import settings
 from app.i18n import make_translator
+from app.icons import ICONS as SERVICE_ICONS
 from app.security import CurrentUser, check_password, require_admin
 from app.site_settings import save_site_settings
 from app.supabase_client import fetch_one, supabase_admin
@@ -85,9 +86,29 @@ def admin_services(request: Request):
     return templates.TemplateResponse("admin/services.html", base_ctx(request, services=services, service=None))
 
 
+@router.post("/services/settings")
+async def admin_services_settings(
+    hero_url: str = Form(""),
+    hero_file: UploadFile = File(None),
+    seconds: int = Form(6),
+    tech_stack: str = Form(""),
+):
+    """Services page banner picture, homepage service-slider speed and the
+    moving tech-stack names."""
+    uploaded_url = await _upload_image(hero_file)
+    save_site_settings({
+        "services_hero_image": uploaded_url or hero_url,
+        "services_slide_seconds": str(min(max(seconds, 2), 30)),
+        "tech_stack": tech_stack,
+    })
+    return RedirectResponse("/admin/services", status_code=303)
+
+
 @router.get("/services/new")
 def admin_service_new(request: Request):
-    return templates.TemplateResponse("admin/service_form.html", base_ctx(request, service=None))
+    return templates.TemplateResponse(
+        "admin/service_form.html", base_ctx(request, service=None, icons=SERVICE_ICONS)
+    )
 
 
 @router.post("/services/new")
@@ -98,6 +119,7 @@ async def admin_service_create(
     description: str = Form(""),
     description_bn: str = Form(""),
     category: str = Form("General"),
+    category_bn: str = Form(""),
     icon: str = Form(""),
     image_url: str = Form(""),
     image_file: UploadFile = File(None),
@@ -113,7 +135,8 @@ async def admin_service_create(
             "description_bn": description_bn,
             "price": 0,
             "category": category,
-            "icon": icon,
+            "category_bn": category_bn,
+            "icon": icon if icon in SERVICE_ICONS else "",
             "image_url": uploaded_url or image_url,
             "sort_order": sort_order,
         }
@@ -126,7 +149,9 @@ def admin_service_edit_page(request: Request, service_id: int):
     service = fetch_one(supabase_admin().table("services").select("*").eq("id", service_id))
     if not service:
         raise HTTPException(status_code=404, detail="Service not found")
-    return templates.TemplateResponse("admin/service_form.html", base_ctx(request, service=service))
+    return templates.TemplateResponse(
+        "admin/service_form.html", base_ctx(request, service=service, icons=SERVICE_ICONS)
+    )
 
 
 @router.post("/services/{service_id}/edit")
@@ -138,6 +163,7 @@ async def admin_service_update(
     description: str = Form(""),
     description_bn: str = Form(""),
     category: str = Form("General"),
+    category_bn: str = Form(""),
     icon: str = Form(""),
     image_url: str = Form(""),
     image_file: UploadFile = File(None),
@@ -152,7 +178,8 @@ async def admin_service_update(
             "description": description,
             "description_bn": description_bn,
             "category": category,
-            "icon": icon,
+            "category_bn": category_bn,
+            "icon": icon if icon in SERVICE_ICONS else "",
             "image_url": uploaded_url or image_url,
             "sort_order": sort_order,
         }

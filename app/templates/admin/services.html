@@ -1,8 +1,29 @@
 {% extends "admin/layout.html" %}
-{% from "admin/_ui.html" import page_header %}
+{% from "admin/_ui.html" import page_header, section_title, image_input %}
 {% from "admin/_catalog.html" import catalog_list %}
 {% block title %}Services — Admin{% endblock %}
 {% block admin_content %}
-{{ page_header("Services", "Shown on the Services page and the homepage. Each one has an \"Order on WhatsApp\" button.", "/admin/services/new", "+ Add service") }}
+{{ page_header("Services", "The Services page groups them by Category (use the same category name to put services in one group). The homepage shows them as a slider, one at a time.", "/admin/services/new", "+ Add service") }}
+
 {{ catalog_list(services, "/admin/services", "service") }}
+
+<div class="mt-14">
+{{ section_title("Page settings", "The Services page banner picture, the homepage slider speed and the moving \"We cover your tech stack\" names.") }}
+</div>
+<form method="post" action="/admin/services/settings" enctype="multipart/form-data" class="panel p-5 sm:p-6 space-y-5 max-w-2xl">
+  {{ image_input("Banner picture (Services page)", "hero_file", "hero_url", contact.services_hero_image or "", "Landscape, about 1200×900px. Leave empty to use the default picture.") }}
+  <div>
+    <label class="label" for="seconds">Homepage slider: next service every</label>
+    <div class="flex items-center gap-2">
+      <input id="seconds" name="seconds" type="number" min="2" max="30" value="{{ contact.services_slide_seconds or 6 }}" class="input w-24 text-center" />
+      <span class="text-sm text-slate-500">seconds</span>
+    </div>
+  </div>
+  <div>
+    <label class="label" for="tech_stack">Tech stack names</label>
+    <textarea id="tech_stack" name="tech_stack" rows="3" placeholder="Laravel, Flutter, PHP, Python, Node.js, React, …" class="input">{{ contact.tech_stack or '' }}</textarea>
+    <p class="hint">Separate with commas. They slide across the Services page in two rows. Leave empty for the default list.</p>
+  </div>
+  <button class="btn-dark">Save settings</button>
+</form>
 {% endblock %}

@@ -229,3 +229,14 @@ update products set description = replace(description, ' Price is per month for 
 update products set description = replace(description, ' Starting price for a 5-page business site.', ''), description_bn = replace(description_bn, ' ৫ পেজের বিজনেস সাইটের শুরুর দাম।', '') where description like '%Starting price for a 5-page business site.%' or description_bn like '%৫ পেজের বিজনেস সাইটের শুরুর দাম।%';
 update products set description = replace(description, ' Priced per project.', ''), description_bn = replace(description_bn, ' দাম প্রজেক্ট অনুযায়ী।', '') where description like '%Priced per project.%' or description_bn like '%দাম প্রজেক্ট অনুযায়ী।%';
 update products set description = replace(description, ' Price is per month.', ''), description_bn = replace(description_bn, ' দাম মাসিক।', '') where description like '%Price is per month.%' or description_bn like '%দাম মাসিক।%';
+
+-- The Services page groups services by category, so give the samples two
+-- shared groups (and a matching line icon each).
+update services set category = 'IT Support', category_bn = 'আইটি সাপোর্ট', icon = 'support'
+  where slug = 'it-support-maintenance' and (icon is null or icon = '');
+update services set category = 'IT Support', category_bn = 'আইটি সাপোর্ট', icon = 'wifi'
+  where slug = 'office-network-setup' and (icon is null or icon = '');
+update services set category = 'Security & Cloud', category_bn = 'নিরাপত্তা ও ক্লাউড', icon = 'shield'
+  where slug = 'data-backup-security' and (icon is null or icon = '');
+update services set category = 'Security & Cloud', category_bn = 'নিরাপত্তা ও ক্লাউড', icon = 'email'
+  where slug = 'business-email-domain' and (icon is null or icon = '');

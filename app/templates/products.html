@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% from "partials/cards.html" import product_carousel with context %}
+{% block title %}{{ heading }} — {{ site_name }}{% endblock %}
+{% block content %}
+<section class="container-x pt-14 sm:pt-20">
+  <div class="text-center max-w-2xl mx-auto mb-10 sm:mb-14">
+    <h1 class="text-4xl sm:text-5xl font-medium tracking-tight">{{ heading }}</h1>
+    {% if intro %}<p class="mt-4 text-slate-500 dark:text-slate-400 leading-relaxed">{{ intro }}</p>{% endif %}
+  </div>
+  {% if items %}
+  {{ product_carousel(items) }}
+  {% else %}
+  <p class="text-center text-slate-400 dark:text-slate-500">{{ empty }}</p>
+  {% endif %}
+</section>
+{% endblock %}
