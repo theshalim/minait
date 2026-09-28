@@ -1,13 +1,13 @@
 {% extends "admin/layout.html" %}
 {% from "admin/_ui.html" import page_header, empty %}
-{% block title %}Orders — Admin{% endblock %}
+{% block title %}Requests — Admin{% endblock %}
 {% block admin_content %}
-{{ page_header("Orders", "Requests from the website's Order / Book a demo forms arrive here automatically. Add orders that came by phone or chat yourself. Set Payment to Paid when the money arrives so it counts in revenue, and use WhatsApp to send the customer their status and tracking link.") }}
+{{ page_header("Requests", "Quote and demo requests from the website arrive here automatically. Add ones that came by phone or chat yourself. Set Payment to Paid when the money arrives so it counts in revenue, and use WhatsApp to send the customer their status and tracking link.") }}
 
 {# ---------------- Add an order that came in over chat ---------------- #}
 <details id="new-order" class="panel mb-8 group" {{ 'open' if not orders else '' }}>
   <summary class="flex items-center justify-between cursor-pointer list-none px-5 py-4">
-    <span class="font-medium">+ Add order</span>
+    <span class="font-medium">+ Add request</span>
     <svg viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 text-slate-400 transition group-open:rotate-180"><path fill-rule="evenodd" d="M5.2 7.2a.75.75 0 0 1 1.06 0L10 10.94l3.74-3.74a.75.75 0 1 1 1.06 1.06l-4.27 4.27a.75.75 0 0 1-1.06 0L5.2 8.26a.75.75 0 0 1 0-1.06z" clip-rule="evenodd"/></svg>
   </summary>
   <form method="post" action="/admin/orders/new" class="px-5 pb-5 grid gap-4 sm:grid-cols-2 border-t border-slate-100 dark:border-slate-800 pt-5">
@@ -32,7 +32,7 @@
       <select name="payment_status" class="input">{% for s in payment_statuses %}<option value="{{ s }}">{{ s|capitalize }}</option>{% endfor %}</select>
     </div>
     <div class="sm:col-span-2"><label class="label">Notes <span class="text-slate-400 font-normal">(optional)</span></label><textarea name="notes" rows="2" class="input"></textarea></div>
-    <div class="sm:col-span-2 flex justify-end"><button class="btn-dark">Save order</button></div>
+    <div class="sm:col-span-2 flex justify-end"><button class="btn-dark">Save request</button></div>
   </form>
 </details>
 
@@ -51,7 +51,7 @@
         <div class="flex flex-wrap items-center gap-2">
           <span class="font-medium">{{ o.service_title }}</span>
           {% if o.kind == 'demo' %}<span class="badge bg-violet-50 text-violet-700 dark:bg-violet-950/50 dark:text-violet-300">Demo request</span>
-          {% elif o.payment_method == 'form' %}<span class="badge bg-sky-50 text-sky-700 dark:bg-sky-950/50 dark:text-sky-300">Website form</span>{% endif %}
+          {% elif o.payment_method == 'form' %}<span class="badge bg-sky-50 text-sky-700 dark:bg-sky-950/50 dark:text-sky-300">Quote request</span>{% endif %}
           <span class="{{ 'badge-green' if o.payment_status == 'paid' else 'badge-amber' if o.payment_status == 'unpaid' else 'badge-gray' }}">{{ o.payment_status|capitalize }}</span>
         </div>
         <div class="text-sm text-slate-600 dark:text-slate-300 mt-1">{{ o.customer_name }}{% if o.customer_phone %} · <a href="tel:{{ o.customer_phone | replace(' ', '') }}" class="underline underline-offset-2">{{ o.customer_phone }}</a>{% endif %}{% if o.customer_email %} · <a href="mailto:{{ o.customer_email }}" class="underline underline-offset-2">{{ o.customer_email }}</a>{% endif %}</div>
@@ -76,14 +76,14 @@
         {% if o.wa_link %}
         <a href="{{ o.wa_link }}" target="_blank" rel="noopener" class="btn-brand btn-sm">WhatsApp customer</a>
         {% endif %}
-        <form method="post" action="/admin/orders/{{ o.id }}/delete" onsubmit="return confirm('Delete this order?');">
+        <form method="post" action="/admin/orders/{{ o.id }}/delete" onsubmit="return confirm('Delete this request?');">
           <button class="btn-danger btn-sm">Delete</button>
         </form>
       </div>
     </div>
   </div>
   {% else %}
-  {{ empty("No orders here yet.") }}
+  {{ empty("No requests here yet.") }}
   {% endfor %}
 </div>
 {% endblock %}

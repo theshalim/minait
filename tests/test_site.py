@@ -240,7 +240,7 @@ def test_whatsapp_not_named_on_the_bangla_site(client, db):
         html = client.get(path).text
         assert "হোয়াটসঅ্যাপ" not in html, path
         assert "যেভাবে কাজ করে" not in html and "how-it-works" not in html, path
-    assert "অর্ডার করুন" in client.get("/").text and "আরও জানুন" in client.get("/services").text
+    assert "কোটেশন নিন" in client.get("/").text and "আরও জানুন" in client.get("/services").text
 
 
 def test_bangla_text_has_no_letter_spacing(client):
@@ -300,14 +300,14 @@ def test_schedule_a_call_dials_the_phone_when_set(client, db):
 def test_order_form_saves_request_and_alerts_admin(client, db):
     db.add("services", title="Repair", slug="repair", price=0)
     page = client.get("/order/service/repair")
-    assert page.status_code == 200 and "Order: Repair" in page.text and 'name="preferred_time"' not in page.text
+    assert page.status_code == 200 and "Get a quote: Repair" in page.text and 'name="preferred_time"' not in page.text
     r = client.post("/order/service/repair", data={"name": "Karim", "email": "k@example.com",
                                                    "company": "ABC", "message": "Two laptops are slow"})
     order = db.tables["orders"][0]
     assert r.headers["location"] == f"/thank-you/{order['order_number']}"
     assert order["service_title"] == "Repair" and order["kind"] == "order" and order["payment_method"] == "form"
     assert "Two laptops are slow" in order["notes"] and "Company: ABC" in order["notes"]
-    assert "New order request" in db.notifications[0] and "Two laptops are slow" in db.notifications[0]
+    assert "Quote request" in db.notifications[0] and "Two laptops are slow" in db.notifications[0]
     thanks = client.get(r.headers["location"]).text
     assert order["order_number"] in thanks and f'href="/orders/{order["order_number"]}"' in thanks
     status = client.get(f"/orders/{order['order_number']}").text
@@ -453,3 +453,16 @@ def test_admin_service_form_saves_icon_and_bangla_category(client, db):
     client.post("/admin/services/new", data={"title": "Other", "icon": "<script>"})
     rows = db.tables["services"]
     assert rows[0]["icon"] == "wifi" and rows[0]["category_bn"] == "সাপোর্ট" and rows[1]["icon"] == ""
+
+
+
+def test_quote_wording_everywhere(client, db):
+    db.add("services", title="Repair", slug="repair", price=0)
+    db.add("products", title="Router", slug="router")
+    for lang, word, gone in (("en", "Get a quote", "Order now"), ("bn", "কোটেশন নিন", "অর্ডার করুন")):
+        client.cookies.set("lang", lang)
+        for path in ("/", "/products", "/products/router", "/services/repair", "/order/service/repair"):
+            html = client.get(path).text
+            assert word in html and gone not in html, (lang, path)
+    admin_login(client, db)
+    assert ">Requests<" in client.get("/admin/orders").text or "Requests" in client.get("/admin").text

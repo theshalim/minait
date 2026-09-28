@@ -2,11 +2,11 @@
 {% from "admin/_ui.html" import page_header, empty %}
 {% block title %}Admin — {{ site_name }}{% endblock %}
 {% block admin_content %}
-{{ page_header("Overview", "Everything at a glance. Customers order on WhatsApp — log each order in Orders.", "/admin/orders#new-order", "+ Add order") }}
+{{ page_header("Overview", "Everything at a glance. Quote and demo requests from the website land in Requests.", "/admin/orders#new-order", "+ Add request") }}
 
 <div class="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-4 mb-10">
   {% for label, value in [
-    ("Total orders", stats.total_orders),
+    ("Total requests", stats.total_orders),
     ("Pending", stats.pending_orders),
     ("Revenue (paid)", "{:,.0f}".format(stats.revenue) ~ " BDT"),
     ("Services", stats.total_services),
@@ -19,7 +19,7 @@
 </div>
 
 <div class="flex items-center justify-between mb-3">
-  <h2 class="font-semibold tracking-tight">Recent orders</h2>
+  <h2 class="font-semibold tracking-tight">Recent requests</h2>
   <a href="/admin/orders" class="btn-ghost btn-sm">View all</a>
 </div>
 <div class="panel divide-y divide-slate-100 dark:divide-slate-800">
@@ -35,7 +35,7 @@
     </div>
   </a>
   {% else %}
-  {{ empty("No orders yet.") }}
+  {{ empty("No requests yet.") }}
   {% endfor %}
 </div>
 {% endblock %}

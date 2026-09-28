@@ -51,9 +51,9 @@ def _clean(order: dict) -> dict:
 
 
 def notify_new_request(order: dict) -> None:
-    """A visitor sent the website's Order / Book-a-demo form."""
+    """A visitor sent the website's Get-a-quote / Book-a-demo form."""
     order = _clean(order)
-    label = "Demo request" if order.get("kind") == "demo" else "New order request"
+    label = "Demo request" if order.get("kind") == "demo" else "Quote request"
     text = (
         f"🆕 <b>{label} — {order['order_number']}</b>\n"
         f"For: {order['service_title']}\n"
