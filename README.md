@@ -115,7 +115,8 @@ The site sends no email (free-tier mail limits make it unreliable), so:
 
 Services, blog posts, FAQs and stat counters have optional Bangla fields in the admin panel.
 Visitors on the বাংলা site see the Bangla text when it is filled in, otherwise the English text.
-These columns come from `db/schema.sql`; **re-run it in the Supabase SQL editor after updating**
+The blog's "top post" (Admin → Blog → *Set as top post*) and these columns come from
+`db/schema.sql`; **re-run it in the Supabase SQL editor after updating**
 (it is safe to re-run and only adds what is missing).
 
 ## 10. Tests

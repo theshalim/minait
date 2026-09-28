@@ -139,6 +139,9 @@ alter table faqs       add column if not exists question_bn         text;
 alter table faqs       add column if not exists answer_bn           text;
 alter table site_stats add column if not exists label_bn            text;
 
+-- The one blog post the admin picked to show big at the top of /blog.
+alter table blog_posts add column if not exists is_featured boolean not null default false;
+
 -- ---------------------------------------------------------------------------
 -- Row Level Security (defense in depth).
 -- The FastAPI backend talks to Postgres with the Supabase SERVICE ROLE key,

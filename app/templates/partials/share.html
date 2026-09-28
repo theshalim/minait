@@ -1,0 +1,31 @@
+{# Round share buttons for one blog post: Facebook, X, LinkedIn, Gmail, and a
+   share/copy-link button (main.js: native share sheet on phones, copies the
+   link elsewhere). Import with context so t() is available:
+   {% from "partials/share.html" import share_buttons with context %} #}
+{% macro share_buttons(post) %}
+{% set url = site_url ~ "/blog/" ~ post.slug %}
+{% set title = loc(post, 'title') %}
+{% set btn = "w-8 h-8 rounded-full border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 flex items-center justify-center hover:bg-slate-100 hover:text-brand dark:hover:bg-slate-800 transition" %}
+<div class="flex items-center gap-1.5 flex-shrink-0">
+  <a href="https://www.facebook.com/sharer/sharer.php?u={{ url | urlencode }}" target="_blank" rel="noopener"
+     class="{{ btn }}" title="{{ t('blog.share_facebook') }}" aria-label="{{ t('blog.share_facebook') }}">
+    <svg viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4"><path d="M13.5 21v-7.5H16l.4-3h-2.9V8.6c0-.87.25-1.46 1.5-1.46h1.6V4.46A21 21 0 0 0 14.27 4.3c-2.3 0-3.87 1.4-3.87 3.97v2.23H7.8v3h2.6V21h3.1z"/></svg>
+  </a>
+  <a href="https://twitter.com/intent/tweet?url={{ url | urlencode }}&amp;text={{ title | urlencode }}" target="_blank" rel="noopener"
+     class="{{ btn }}" title="{{ t('blog.share_x') }}" aria-label="{{ t('blog.share_x') }}">
+    <svg viewBox="0 0 24 24" fill="currentColor" class="w-3.5 h-3.5"><path d="M17.75 3h3.07l-6.7 7.66L22 21h-6.17l-4.83-6.32L5.47 21H2.4l7.17-8.2L2 3h6.33l4.36 5.77L17.75 3zm-1.08 16.2h1.7L7.4 4.73H5.58L16.67 19.2z"/></svg>
+  </a>
+  <a href="https://www.linkedin.com/sharing/share-offsite/?url={{ url | urlencode }}" target="_blank" rel="noopener"
+     class="{{ btn }}" title="{{ t('blog.share_linkedin') }}" aria-label="{{ t('blog.share_linkedin') }}">
+    <svg viewBox="0 0 24 24" fill="currentColor" class="w-3.5 h-3.5"><path d="M4.98 3.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5zM3 9.75h4V21H3V9.75zm6.5 0h3.83v1.54h.05c.53-1 1.84-2.06 3.8-2.06 4.06 0 4.82 2.67 4.82 6.15V21h-4v-5.02c0-1.2-.02-2.74-1.67-2.74-1.67 0-1.93 1.3-1.93 2.65V21h-4V9.75z"/></svg>
+  </a>
+  <a href="https://mail.google.com/mail/?view=cm&amp;fs=1&amp;su={{ title | urlencode }}&amp;body={{ url | urlencode }}" target="_blank" rel="noopener"
+     class="{{ btn }}" title="{{ t('blog.share_gmail') }}" aria-label="{{ t('blog.share_gmail') }}">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" class="w-4 h-4"><rect x="3" y="5.5" width="18" height="13" rx="1.5"/><path d="M3.5 6.5 12 13l8.5-6.5"/></svg>
+  </a>
+  <button type="button" data-share-url="{{ url }}" data-share-title="{{ title }}" data-copied="{{ t('blog.link_copied') }}"
+          class="share-link {{ btn }} relative" title="{{ t('blog.share_link') }}" aria-label="{{ t('blog.share_link') }}">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" class="w-4 h-4"><path d="M10 13.5a4.5 4.5 0 0 0 6.36 0l2.8-2.8a4.5 4.5 0 0 0-6.36-6.36l-1.3 1.3"/><path d="M14 10.5a4.5 4.5 0 0 0-6.36 0l-2.8 2.8a4.5 4.5 0 0 0 6.36 6.36l1.3-1.3"/></svg>
+  </button>
+</div>
+{% endmacro %}

@@ -80,9 +80,20 @@ TRANSLATIONS = {
         "service.order_now": "Order Now",
         "service.price": "Price",
         "service.back": "← All services",
-        "blog.heading": "Blog",
+        "blog.heading": "Mina IT Blog",
         "blog.empty": "No articles yet — check back soon.",
         "blog.back": "← All articles",
+        "blog.learn_more": "Learn more",
+        "blog.search": "Search blog",
+        "blog.no_results": "No articles match your search.",
+        "blog.previous": "Previous",
+        "blog.next": "Next",
+        "blog.share_facebook": "Share on Facebook",
+        "blog.share_x": "Share on X",
+        "blog.share_linkedin": "Share on LinkedIn",
+        "blog.share_gmail": "Share by Gmail",
+        "blog.share_link": "Share / copy link",
+        "blog.link_copied": "Link copied!",
         "order.bookmark": "Bookmark this page to check your order's progress anytime.",
         "order.back_home": "← Back to home",
         "checkout.phone_hint": "We'll message you about your order on this number.",
@@ -201,9 +212,20 @@ TRANSLATIONS = {
         "service.order_now": "এখনই অর্ডার করুন",
         "service.price": "মূল্য",
         "service.back": "← সব সার্ভিস",
-        "blog.heading": "ব্লগ",
+        "blog.heading": "মিনা আইটি ব্লগ",
         "blog.empty": "এখনো কোনো লেখা নেই — শীঘ্রই আসছে।",
         "blog.back": "← সব লেখা",
+        "blog.learn_more": "বিস্তারিত পড়ুন",
+        "blog.search": "ব্লগে খুঁজুন",
+        "blog.no_results": "আপনার খোঁজের সাথে মেলে এমন কোনো লেখা নেই।",
+        "blog.previous": "আগের",
+        "blog.next": "পরের",
+        "blog.share_facebook": "ফেসবুকে শেয়ার করুন",
+        "blog.share_x": "X-এ শেয়ার করুন",
+        "blog.share_linkedin": "লিংকডইনে শেয়ার করুন",
+        "blog.share_gmail": "জিমেইলে পাঠান",
+        "blog.share_link": "শেয়ার / লিংক কপি করুন",
+        "blog.link_copied": "লিংক কপি হয়েছে!",
         "order.bookmark": "যেকোনো সময় অর্ডারের অগ্রগতি দেখতে এই পেজটা বুকমার্ক করে রাখুন।",
         "order.back_home": "← হোমে ফিরে যান",
         "checkout.phone_hint": "এই নম্বরে আমরা আপনার অর্ডারের আপডেট জানাব।",
@@ -274,6 +296,27 @@ def localized(row: dict | None, field: str, locale: str) -> str:
     if locale == "bn" and row.get(f"{field}_bn"):
         return row[f"{field}_bn"]
     return row.get(field) or ""
+
+
+MONTHS = {
+    "en": ["January", "February", "March", "April", "May", "June", "July", "August",
+           "September", "October", "November", "December"],
+    "bn": ["জানুয়ারি", "ফেব্রুয়ারি", "মার্চ", "এপ্রিল", "মে", "জুন", "জুলাই", "আগস্ট",
+           "সেপ্টেম্বর", "অক্টোবর", "নভেম্বর", "ডিসেম্বর"],
+}
+BN_DIGITS = str.maketrans("0123456789", "০১২৩৪৫৬৭৮৯")
+
+
+def format_date(value: str | None, locale: str) -> str:
+    """'2026-08-25T10:00:00+00:00' -> 'August 25, 2026' / '২৫ আগস্ট, ২০২৬'."""
+    try:
+        year, month, day = (int(p) for p in str(value)[:10].split("-"))
+        name = MONTHS.get(locale, MONTHS["en"])[month - 1]
+    except (ValueError, IndexError):
+        return ""
+    if locale == "bn":
+        return f"{day} {name}, {year}".translate(BN_DIGITS)
+    return f"{name} {day}, {year}"
 
 
 def make_translator(locale: str):

@@ -359,3 +359,67 @@ def test_unique_slug():
     taken = {"a", "a-2"}
     assert unique_slug("A", "x", taken.__contains__) == "a-3"
     assert unique_slug("বাংলা", "service", taken.__contains__) == "service"
+
+
+# ---------------------------------------------------------------------------
+# Blog page: top post, share buttons, search, pages
+# ---------------------------------------------------------------------------
+def _posts(db, n, **extra):
+    return [db.add("blog_posts", title=f"Post {i}", slug=f"post-{i}", excerpt=f"About {i}",
+                   content_markdown="x", is_published=True, created_at=f"2026-08-{i:02d}T10:00:00", **extra)
+            for i in range(1, n + 1)]
+
+
+def _top_title(html):
+    return html.split("<article")[1].split("</h2>")[0].rsplit(">", 1)[1]
+
+
+def test_blog_newest_post_is_on_top_by_default(client, db):
+    _posts(db, 3)
+    html = client.get("/blog").text
+    assert _top_title(html) == "Post 3"
+    assert "August 3, 2026" in html
+
+
+def test_admin_picks_the_top_post(client, db):
+    posts = _posts(db, 3)
+    admin_login(client, db)
+    client.post(f"/admin/blog/{posts[0]['id']}/feature")
+    assert _top_title(client.get("/blog").text) == "Post 1"
+    assert "★ Top post" in client.get("/admin/blog").text
+
+    client.post(f"/admin/blog/{posts[1]['id']}/feature")  # only one top post at a time
+    assert [p["is_featured"] for p in db.tables["blog_posts"]] == [False, True, False]
+    client.post(f"/admin/blog/{posts[1]['id']}/feature")  # un-pick -> newest again
+    assert _top_title(client.get("/blog").text) == "Post 3"
+
+
+def test_blog_share_buttons(client, db):
+    _posts(db, 1)
+    html = client.get("/blog").text
+    url = "https%3A//mina.test/blog/post-1"
+    assert f"facebook.com/sharer/sharer.php?u={url}" in html
+    assert f"twitter.com/intent/tweet?url={url}" in html
+    assert f"linkedin.com/sharing/share-offsite/?url={url}" in html
+    assert "mail.google.com/mail/?view=cm" in html
+    assert 'data-share-url="https://mina.test/blog/post-1"' in html
+    assert "facebook.com/sharer" in client.get("/blog/post-1").text
+
+
+def test_blog_search_and_pages(client, db):
+    _posts(db, 23)
+    page1 = client.get("/blog").text
+    assert page1.count("<article") == 11  # top post + 10
+    assert 'href="/blog?page=3"' in page1
+    page3 = client.get("/blog?page=3").text
+    assert page3.count("<article") == 2  # posts 2 and 1, no top post
+    found = client.get("/blog?q=about 7").text
+    assert found.count("<article") == 1 and "Post 7" in found
+    assert "No articles match" in client.get("/blog?q=zzz").text
+
+
+def test_blog_dates_in_bangla(client, db):
+    _posts(db, 1)
+    client.cookies.set("lang", "bn")
+    html = client.get("/blog").text
+    assert "১ আগস্ট, ২০২৬" in html and "বিস্তারিত পড়ুন" in html

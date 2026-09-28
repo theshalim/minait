@@ -86,8 +86,13 @@ def service_detail(request: Request, slug: str):
     return templates.TemplateResponse("service_detail.html", base_ctx(request, service=service))
 
 
+BLOG_PAGE_SIZE = 10
+
+
 @router.get("/blog")
-def blog_list(request: Request):
+def blog_list(request: Request, q: str = "", page: int = 1):
+    """Blog index: one big "top post" (the one the admin picked, else the
+    newest) above a paged list of the rest. Searching shows plain results."""
     posts = (
         supabase_admin()
         .table("blog_posts")
@@ -97,7 +102,30 @@ def blog_list(request: Request):
         .execute()
         .data
     )
-    return templates.TemplateResponse("blog_list.html", base_ctx(request, posts=posts))
+    q = q.strip()
+    featured = None
+    if q:
+        needle = q.lower()
+        fields = ("title", "title_bn", "excerpt", "excerpt_bn")
+        posts = [p for p in posts if any(needle in (p.get(f) or "").lower() for f in fields)]
+    elif posts:
+        featured = next((p for p in posts if p.get("is_featured")), posts[0])
+        posts = [p for p in posts if p is not featured]
+
+    pages = max(1, -(-len(posts) // BLOG_PAGE_SIZE))
+    page = min(max(page, 1), pages)
+    start = (page - 1) * BLOG_PAGE_SIZE
+    return templates.TemplateResponse(
+        "blog_list.html",
+        base_ctx(
+            request,
+            featured=featured if page == 1 else None,
+            posts=posts[start : start + BLOG_PAGE_SIZE],
+            q=q,
+            page=page,
+            pages=pages,
+        ),
+    )
 
 
 @router.get("/blog/{slug}")

@@ -186,3 +186,35 @@
     });
   }
 })();
+
+// Blog "share / copy link" buttons: phones get the native share sheet
+// (WhatsApp, Messenger, ...); elsewhere the link is copied to the clipboard.
+(function () {
+  document.querySelectorAll(".share-link").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var url = btn.getAttribute("data-share-url");
+      var title = btn.getAttribute("data-share-title") || document.title;
+      if (navigator.share) {
+        navigator.share({ title: title, url: url }).catch(function () {});
+        return;
+      }
+      function done() {
+        var tip = document.createElement("span");
+        tip.textContent = btn.getAttribute("data-copied") || "Link copied!";
+        tip.className =
+          "absolute -top-9 right-0 whitespace-nowrap bg-slate-900 text-white text-xs px-2 py-1 rounded-md";
+        btn.appendChild(tip);
+        setTimeout(function () {
+          tip.remove();
+        }, 1600);
+      }
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(url).then(done, function () {
+          window.prompt("", url);
+        });
+      } else {
+        window.prompt("", url);
+      }
+    });
+  });
+})();

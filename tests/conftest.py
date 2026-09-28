@@ -32,7 +32,7 @@ def _token_payload(token: str) -> dict:
 DEFAULTS = {
     "services": {"is_active": True, "sort_order": 0, "currency": "BDT", "category": "General", "description": ""},
     "hero_slides": {"is_active": True, "sort_order": 0},
-    "blog_posts": {"is_published": False},
+    "blog_posts": {"is_published": False, "is_featured": False},
     "orders": {"payment_status": "unpaid", "status": "pending"},
     "profiles": {"is_admin": False},
     "faqs": {"sort_order": 0},

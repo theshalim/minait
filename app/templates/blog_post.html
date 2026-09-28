@@ -1,12 +1,16 @@
 {% extends "base.html" %}
+{% from "partials/share.html" import share_buttons with context %}
 {% block title %}{{ loc(post, 'title') }} — {{ site_name }}{% endblock %}
 {% block content %}
-<article class="max-w-2xl mx-auto px-5 py-16">
+<article class="max-w-3xl mx-auto px-5 py-16">
   <a href="/blog" class="text-sm text-slate-400 hover:text-brand">{{ t('blog.back') }}</a>
-  <div class="text-xs text-slate-400 mt-4">{{ post.created_at[:10] }}</div>
-  <h1 class="text-3xl font-extrabold mt-2 mb-6">{{ loc(post, 'title') }}</h1>
+  <div class="flex items-center justify-between gap-4 mt-6">
+    <time class="text-sm text-slate-600 dark:text-slate-400">{{ fmt_date(post.created_at) }}</time>
+    {{ share_buttons(post) }}
+  </div>
+  <h1 class="text-3xl sm:text-4xl font-medium leading-tight tracking-tight mt-4 mb-8">{{ loc(post, 'title') }}</h1>
   {% if post.cover_image_url %}
-  <img src="{{ post.cover_image_url }}" alt="" class="w-full rounded-2xl mb-8" />
+  <img src="{{ post.cover_image_url }}" alt="" class="w-full rounded-3xl mb-10" />
   {% endif %}
   <div class="prose prose-slate dark:prose-invert max-w-none leading-relaxed">
     {{ post.content_html | safe }}

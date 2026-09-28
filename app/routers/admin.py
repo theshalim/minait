@@ -524,6 +524,19 @@ async def admin_blog_update(
     return RedirectResponse("/admin/blog", status_code=303)
 
 
+@router.post("/blog/{post_id}/feature")
+def admin_blog_feature(post_id: int):
+    """Makes this post the big "top post" on /blog (only one at a time), or
+    un-picks it if it already is — then the newest post goes on top."""
+    post = fetch_one(supabase_admin().table("blog_posts").select("*").eq("id", post_id))
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+    supabase_admin().table("blog_posts").update({"is_featured": False}).eq("is_featured", True).execute()
+    if not post.get("is_featured"):
+        supabase_admin().table("blog_posts").update({"is_featured": True}).eq("id", post_id).execute()
+    return RedirectResponse("/admin/blog", status_code=303)
+
+
 @router.post("/blog/{post_id}/delete")
 def admin_blog_delete(post_id: int):
     supabase_admin().table("blog_posts").delete().eq("id", post_id).execute()

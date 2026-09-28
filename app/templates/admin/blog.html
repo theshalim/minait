@@ -2,7 +2,10 @@
 {% block title %}Blog — Admin{% endblock %}
 {% block admin_content %}
 <div class="flex items-center justify-between mb-6">
-  <h1 class="text-2xl font-extrabold">Blog posts</h1>
+  <div>
+    <h1 class="text-2xl font-extrabold">Blog posts</h1>
+    <p class="text-sm text-slate-500 mt-1">The "Top post" shows big at the top of the blog page. If none is picked, the newest published post goes on top.</p>
+  </div>
   <a href="/admin/blog/new" class="bg-brand text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-brand-dark">+ New post</a>
 </div>
 
@@ -17,6 +20,12 @@
       <span class="px-2 py-0.5 rounded-full text-xs font-medium {{ 'bg-green-100 text-green-700' if p.is_published else 'bg-slate-100 text-slate-500' }}">
         {{ "Published" if p.is_published else "Draft" }}
       </span>
+      {% if p.is_featured %}
+      <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700">★ Top post</span>
+      {% endif %}
+      <form method="post" action="/admin/blog/{{ p.id }}/feature" class="inline">
+        <button class="text-slate-500 hover:text-slate-800 font-medium">{{ "Remove from top" if p.is_featured else "Set as top post" }}</button>
+      </form>
       <a href="/admin/blog/{{ p.id }}/edit" class="text-brand font-medium">Edit</a>
       <form method="post" action="/admin/blog/{{ p.id }}/delete" class="inline" onsubmit="return confirm('Delete this post?');">
         <button class="text-red-500 hover:text-red-700 font-medium">Delete</button>
