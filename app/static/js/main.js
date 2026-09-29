@@ -301,7 +301,8 @@
         var dot = document.createElement("button");
         dot.type = "button";
         dot.setAttribute("aria-label", String(i + 1));
-        dot.className = "h-2 rounded-full transition-all " + (i === index ? "w-6 bg-slate-900 dark:bg-white" : "w-2 bg-slate-300 dark:bg-slate-600");
+        dot.className = "carousel-dot" + (i === index ? " is-active" : "");
+        if (i === index) dot.innerHTML = '<span class="dot-fill"></span>';
         (function (i) {
           dot.addEventListener("click", function () {
             go(i);
@@ -325,6 +326,7 @@
 
     function restart() {
       clearInterval(timer);
+      root.classList.toggle("no-autoplay", maxIndex() === 0);
       if (maxIndex() === 0) return; // everything already fits — nothing to move
       timer = setInterval(function () {
         if (!paused && !document.hidden) go(index + 1);
@@ -342,10 +344,24 @@
     if (prev) prev.addEventListener("click", function () { go(index - 1); restart(); });
     if (next) next.addEventListener("click", function () { go(index + 1); restart(); });
 
-    root.addEventListener("mouseenter", function () { paused = true; });
-    root.addEventListener("mouseleave", function () { paused = false; });
-    root.addEventListener("focusin", function () { paused = true; });
-    root.addEventListener("focusout", function () { paused = false; });
+    // Pausing freezes the progress bar; resuming starts a fresh full interval
+    // so the bar and the next move stay in step.
+    function pause() {
+      paused = true;
+      root.classList.add("is-paused");
+    }
+    function resume() {
+      if (!paused) return;
+      paused = false;
+      root.classList.remove("is-paused");
+      go(index);
+      restart();
+    }
+    root.style.setProperty("--dot-duration", seconds + "s");
+    root.addEventListener("mouseenter", pause);
+    root.addEventListener("mouseleave", resume);
+    root.addEventListener("focusin", pause);
+    root.addEventListener("focusout", resume);
 
     var startX = null;
     root.addEventListener("touchstart", function (e) { startX = e.touches[0].clientX; }, { passive: true });

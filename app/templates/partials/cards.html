@@ -57,32 +57,45 @@
 
 {% macro product_card(p, index) %}
 {% set tone = p.color if p.color in tones else tones[index % tones|length] %}
-<div class="tone-{{ tone }} h-full flex flex-col gap-3 sm:gap-4">
-  {# Big box: picture + headline #}
-  <a href="/products/{{ p.slug }}" class="group block rounded-3xl p-5 sm:p-7 text-center" style="background: var(--tone-big)">
-    <div class="aspect-[16/10] rounded-2xl overflow-hidden bg-white/70 dark:bg-slate-950/40 shadow-[0_1px_2px_rgba(15,23,42,0.06)]">
+{% set detail = "/products/" ~ p.slug %}
+<article class="tone-{{ tone }} product-card h-full flex flex-col gap-2.5 sm:gap-3">
+  {# Big box: label + headline on top, picture running off the bottom edge #}
+  <a href="{{ detail }}" class="group relative flex-1 flex flex-col overflow-hidden rounded-[28px] px-6 pt-7 sm:px-9 sm:pt-9" style="background: var(--tone-big)">
+    <div class="flex items-start justify-between gap-4">
+      <div class="min-w-0">
+        {% if p.category %}<div class="eyebrow" style="color: var(--tone-ink)">{{ p.category }}</div>{% endif %}
+        <h3 class="mt-2 text-2xl sm:text-[28px] font-medium tracking-tight leading-snug text-slate-900 dark:text-white line-clamp-2 min-h-[2.75em]">{{ loc(p, 'title') }}</h3>
+      </div>
+      <span class="flex-shrink-0 w-10 h-10 rounded-full bg-white/80 dark:bg-white/10 backdrop-blur flex items-center justify-center text-slate-900 dark:text-white shadow-[0_1px_2px_rgba(15,23,42,0.08)] transition duration-300 group-hover:bg-slate-900 group-hover:text-white dark:group-hover:bg-white dark:group-hover:text-slate-900" aria-hidden="true">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 transition duration-300 group-hover:-rotate-45"><path d="M4 10h11m-4-4 4 4-4 4"/></svg>
+      </span>
+    </div>
+    <div class="mt-auto pt-5 sm:pt-6"></div>
+    <div class="aspect-[16/10] rounded-t-2xl overflow-hidden bg-white/70 dark:bg-slate-950/40 shadow-[0_-1px_0_rgba(255,255,255,0.6),0_10px_30px_-12px_rgba(15,23,42,0.25)]">
       {% if p.image_url %}
-      <img src="{{ p.image_url }}" alt="{{ loc(p, 'title') }}" loading="lazy" class="w-full h-full object-cover group-hover:scale-[1.03] transition duration-700" />
+      <img src="{{ p.image_url }}" alt="{{ loc(p, 'title') }}" class="w-full h-full object-cover transition duration-700 ease-out group-hover:scale-[1.04]" />
       {% else %}
       <div class="w-full h-full flex items-center justify-center"><img src="/static/img/logo.png" alt="" class="h-10 w-auto opacity-50" /></div>
       {% endif %}
     </div>
-    <h3 class="mt-6 text-xl sm:text-2xl font-medium tracking-tight text-slate-900 dark:text-white">{{ loc(p, 'title') }}</h3>
   </a>
-  {# Small box: details + actions #}
-  <div class="flex-1 rounded-3xl px-5 py-6 sm:px-7 text-center flex flex-col" style="background: var(--tone-small)">
-    {% if p.category %}<div class="eyebrow" style="color: var(--tone-ink)">{{ p.category }}</div>{% endif %}
+  {# Small box: two lines about it, one clear main action, two quieter ones #}
+  <div class="rounded-[28px] px-6 py-6 sm:px-9 sm:py-7" style="background: var(--tone-small)">
     {% if loc(p, 'description') %}
-    <p class="mt-2.5 text-sm text-slate-600 dark:text-slate-300 leading-relaxed line-clamp-3">{{ loc(p, 'description') }}</p>
+    <p class="text-[15px] text-slate-600 dark:text-slate-300 leading-relaxed line-clamp-2 min-h-[3.2em]">{{ loc(p, 'description') }}</p>
     {% endif %}
-    <div class="flex-1"></div>
-    <div class="mt-5 flex flex-wrap items-center justify-center gap-2">
-      <a href="/order/product/{{ p.slug }}" class="btn-dark btn-sm">{{ t('offer.order') }}</a>
-      <a href="/order/product/{{ p.slug }}?type=demo" class="btn-outline btn-sm">{{ t('offer.book_demo') }}</a>
-      <a href="/products/{{ p.slug }}" class="btn-ghost btn-sm">{{ t('offer.view_details') }} {{ chevron }}</a>
+    <div class="mt-6 flex flex-wrap items-center justify-between gap-x-5 gap-y-3">
+      <div class="flex flex-wrap items-center gap-x-5 gap-y-2">
+        <a href="/order/product/{{ p.slug }}" class="btn-dark">{{ t('offer.order') }}</a>
+        <a href="/order/product/{{ p.slug }}?type=demo" class="group/link inline-flex items-center gap-1 text-sm font-medium text-slate-900 dark:text-white">
+          <span class="border-b border-transparent group-hover/link:border-current transition">{{ t('offer.book_demo') }}</span>
+          <span class="transition group-hover/link:translate-x-0.5"><svg viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4"><path fill-rule="evenodd" d="M7.2 14.8a.75.75 0 0 1 0-1.06L10.94 10 7.2 6.26a.75.75 0 1 1 1.06-1.06l4.27 4.27a.75.75 0 0 1 0 1.06L8.26 14.8a.75.75 0 0 1-1.06 0z" clip-rule="evenodd"/></svg></span>
+        </a>
+      </div>
+      <a href="{{ detail }}" class="text-sm font-medium text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition">{{ t('offer.view_details') }}</a>
     </div>
   </div>
-</div>
+</article>
 {% endmacro %}
 
 {# Two at a time (one on phones); the rest slide in every N seconds, where N
@@ -90,24 +103,22 @@
 {% macro product_carousel(products) %}
 {% set seconds = (contact.products_slide_seconds or 5) | int %}
 <div class="product-carousel relative" data-interval="{{ [seconds, 2]|max }}">
-  <div class="overflow-hidden -mx-2 sm:-mx-2.5">
+  <div class="overflow-hidden -mx-1.5 sm:-mx-2 px-0 py-2">
     <div class="product-track flex items-stretch transition-transform duration-700 ease-[cubic-bezier(.22,.61,.36,1)]">
       {% for p in products %}
-      <div class="product-slide w-full md:w-1/2 flex-shrink-0 px-2 sm:px-2.5" {% if loop.index > 2 %}aria-hidden="true"{% endif %}>
+      <div class="product-slide w-full md:w-1/2 flex-shrink-0 px-1.5 sm:px-2" {% if loop.index > 2 %}aria-hidden="true"{% endif %}>
         {{ product_card(p, loop.index0) }}
       </div>
       {% endfor %}
     </div>
   </div>
   {% if products|length > 1 %}
-  <div class="product-controls mt-6 flex items-center justify-center gap-3">
-    <button type="button" class="product-prev w-10 h-10 rounded-full border border-slate-300 dark:border-slate-600 flex items-center justify-center hover:border-slate-900 dark:hover:border-white transition" aria-label="{{ t('products.previous') }}">
-      <svg viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 rotate-180"><path fill-rule="evenodd" d="M7.2 14.8a.75.75 0 0 1 0-1.06L10.94 10 7.2 6.26a.75.75 0 1 1 1.06-1.06l4.27 4.27a.75.75 0 0 1 0 1.06L8.26 14.8a.75.75 0 0 1-1.06 0z" clip-rule="evenodd"/></svg>
+  <div class="product-controls mt-8 flex items-center justify-center gap-4">
+    <button type="button" class="product-prev carousel-arrow" aria-label="{{ t('products.previous') }}">
+      <span class="rotate-180"><svg viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4"><path fill-rule="evenodd" d="M7.2 14.8a.75.75 0 0 1 0-1.06L10.94 10 7.2 6.26a.75.75 0 1 1 1.06-1.06l4.27 4.27a.75.75 0 0 1 0 1.06L8.26 14.8a.75.75 0 0 1-1.06 0z" clip-rule="evenodd"/></svg></span>
     </button>
-    <div class="product-dots flex items-center gap-1.5"></div>
-    <button type="button" class="product-next w-10 h-10 rounded-full border border-slate-300 dark:border-slate-600 flex items-center justify-center hover:border-slate-900 dark:hover:border-white transition" aria-label="{{ t('products.next') }}">
-      <svg viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4"><path fill-rule="evenodd" d="M7.2 14.8a.75.75 0 0 1 0-1.06L10.94 10 7.2 6.26a.75.75 0 1 1 1.06-1.06l4.27 4.27a.75.75 0 0 1 0 1.06L8.26 14.8a.75.75 0 0 1-1.06 0z" clip-rule="evenodd"/></svg>
-    </button>
+    <div class="product-dots flex items-center gap-2"></div>
+    <button type="button" class="product-next carousel-arrow" aria-label="{{ t('products.next') }}"><svg viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4"><path fill-rule="evenodd" d="M7.2 14.8a.75.75 0 0 1 0-1.06L10.94 10 7.2 6.26a.75.75 0 1 1 1.06-1.06l4.27 4.27a.75.75 0 0 1 0 1.06L8.26 14.8a.75.75 0 0 1-1.06 0z" clip-rule="evenodd"/></svg></button>
   </div>
   {% endif %}
 </div>

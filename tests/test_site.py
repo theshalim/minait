@@ -58,7 +58,7 @@ def test_products_page(client, db):
     html = client.get("/products").text
     assert "Router" in html and "Custom PC" in html and "Old stock" not in html
     assert "2,500" not in html and "Price on request" not in html
-    assert 'class="tone-green' in html and 'class="tone-green h-full' in html
+    assert 'class="tone-green product-card' in html
     for link in ('href="/order/product/router"', 'href="/order/product/router?type=demo"', 'href="/products/router"'):
         assert link in html
     client.cookies.set("lang", "bn")
