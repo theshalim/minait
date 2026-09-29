@@ -6,7 +6,7 @@
 {% macro chevron() %}<svg viewBox="0 0 20 20" fill="currentColor" class="w-3.5 h-3.5"><path fill-rule="evenodd" d="M7.2 14.8a.75.75 0 0 1 0-1.06L10.94 10 7.2 6.26a.75.75 0 1 1 1.06-1.06l4.27 4.27a.75.75 0 0 1 0 1.06L8.26 14.8a.75.75 0 0 1-1.06 0z" clip-rule="evenodd"/></svg>{% endmacro %}
 {% macro placeholder(size) %}
 <div class="w-full h-full bg-gradient-to-br from-brand-light to-white dark:from-brand/10 dark:to-slate-900 flex items-center justify-center">
-  <img src="/static/img/logo.png" alt="" class="{{ size }} w-auto opacity-60" />
+  <img src="/static/img/logo-mark.png" alt="" class="{{ size }} w-auto opacity-50" />
 </div>
 {% endmacro %}
 
@@ -35,7 +35,7 @@
       <div class="mt-6 aspect-[16/9] rounded-3xl overflow-hidden">
         {% if featured.cover_image_url %}
         <img src="{{ featured.cover_image_url }}" alt="{{ loc(featured, 'title') }}" class="w-full h-full object-cover group-hover:scale-[1.02] transition duration-500" />
-        {% else %}{{ placeholder("h-20") }}{% endif %}
+        {% else %}{{ placeholder("h-9") }}{% endif %}
       </div>
     </a>
     {% if loc(featured, 'excerpt') %}
@@ -53,7 +53,7 @@
       <a href="/blog/{{ p.slug }}" class="block aspect-[16/10] rounded-2xl overflow-hidden group">
         {% if p.cover_image_url %}
         <img src="{{ p.cover_image_url }}" alt="{{ loc(p, 'title') }}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
-        {% else %}{{ placeholder("h-10") }}{% endif %}
+        {% else %}{{ placeholder("h-5") }}{% endif %}
       </a>
       <div>
         <div class="flex items-center justify-between gap-4 mb-3">

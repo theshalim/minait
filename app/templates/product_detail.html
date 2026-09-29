@@ -13,7 +13,7 @@
         {% if product.image_url %}
         <img src="{{ product.image_url }}" alt="{{ loc(product, 'title') }}" class="w-full h-full object-cover" />
         {% else %}
-        <div class="w-full h-full flex items-center justify-center"><img src="/static/img/logo.png" alt="" class="h-12 w-auto opacity-50" /></div>
+        <div class="w-full h-full flex items-center justify-center"><img src="/static/img/logo-mark.png" alt="" class="h-6 w-auto opacity-40" /></div>
         {% endif %}
       </div>
       <h1 class="mt-7 text-3xl sm:text-4xl font-medium tracking-tight leading-tight">{{ loc(product, 'title') }}</h1>

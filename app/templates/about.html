@@ -92,9 +92,7 @@
   {# ================================= Contact ================================= #}
   <section id="contact" class="relative scroll-mt-24 {{ 'pt-8' if stats else 'pt-24 sm:pt-32' }} pb-24 sm:pb-28 text-center">
     <div class="relative container-x">
-      <div class="mx-auto w-20 h-20 rounded-2xl bg-white ring-1 ring-slate-200/80 dark:ring-white/10 p-3 flex items-center justify-center shadow-[0_20px_50px_-20px_rgba(0,200,160,0.5)]">
-        <img src="/static/img/logo.png" alt="{{ site_name }}" class="max-w-full max-h-full object-contain" />
-      </div>
+      <img src="/static/img/logo-mark.png" alt="{{ site_name }}" class="mx-auto h-14 sm:h-20 w-auto dark:brightness-0 dark:invert" />
       <div class="mt-7">{{ badge(t('about.cta_badge'), "email") }}</div>
       <h2 class="mt-5 text-3xl sm:text-6xl font-semibold tracking-tight leading-tight max-w-4xl mx-auto">{{ about.cta_heading | hl }}</h2>
       <p class="mt-6 text-[15px] sm:text-base text-slate-500 dark:text-slate-400 leading-relaxed max-w-xl mx-auto">{{ about.cta_text }}</p>
