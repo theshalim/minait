@@ -114,3 +114,10 @@ html[lang="bn"] [class*="tracking-"] {
 .no-autoplay .dot-fill { width: 100%; animation: none; }
 @keyframes dot-fill { to { width: 100%; } }
 @media (prefers-reduced-motion: reduce) { .dot-fill { animation: none; width: 100%; } }
+
+/* Highlighted words in headings ({{ text | hl }} with *stars*): the logo's
+   teal fading to a light aqua. */
+.text-gradient {
+  background: linear-gradient(90deg, #00c8a0 0%, #5eead4 55%, #7dd3fc 100%);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}

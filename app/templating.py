@@ -1,6 +1,8 @@
+import re
 from pathlib import Path
 
 from fastapi import Request
+from markupsafe import Markup, escape
 from fastapi.templating import Jinja2Templates
 
 from app.config import settings
@@ -11,6 +13,16 @@ from app.site_settings import get_site_settings
 
 TEMPLATES_DIR = Path(__file__).parent / "templates"
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
+
+
+def highlight(text) -> Markup:
+    """`{{ heading | hl }}`: words wrapped in *stars* get the brand gradient,
+    so the admin can pick which words stand out ("We make *IT simple*")."""
+    safe = str(escape(text or ""))
+    return Markup(re.sub(r"\*(.+?)\*", r'<span class="text-gradient">\1</span>', safe))
+
+
+templates.env.filters["hl"] = highlight
 
 
 def base_ctx(request: Request, **extra) -> dict:

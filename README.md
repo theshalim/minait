@@ -51,6 +51,9 @@ minait/
 5. Optional: run [`db/sample_content.sql`](db/sample_content.sql) too, for 4 sample services,
    4 products and 4 blog posts (free Unsplash photos) so the site doesn't start empty. Edit or
    delete them in the admin panel later.
+7. Optional: run [`db/service_basket.sql`](db/service_basket.sql) for the "Our Service Basket"
+   group (custom software, web development & maintenance, cloud management, IT infrastructure),
+   written for Bangladeshi businesses, in English and Bangla.
 6. Optional: run [`db/sample_faqs.sql`](db/sample_faqs.sql) for 35 plain-language FAQs (English +
    Bangla, grouped by topic) for the "?" assistant. Adjust prices, timelines and payment terms
    in **Admin → FAQs** to match how you really work.

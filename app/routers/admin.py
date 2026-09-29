@@ -11,7 +11,7 @@ from app.config import settings
 from app.i18n import make_translator
 from app.icons import ICONS as SERVICE_ICONS
 from app.security import CurrentUser, check_password, require_admin
-from app.site_settings import save_site_settings
+from app.site_settings import ABOUT_TEXT_FIELDS, save_site_settings
 from app.slides import page_slides
 from app.supabase_client import fetch_one, supabase_admin
 from app.templating import base_ctx, templates
@@ -23,6 +23,18 @@ logger = logging.getLogger("minait")
 IMAGE_BUCKET = "service-images"
 ORDER_STATUSES = ["pending", "in_progress", "completed", "cancelled"]
 PAYMENT_STATUSES = ["unpaid", "paid", "failed", "refunded"]
+ABOUT_LABELS = {
+    "hero_title": "Top heading",
+    "hero_text": "Top text (first paragraph)",
+    "hero_text2": "Top text (second paragraph)",
+    "features_heading": "\"What makes us different\" heading",
+    "story_heading": "\"Who we are\" heading",
+    "story_text": "\"Who we are\" text",
+    "numbers_heading": "Numbers heading",
+    "numbers_text": "Numbers text",
+    "cta_heading": "Contact heading (bottom)",
+    "cta_text": "Contact text (bottom)",
+}
 
 
 async def _upload_image(file: UploadFile | None) -> str | None:
@@ -106,6 +118,34 @@ async def admin_services_settings(
         "tech_stack": tech_stack,
     })
     return RedirectResponse("/admin/services", status_code=303)
+
+
+# ---------------------------------------------------------------------------
+# About page texts + picture (stored as site settings; empty = built-in text)
+# ---------------------------------------------------------------------------
+@router.get("/about")
+def admin_about(request: Request):
+    en, bn = make_translator("en"), make_translator("bn")
+    fields = [
+        {"key": f, "label": ABOUT_LABELS[f], "default_en": en(f"about.{f}"), "default_bn": bn(f"about.{f}"),
+         "long": f in ("hero_text", "hero_text2", "story_text", "numbers_text", "cta_text")}
+        for f in ABOUT_TEXT_FIELDS
+    ]
+    return templates.TemplateResponse("admin/about.html", base_ctx(request, fields=fields))
+
+
+@router.post("/about")
+async def admin_about_save(request: Request):
+    form = await request.form()
+    values = {}
+    for f in ABOUT_TEXT_FIELDS:
+        values[f"about_{f}"] = str(form.get(f"about_{f}", ""))
+        values[f"about_{f}_bn"] = str(form.get(f"about_{f}_bn", ""))
+    upload = form.get("story_file")
+    uploaded_url = await _upload_image(upload) if hasattr(upload, "filename") else None
+    values["about_story_image"] = uploaded_url or str(form.get("story_url", ""))
+    save_site_settings(values)
+    return RedirectResponse("/admin/about?saved=1", status_code=303)
 
 
 @router.get("/services/new")

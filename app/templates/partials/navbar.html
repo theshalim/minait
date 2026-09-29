@@ -1,6 +1,6 @@
 {# Public navbar. No login/admin links on purpose: the one admin opens /login
    (or /admin) by URL, and customers order by chatting on WhatsApp. #}
-{% set nav_links = [("/services", t('nav.services')), ("/products", t('nav.products')), ("/blog", t('nav.blog'))] %}
+{% set nav_links = [("/services", t('nav.services')), ("/products", t('nav.products')), ("/blog", t('nav.blog')), ("/about", t('nav.about'))] %}
 {% macro lang_switch() %}
 <div class="flex items-center gap-0.5 rounded-full bg-slate-100 dark:bg-slate-800 p-0.5 text-xs font-semibold">
   <a href="/set-lang/en?next={{ request.url.path | urlencode }}"

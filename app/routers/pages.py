@@ -7,7 +7,7 @@ from fastapi.responses import RedirectResponse
 from app.i18n import LANG_COOKIE, SUPPORTED_LANGS, get_locale, localized, make_translator
 from app.supabase_client import fetch_one, supabase_admin
 from app.templating import base_ctx, templates
-from app.site_settings import get_site_settings
+from app.site_settings import about_texts, get_site_settings
 from app.slides import page_slides
 from app.utils import render_markdown
 
@@ -120,6 +120,33 @@ def services_page(request: Request):
             hero_image=contact.get("services_hero_image") or DEFAULT_SERVICES_HERO,
             banner_slides=page_slides("services", active_only=True) or [],
             tech=tech_stack(contact),
+        ),
+    )
+
+
+DEFAULT_ABOUT_IMAGE = (
+    "https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=1400&q=80&auto=format&fit=crop"
+)
+
+
+@router.get("/about")
+def about_page(request: Request):
+    """About us: intro, what makes us different (the "Why choose us" points),
+    who we are, our numbers (the homepage counters) and a contact call."""
+    contact = get_site_settings()
+    lang = get_locale(request)
+    return templates.TemplateResponse(
+        "about.html",
+        base_ctx(
+            request,
+            about=about_texts(contact, lang, make_translator(lang)),
+            story_image=contact.get("about_story_image") or DEFAULT_ABOUT_IMAGE,
+            features=_optional(
+                lambda: supabase_admin().table("features").select("*").order("sort_order").execute().data
+            ),
+            stats=_optional(
+                lambda: supabase_admin().table("site_stats").select("*").order("sort_order").execute().data
+            ),
         ),
     )
 

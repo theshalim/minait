@@ -1,0 +1,43 @@
+{% extends "admin/layout.html" %}
+{% from "admin/_ui.html" import page_header, section_title, image_input %}
+{% block title %}About page — Admin{% endblock %}
+{% block admin_content %}
+{{ page_header("About page", "The texts on the About us page. Leave a box empty to use the text shown in grey. Wrap words in *stars* to highlight them in colour, e.g. \"We make *IT simple*\". The \"What makes us different\" cards are the Why choose us points (Home page), and the numbers are the Number counters (Home page).") }}
+
+{% if request.query_params.get('saved') %}<div class="alert-ok mb-6">Saved. <a href="/about" target="_blank" class="underline">Open the About page</a></div>{% endif %}
+
+<form method="post" action="/admin/about" enctype="multipart/form-data" class="space-y-5 max-w-3xl">
+  <div class="panel p-5 sm:p-6">
+    {{ image_input("\"Who we are\" picture", "story_file", "story_url", contact.about_story_image or "", "Landscape, about 1200×900px — your office, team or work. Leave empty for the built-in picture.") }}
+  </div>
+
+  {% for f in fields %}
+  <div class="panel p-5 sm:p-6">
+    <div class="font-medium text-sm mb-3">{{ f.label }}</div>
+    <div class="grid gap-3 sm:grid-cols-2">
+      <div>
+        <label class="label">English</label>
+        {% if f.long %}
+        <textarea name="about_{{ f.key }}" rows="4" placeholder="{{ f.default_en }}" class="input">{{ contact.get('about_' ~ f.key) or '' }}</textarea>
+        {% else %}
+        <input name="about_{{ f.key }}" value="{{ contact.get('about_' ~ f.key) or '' }}" placeholder="{{ f.default_en }}" class="input" />
+        {% endif %}
+      </div>
+      <div>
+        <label class="label">বাংলা</label>
+        {% if f.long %}
+        <textarea name="about_{{ f.key }}_bn" rows="4" placeholder="{{ f.default_bn }}" class="input">{{ contact.get('about_' ~ f.key ~ '_bn') or '' }}</textarea>
+        {% else %}
+        <input name="about_{{ f.key }}_bn" value="{{ contact.get('about_' ~ f.key ~ '_bn') or '' }}" placeholder="{{ f.default_bn }}" class="input" />
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+
+  <div class="flex gap-2">
+    <button class="btn-dark">Save</button>
+    <a href="/about" target="_blank" class="btn-ghost">View page</a>
+  </div>
+</form>
+{% endblock %}

@@ -37,8 +37,36 @@ def get_site_settings() -> dict:
     return values
 
 
+# About page texts (Admin -> About page). Each has an English key
+# "about_<field>" and a Bangla one "about_<field>_bn"; the picture has one.
+ABOUT_TEXT_FIELDS = (
+    "hero_title", "hero_text", "hero_text2", "features_heading", "story_heading",
+    "story_text", "numbers_heading", "numbers_text", "cta_heading", "cta_text",
+)
+ABOUT_KEYS = tuple(
+    [f"about_{f}" for f in ABOUT_TEXT_FIELDS]
+    + [f"about_{f}_bn" for f in ABOUT_TEXT_FIELDS]
+    + ["about_story_image"]
+)
+
+
+def about_texts(contact: dict, lang: str, t) -> dict:
+    """The About page's texts in the visitor's language: what the admin
+    wrote, else the built-in default."""
+    out = {}
+    for f in ABOUT_TEXT_FIELDS:
+        english = contact.get(f"about_{f}") or ""
+        if lang == "bn":
+            # Bangla text if written; else the admin's own English (their
+            # facts beat a generic default); else the built-in Bangla.
+            out[f] = contact.get(f"about_{f}_bn") or english or t(f"about.{f}")
+        else:
+            out[f] = english or t(f"about.{f}")
+    return out
+
+
 def save_site_settings(values: dict) -> None:
-    for key in KEYS:
+    for key in KEYS + ABOUT_KEYS:
         if key in values:
             supabase_admin().table("site_settings").upsert(
                 {"key": key, "value": values[key].strip()}, on_conflict="key"
