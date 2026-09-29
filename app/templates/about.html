@@ -1,28 +1,28 @@
 {% extends "base.html" %}
 {% block title %}{{ t('about.page_title') }} — {{ site_name }}{% endblock %}
 {% block content %}
-{# About us — a dark page in the logo's colours (#00202F navy-teal, #00C8A0
-   teal). Texts come from Admin -> About page (built-in defaults otherwise);
-   words in *stars* are highlighted. "What makes us different" reuses the
-   "Why choose us" points and "Our record" reuses the homepage counters. #}
+{# About us — a clean white page with the logo's colours as accents (navy-teal
+   #00202F for text, teal #00C8A0 for highlights; dark mode follows the site).
+   Texts come from Admin -> About page (built-in defaults otherwise); words in
+   *stars* are highlighted. "What makes us different" reuses the "Why choose
+   us" points and "Our record" reuses the homepage counters. #}
 {% macro badge(label, icon="ai") %}
-<span class="inline-flex items-center gap-2 rounded-full bg-[#00c8a0]/10 ring-1 ring-[#00c8a0]/30 px-3.5 py-1.5 text-xs font-medium text-[#7ff0d6]">
+<span class="inline-flex items-center gap-2 rounded-full bg-[#00c8a0]/10 ring-1 ring-[#00c8a0]/25 px-3.5 py-1.5 text-xs font-medium text-[#007a63] dark:text-[#5eead4]">
   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor" class="w-3.5 h-3.5"><path stroke-linecap="round" stroke-linejoin="round" d="{{ service_icon({'icon': icon}) }}"/></svg>
   {{ label }}
 </span>
 {% endmacro %}
 {% set call_phone = (contact.contact_phone or '') | replace(' ', '') | replace('-', '') %}
 
-<div class="relative overflow-hidden bg-[#001821] text-white">
-  <div class="pointer-events-none absolute inset-0 bg-[radial-gradient(40%_30%_at_50%_0%,rgba(0,200,160,0.12),transparent_70%)]"></div>
+<div class="relative overflow-hidden bg-white dark:bg-slate-950 text-[#00202f] dark:text-white">
 
   {# ================================ Hero ================================ #}
   <section class="relative container-x pt-8 sm:pt-12">
-    <div class="relative overflow-hidden rounded-[32px] ring-1 ring-white/10 bg-gradient-to-b from-[#00202f] to-[#003038] px-6 py-12 sm:px-14 sm:py-16 lg:px-20 lg:py-20">
-      <div class="pointer-events-none absolute -bottom-24 left-1/2 -translate-x-1/2 w-[80%] h-48 rounded-full bg-[#00c8a0]/25 blur-3xl"></div>
+    <div class="relative overflow-hidden rounded-[32px] ring-1 ring-[#00c8a0]/15 bg-gradient-to-br from-[#effcf8] via-white to-[#e6f8f4] dark:from-[#00202f] dark:via-[#00202f] dark:to-[#003038] dark:ring-white/10 px-6 py-12 sm:px-14 sm:py-16 lg:px-20 lg:py-20">
+      <div class="pointer-events-none absolute -bottom-24 right-0 w-[60%] h-56 rounded-full bg-[#00c8a0]/15 blur-3xl"></div>
       <div class="relative grid gap-8 md:grid-cols-2 md:gap-14 items-start">
         <h1 class="text-3xl sm:text-5xl font-semibold tracking-tight leading-[1.15]">{{ about.hero_title | hl }}</h1>
-        <div class="space-y-4 text-[15px] sm:text-base text-slate-300 leading-relaxed md:pt-2">
+        <div class="space-y-4 text-[15px] sm:text-base text-slate-600 dark:text-slate-300 leading-relaxed md:pt-2">
           <p>{{ about.hero_text }}</p>
           {% if about.hero_text2 %}<p>{{ about.hero_text2 }}</p>{% endif %}
         </div>
@@ -39,11 +39,11 @@
       {% set feature_icons = ["support", "users", "chart", "shield"] %}
       {% for f in features %}
       <div>
-        <div class="w-10 h-10 rounded-xl bg-[#00c8a0]/10 ring-1 ring-[#00c8a0]/25 flex items-center justify-center text-[#5eead4]">
+        <div class="w-11 h-11 rounded-xl bg-[#00c8a0]/10 ring-1 ring-[#00c8a0]/20 flex items-center justify-center text-[#00a383] dark:text-[#5eead4]">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="{{ service_icon({'icon': feature_icons[loop.index0 % 4]}) }}"/></svg>
         </div>
-        <h3 class="mt-5 text-sm font-semibold uppercase tracking-[0.08em] text-white">{{ loc(f, 'title') }}</h3>
-        {% if loc(f, 'description') %}<p class="mt-2 text-sm text-slate-400 leading-relaxed">{{ loc(f, 'description') }}</p>{% endif %}
+        <h3 class="mt-5 text-sm font-semibold uppercase tracking-[0.08em]">{{ loc(f, 'title') }}</h3>
+        {% if loc(f, 'description') %}<p class="mt-2 text-sm text-slate-500 dark:text-slate-400 leading-relaxed">{{ loc(f, 'description') }}</p>{% endif %}
       </div>
       {% endfor %}
     </div>
@@ -51,18 +51,18 @@
   {% endif %}
 
   {# ================================ Who we are ================================ #}
-  <section class="relative mt-24 sm:mt-32 border-y border-white/5 bg-gradient-to-r from-white/[0.02] via-[#00c8a0]/[0.04] to-white/[0.02]">
+  <section class="relative mt-24 sm:mt-32 bg-[#f6fbfa] dark:bg-white/[0.02] border-y border-slate-100 dark:border-white/5">
     <div class="container-x py-16 sm:py-24 grid gap-10 md:grid-cols-2 md:gap-16 items-center">
-      <div class="aspect-[4/3] rounded-3xl overflow-hidden ring-1 ring-white/10 shadow-[0_40px_80px_-40px_rgba(0,200,160,0.35)]">
+      <div class="aspect-[4/3] rounded-3xl overflow-hidden ring-1 ring-slate-200/70 dark:ring-white/10 shadow-[0_40px_80px_-40px_rgba(0,32,47,0.35)]">
         <img src="{{ story_image }}" alt="" class="w-full h-full object-cover" />
       </div>
       <div>
         {{ badge(t('about.story_badge'), "users") }}
         <h2 class="mt-5 text-3xl sm:text-5xl font-semibold tracking-tight leading-tight">{{ about.story_heading | hl }}</h2>
-        <p class="mt-6 text-[15px] text-slate-300 leading-relaxed">{{ about.story_text }}</p>
+        <p class="mt-6 text-[15px] text-slate-600 dark:text-slate-300 leading-relaxed">{{ about.story_text }}</p>
         <a href="#contact" class="mt-8 inline-flex items-center gap-1.5 group">
-          <span class="rounded-full bg-white text-slate-900 px-5 py-2.5 text-sm font-medium group-hover:bg-[#00c8a0] transition">{{ t('about.story_button') }}</span>
-          <span class="w-10 h-10 rounded-full bg-white text-slate-900 flex items-center justify-center group-hover:bg-[#00c8a0] transition">
+          <span class="rounded-full bg-[#00202f] text-white dark:bg-white dark:text-[#00202f] px-5 py-2.5 text-sm font-medium group-hover:bg-[#00a383] transition">{{ t('about.story_button') }}</span>
+          <span class="w-10 h-10 rounded-full bg-[#00202f] text-white dark:bg-white dark:text-[#00202f] flex items-center justify-center group-hover:bg-[#00a383] transition">
             <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 -rotate-45"><path d="M4 10h11m-4-4 4 4-4 4"/></svg>
           </span>
         </a>
@@ -76,13 +76,13 @@
     <div class="md:sticky md:top-32 self-start">
       {{ badge(t('about.numbers_badge'), "chart") }}
       <h2 class="mt-5 text-3xl sm:text-5xl font-semibold tracking-tight leading-tight">{{ about.numbers_heading | hl }}</h2>
-      <p class="mt-6 text-[15px] text-slate-400 leading-relaxed max-w-md">{{ about.numbers_text }}</p>
+      <p class="mt-6 text-[15px] text-slate-500 dark:text-slate-400 leading-relaxed max-w-md">{{ about.numbers_text }}</p>
     </div>
-    <div class="divide-y divide-white/10">
+    <div class="divide-y divide-slate-100 dark:divide-white/10">
       {% for s in stats %}
       <div class="py-7 first:pt-0">
         <div class="text-5xl sm:text-6xl font-semibold tracking-tight text-gradient">{{ s.value }}</div>
-        <div class="mt-2 text-sm text-slate-400">{{ loc(s, 'label') }}</div>
+        <div class="mt-2 text-sm text-slate-500 dark:text-slate-400">{{ loc(s, 'label') }}</div>
       </div>
       {% endfor %}
     </div>
@@ -90,20 +90,19 @@
   {% endif %}
 
   {# ================================= Contact ================================= #}
-  <section id="contact" class="relative scroll-mt-24 {{ 'pt-8' if stats else 'pt-24 sm:pt-32' }} pb-24 sm:pb-32 text-center">
-    <div class="pointer-events-none absolute inset-x-0 bottom-0 h-72 bg-[radial-gradient(50%_60%_at_50%_100%,rgba(0,200,160,0.18),transparent_70%)]"></div>
+  <section id="contact" class="relative scroll-mt-24 {{ 'pt-8' if stats else 'pt-24 sm:pt-32' }} pb-24 sm:pb-28 text-center">
     <div class="relative container-x">
-      <div class="mx-auto w-20 h-20 rounded-2xl bg-white p-3 flex items-center justify-center shadow-[0_20px_50px_-20px_rgba(0,200,160,0.6)]">
+      <div class="mx-auto w-20 h-20 rounded-2xl bg-white ring-1 ring-slate-200/80 dark:ring-white/10 p-3 flex items-center justify-center shadow-[0_20px_50px_-20px_rgba(0,200,160,0.5)]">
         <img src="/static/img/logo.png" alt="{{ site_name }}" class="max-w-full max-h-full object-contain" />
       </div>
       <div class="mt-7">{{ badge(t('about.cta_badge'), "email") }}</div>
       <h2 class="mt-5 text-3xl sm:text-6xl font-semibold tracking-tight leading-tight max-w-4xl mx-auto">{{ about.cta_heading | hl }}</h2>
-      <p class="mt-6 text-[15px] sm:text-base text-slate-400 leading-relaxed max-w-xl mx-auto">{{ about.cta_text }}</p>
+      <p class="mt-6 text-[15px] sm:text-base text-slate-500 dark:text-slate-400 leading-relaxed max-w-xl mx-auto">{{ about.cta_text }}</p>
       <div class="mt-10 flex flex-wrap items-center justify-center gap-3">
-        <a href="/services" class="rounded-full bg-[#00c8a0] text-[#00202f] px-6 py-3 text-sm font-semibold hover:bg-[#2ee0bb] transition">{{ t('offer.order') }}</a>
-        {% if call_phone %}<a href="tel:{{ call_phone }}" class="rounded-full ring-1 ring-white/20 px-6 py-3 text-sm font-medium hover:bg-white/10 transition">{{ t('enquiry.call') }} · {{ contact.contact_phone }}</a>{% endif %}
-        {% if contact.contact_email %}<a href="mailto:{{ contact.contact_email }}" class="rounded-full ring-1 ring-white/20 px-6 py-3 text-sm font-medium hover:bg-white/10 transition">{{ t('enquiry.email_us') }}</a>{% endif %}
-        {% if whatsapp_number %}<a href="https://wa.me/{{ whatsapp_number }}" target="_blank" rel="noopener" class="rounded-full ring-1 ring-white/20 px-6 py-3 text-sm font-medium hover:bg-white/10 transition">{{ t('enquiry.chat') }}</a>{% endif %}
+        <a href="/services" class="rounded-full bg-[#00202f] text-white dark:bg-[#00c8a0] dark:text-[#00202f] px-6 py-3 text-sm font-semibold hover:bg-[#00a383] transition">{{ t('offer.order') }}</a>
+        {% if call_phone %}<a href="tel:{{ call_phone }}" class="rounded-full ring-1 ring-slate-300 dark:ring-white/20 px-6 py-3 text-sm font-medium hover:bg-slate-50 dark:hover:bg-white/10 transition">{{ t('enquiry.call') }} · {{ contact.contact_phone }}</a>{% endif %}
+        {% if contact.contact_email %}<a href="mailto:{{ contact.contact_email }}" class="rounded-full ring-1 ring-slate-300 dark:ring-white/20 px-6 py-3 text-sm font-medium hover:bg-slate-50 dark:hover:bg-white/10 transition">{{ t('enquiry.email_us') }}</a>{% endif %}
+        {% if whatsapp_number %}<a href="https://wa.me/{{ whatsapp_number }}" target="_blank" rel="noopener" class="rounded-full ring-1 ring-slate-300 dark:ring-white/20 px-6 py-3 text-sm font-medium hover:bg-slate-50 dark:hover:bg-white/10 transition">{{ t('enquiry.chat') }}</a>{% endif %}
       </div>
     </div>
   </section>
